@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#00162e] text-[#F8F8F2] antialiased overflow-x-hidden;
+  }
+}
+
+/* Custom radial gradient using Far Corners brand colors: Navy #002244 and Green #77C65E */
+.bg-radial-gradient {
+  background: radial-gradient(circle at 50% 30%, rgba(119, 198, 94, 0.18) 0%, rgba(0, 34, 68, 0.4) 40%, rgba(0, 22, 46, 1) 80%);
+}
+
+.bg-radial-navy {
+  background: radial-gradient(circle at 50% 20%, rgba(74, 144, 214, 0.2) 0%, rgba(0, 34, 68, 1) 75%);
+}
+
+/* Custom Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #00162e;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e4066;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #77C65E;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
