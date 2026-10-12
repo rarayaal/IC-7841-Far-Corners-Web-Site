@@ -1,0 +1,41 @@
+import express from "express";
+import { pool } from "./db.js";
+import { projectsRouter } from "./routes/projects.routes.js";
+
+const app = express();
+const port = Number(process.env.PORT ?? 3000);
+
+app.use(express.json());
+app.use("/api/v1/projects", projectsRouter);
+
+app.get("/api/health", (_req, res) => {
+  res.status(200).json({
+    status: "ok",
+    message: "API de Far Corners funcionando",
+  });
+});
+
+
+app.get("/api/health/db", async (_req, res) => {
+  try {
+    await pool.query("SELECT 1");
+
+    res.status(200).json({
+      status: "ok",
+      message: "Conexión con MySQL funcionando",
+    });
+  } catch (error) {
+    console.error("Error al conectar con MySQL:", error);
+
+    res.status(503).json({
+      status: "error",
+      message: "No se pudo conectar con la base de datos",
+    });
+  }
+});
+
+
+
+app.listen(port, "0.0.0.0", () => {
+  console.log(`API disponible en http://localhost:${port}`);
+});
