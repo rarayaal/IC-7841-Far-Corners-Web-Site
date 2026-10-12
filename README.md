@@ -1,17 +1,18 @@
 # Manual de Configuración y Ejecución - Far Corners Web Site
 
-Este documento detalla los pasos necesarios para levantar el entorno de desarrollo local, la base de datos y la ejecución de los componentes de la plataforma.
+Este documento detalla los pasos necesarios para levantar el entorno de desarrollo local, la base de datos y la ejecución de los componentes de la plataforma del Teatro Comunitario Far Corners, conforme a la arquitectura establecida en el proyecto.
 
 ## 1. Requisitos Previos
 
 * Docker y Docker Compose instalados.
 * Node.js (versión 20 o superior recomendada).
+* Cliente de bases de datos opcional (DBeaver recomendado para la gestión visual).
 
 ## 2. Configuración de Variables de Entorno
 
-Se debe crear un archivo `.env` tanto en la carpeta `backend/` como en la carpeta `frontend/`, tomando como referencia los ejemplos provistos o utilizando las siguientes configuraciones predeterminadas para el entorno local.
+Se debe crear un archivo `.env` dentro de la carpeta `backend/` utilizando la siguiente configuración para el entorno local con contenedores:
 
-Ejemplo para `backend/.env`:
+Archivo `backend/.env`:
 
 ```env
 PORT=3000
@@ -63,7 +64,7 @@ npm install
 ```
 
 
-3. Ejecutar en modo desarrollo:
+3. Ejecutar en modo desarrollo (con recarga automática):
 ```bash
 npm run dev
 
@@ -92,3 +93,31 @@ npm install
 npm run dev
 
 ```
+
+
+
+---
+
+## 5. Verificación y Pruebas del Sistema
+
+### Endpoints de Comprobación (Health Checks)
+
+Una vez que el backend esté en ejecución, se pueden verificar los servicios mediante las siguientes rutas en el navegador o un cliente HTTP:
+
+* **Estado general de la API:** `http://localhost:3000/api/health`
+
+* **Verificación de conexión con PostgreSQL:** `http://localhost:3000/api/health/db`
+
+* **Listado de proyectos (Ejemplo de API):** `http://localhost:3000/api/v1/projects`
+
+
+### Parámetros de Conexión a la Base de Datos (Cliente SQL)
+
+Para conectarse a la base de datos relacional administrada por Docker:
+
+* **Driver:** PostgreSQL
+* **Host:** `localhost`
+* **Port:** `5432`
+* **Database:** `farcorners`
+* **Username:** `admin`
+* **Password:** `adminpassword`
