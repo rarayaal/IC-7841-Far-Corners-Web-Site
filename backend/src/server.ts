@@ -8,6 +8,19 @@ const port = Number(process.env.PORT ?? 3000);
 app.use(express.json());
 app.use("/api/v1/projects", projectsRouter);
 
+app.get("/", (_req, res) => {
+	res.status(200).json({
+		name: "Far Corners API",
+		version: "1.0.0",
+		status: "online",
+		endpoints: {
+			health: "/api/health",
+			database_health: "/api/health/db",
+			projects: "/api/v1/projects",
+		},
+	});
+});
+
 app.get("/api/health", (_req, res) => {
   res.status(200).json({
     status: "ok",
@@ -15,17 +28,16 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
-
 app.get("/api/health/db", async (_req, res) => {
   try {
     await pool.query("SELECT 1");
 
     res.status(200).json({
       status: "ok",
-      message: "Conexión con MySQL funcionando",
+      message: "Conexión con PostgreSQL funcionando",
     });
   } catch (error) {
-    console.error("Error al conectar con MySQL:", error);
+    console.error("Error al conectar con PostgreSQL:", error);
 
     res.status(503).json({
       status: "error",
@@ -33,8 +45,6 @@ app.get("/api/health/db", async (_req, res) => {
     });
   }
 });
-
-
 
 app.listen(port, "0.0.0.0", () => {
   console.log(`API disponible en http://localhost:${port}`);

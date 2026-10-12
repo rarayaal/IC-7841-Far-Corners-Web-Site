@@ -1,8 +1,7 @@
 import { pool } from "../db.js";
-import type { RowDataPacket } from "mysql2";
 
 export async function obtenerProyectosPublicados() {
-  const [proyectos] = await pool.execute<RowDataPacket[]>(`
+	const result = await pool.query(`
     SELECT
       id,
       title,
@@ -15,11 +14,12 @@ export async function obtenerProyectosPublicados() {
     ORDER BY display_order ASC, id ASC
   `);
 
-  return proyectos;
+	return result.rows;
 }
 
-export async function obtenerProyectoPorId(id: string){
-    const [proyectos] = await pool.execute<RowDataPacket[]>(`
+export async function obtenerProyectoPorId(id: string) {
+	const result = await pool.query(
+		`
     SELECT
       id,
       title,
@@ -28,11 +28,11 @@ export async function obtenerProyectoPorId(id: string){
       image_url,
       display_order
     FROM projects
-    WHERE id = ? and is_published = TRUE
+    WHERE id = $1 and is_published = TRUE
     ORDER BY display_order ASC, id ASC
+    `,
+		[id],
+	);
 
-    `, [id]);
-    
-
-    return proyectos[0];
+	return result.rows[0];
 }
