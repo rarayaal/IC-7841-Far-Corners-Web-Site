@@ -1,12 +1,16 @@
 import express from "express";
 import { pool } from "./db.js";
 import { projectsRouter } from "./routes/projects.routes.js";
+import { usersRouter } from './routes/users.routes.js';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 const port = Number(process.env.PORT ?? 3000);
 
 app.use(express.json());
+app.use(cookieParser());
 app.use("/api/v1/projects", projectsRouter);
+app.use("/api/v1/auth", usersRouter);
 
 app.get("/", (_req, res) => {
 	res.status(200).json({

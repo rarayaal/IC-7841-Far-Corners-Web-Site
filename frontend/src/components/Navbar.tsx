@@ -69,9 +69,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Admin Mode Toggle */}
             <button
               onClick={() => {
-                setIsAdminMode(!isAdminMode);
-                if (!isAdminMode) setCurrentPage('admin');
-                else setCurrentPage('home');
+                setMobileMenuOpen(false);
+
+                if (isAdminMode) {
+                  setCurrentPage('admin');
+                  return;
+                }
+
+                setCurrentPage('loginAdmin');
               }}
               className={`flex items-center space-x-1.5 px-2.5 py-1 rounded text-xs transition-colors ${
                 isAdminMode
@@ -87,7 +92,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       {/* Main Navbar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo Brand Header */}
           <div
@@ -95,7 +100,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               setIsAdminMode(false);
               setCurrentPage('home');
             }}
-            className="flex items-center space-x-3 cursor-pointer group"
+            className="flex shrink-0 items-center space-x-3 cursor-pointer group"
           >
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#002244] to-[#00162e] p-1 border border-[#77C65E]/50 shadow-glow-green group-hover:scale-105 transition-transform flex items-center justify-center">
               <img
@@ -107,7 +112,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }}
               />
             </div>
-            <div>
+            <div className="whitespace-nowrap">
               <span className="block font-serif text-xl sm:text-2xl font-bold tracking-tight text-white group-hover:text-[#77C65E] transition-colors">
                 Far Corners
               </span>
@@ -118,7 +123,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Desktop Nav Items */}
-          <nav className="hidden lg:flex items-center space-x-1">
+          <nav className="hidden xl:flex items-center space-x-1">
             {navItems.map((item) => {
               const isActive = currentPage === item.id && !isAdminMode;
               return (
@@ -165,10 +170,25 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Heart className="w-4 h-4 fill-[#002244]" />
               <span>{language === 'es' ? 'Donar' : 'Donate'}</span>
             </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setIsAdminMode(false);
+                setCurrentPage('register');
+                setMobileMenuOpen(false);
+              }}
+              className="shrink-0 whitespace-nowrap px-4 py-2 rounded-xl
+                        border border-[#77C65E] text-[#77C65E]
+                        hover:bg-[#77C65E] hover:text-[#002244]
+                        text-sm font-semibold transition-colors"
+            >
+              {language === 'es' ? 'Crear cuenta' : 'Sign up'}
+            </button>
           </div>
 
           {/* Mobile menu trigger */}
-          <div className="flex lg:hidden items-center space-x-2">
+          <div className="flex xl:hidden items-center space-x-2">
             <button
               onClick={onOpenSearch}
               className="p-2 text-slate-200 hover:text-white rounded-lg bg-white/10"
@@ -187,7 +207,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-[#002244] border-b border-white/10 px-4 pt-3 pb-6 space-y-2 animate-fadeIn">
+       <div className="xl:hidden bg-[#002244] border-b border-white/10 px-4 pt-3 pb-6 space-y-2 animate-fadeIn">
           {navItems.map((item) => {
             const isActive = currentPage === item.id && !isAdminMode;
             const IconComp = item.icon;
@@ -232,6 +252,21 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <Heart className="w-4 h-4 fill-[#002244]" />
               <span>{language === 'es' ? 'Donar' : 'Donate'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setIsAdminMode(false);
+                setCurrentPage('register');
+                setMobileMenuOpen(false);
+              }}
+              className="col-span-2 w-full px-4 py-3 rounded-xl
+                        border border-[#77C65E] text-[#77C65E]
+                        hover:bg-[#77C65E] hover:text-[#002244]
+                        text-sm font-semibold transition-colors"
+            >
+              {language === 'es' ? 'Crear cuenta' : 'Sign up'}
             </button>
           </div>
         </div>
