@@ -187,3 +187,56 @@ CREATE TRIGGER update_purchases_modtime BEFORE UPDATE ON purchases FOR EACH ROW 
 CREATE TRIGGER update_projects_modtime BEFORE UPDATE ON projects FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_institutional_content_modtime BEFORE UPDATE ON institutional_content FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_newsletter_subscribers_modtime BEFORE UPDATE ON newsletter_subscribers FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- 4. Seed de Seguridad: Permisos y Administrador Maestro
+
+-- Catalogo de permisos segun modulos del sistema
+INSERT INTO permissions (id, code, description) VALUES
+    ('11111111-1111-1111-1111-111111110001', 'users:manage', 'Gestionar usuarios y administradores'),
+    ('11111111-1111-1111-1111-111111110002', 'roles:manage', 'Gestionar roles y permisos del sistema'),
+    ('11111111-1111-1111-1111-111111110003', 'audit:read', 'Consultar la bitacora de auditoria del sistema'),
+    ('11111111-1111-1111-1111-111111110004', 'content:manage', 'Gestionar contenido institucional e impacto'),
+    ('11111111-1111-1111-1111-111111110005', 'projects:manage', 'Gestionar catalogo de proyectos teatrales'),
+    ('11111111-1111-1111-1111-111111110006', 'events:manage', 'Gestionar eventos y cartelera'),
+    ('11111111-1111-1111-1111-111111110007', 'tickets:manage', 'Gestionar inventario y precios de boleteria'),
+    ('11111111-1111-1111-1111-111111110008', 'donations:manage', 'Gestionar donaciones e informacion financiera'),
+    ('11111111-1111-1111-1111-111111110009', 'community:manage', 'Gestionar programas de voluntarios y estudiantes'),
+    ('11111111-1111-1111-1111-111111110010', 'media:manage', 'Gestionar galeria multimedia y almacenamiento')
+ON CONFLICT (code) DO NOTHING;
+
+-- Usuario Administrador Maestro Inicial (password: Admin123*!)
+-- Hash bcrypt con factor de coste 12
+INSERT INTO users (
+    id,
+    full_name,
+    email,
+    password_hash,
+    role,
+    status
+) VALUES (
+    'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    'Administrador General Far Corners',
+    'admin@farcornerscr.org',
+    '$2b$12$Z0m08Qy4x6cKzHnF9J7j2.TfRvyE37S4fW3Q8B.bIgeiJ5KzGqC12',
+    'admin',
+    'active'
+) ON CONFLICT (email) DO NOTHING;
+
+-- Asignar todos los permisos al Administrador Maestro Inicial
+INSERT INTO user_permissions (user_id, permission_id)
+SELECT 
+    'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 
+    p.id 
+FROM permissions p
+ON CONFLICT (user_id, permission_id) DO NOTHING;
+
+-- 5. Indices de optimizacion para modulos de seguridad y auditoria (SAD 8.1 / RR-03)
+-- Agiliza la busqueda de cuentas en el flujo de inicio de sesion
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+
+-- Optimiza la recuperacion rapida de permisos asignados en cada validacion de token
+CREATE INDEX IF NOT EXISTS idx_user_permissions_user_id ON user_permissions(user_id);
+
+-- Acelera el filtrado y ordenamiento cronologico en la consulta de bitacora de auditoria
+CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at DESC);
