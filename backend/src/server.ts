@@ -1,12 +1,15 @@
 import express from "express";
 import { pool } from "./db.js";
 import { projectsRouter } from "./routes/projects.routes.js";
+import { authRouter, usersRouter } from "./routes/auth.routes.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 3000);
 
 app.use(express.json());
 app.use("/api/v1/projects", projectsRouter);
+app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/users", usersRouter);
 
 app.get("/", (_req, res) => {
 	res.status(200).json({
@@ -16,6 +19,8 @@ app.get("/", (_req, res) => {
 		endpoints: {
 			health: "/api/health",
 			database_health: "/api/health/db",
+			auth: "/api/v1/auth",
+			users: "/api/v1/users",
 			projects: "/api/v1/projects",
 		},
 	});
