@@ -33,8 +33,8 @@ CREATE TABLE users (
     full_name VARCHAR(200) NOT NULL,
     email VARCHAR(254) NOT NULL UNIQUE,
     password_hash VARCHAR(255),
-    role VARCHAR(30) NOT NULL DEFAULT 'visitor'
-        CHECK (role IN ('admin', 'visitor')),
+    role VARCHAR(30) NOT NULL DEFAULT 'user'
+        CHECK (role IN ('admin', 'manager', 'visitor', 'user')),
     participant_type VARCHAR(40)
         CHECK (participant_type IN ('international_student', 'volunteer', 'intern')),
     status VARCHAR(30) NOT NULL DEFAULT 'active'
@@ -46,6 +46,18 @@ CREATE TABLE users (
         NULLIF(TRIM(password_hash), '') IS NOT NULL
         OR NULLIF(TRIM(google_id), '') IS NOT NULL
     )
+);
+
+CREATE TABLE permissions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    code VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT NOT NULL
+);
+
+CREATE TABLE user_permissions (
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    permission_id UUID NOT NULL REFERENCES permissions(id) ON DELETE CASCADE,
+    PRIMARY KEY (user_id, permission_id)
 );
 
 
@@ -503,42 +515,53 @@ FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_applications_modtime BEFORE UPDATE ON applications
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+-- Seed de Seguridad: Permisos y Administrador Maestro
+
+-- Catalogo de permisos segun modulos del sistema
+INSERT INTO permissions (id, code, description) VALUES
+    ('11111111-1111-1111-1111-111111110001', 'users:manage', 'Gestionar usuarios y administradores'),
+    ('11111111-1111-1111-1111-111111110002', 'roles:manage', 'Gestionar roles y permisos del sistema'),
+    ('11111111-1111-1111-1111-111111110003', 'audit:read', 'Consultar la bitacora de auditoria del sistema'),
+    ('11111111-1111-1111-1111-111111110004', 'content:manage', 'Gestionar contenido institucional e impacto'),
+    ('11111111-1111-1111-1111-111111110005', 'projects:manage', 'Gestionar catalogo de proyectos teatrales'),
+    ('11111111-1111-1111-1111-111111110006', 'events:manage', 'Gestionar eventos y cartelera'),
+    ('11111111-1111-1111-1111-111111110007', 'tickets:manage', 'Gestionar inventario y precios de boleteria'),
+    ('11111111-1111-1111-1111-111111110008', 'donations:manage', 'Gestionar donaciones e informacion financiera'),
+    ('11111111-1111-1111-1111-111111110009', 'community:manage', 'Gestionar programas de voluntarios y estudiantes'),
+    ('11111111-1111-1111-1111-111111110010', 'media:manage', 'Gestionar galeria multimedia y almacenamiento')
+ON CONFLICT (code) DO NOTHING;
+
+-- Usuario Administrador Maestro Inicial (password: Admin123*!)
+-- Hash bcrypt con factor de coste 12
+INSERT INTO users (
+    id,
+    full_name,
+    email,
+    password_hash,
+    role,
+    status
+) VALUES (
+    'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    'Administrador General Far Corners',
+    'admin@farcornerscr.org',
+    '$2b$12$Z0m08Qy4x6cKzHnF9J7j2.TfRvyE37S4fW3Q8B.bIgeiJ5KzGqC12',
+    'admin',
+    'active'
+) ON CONFLICT (email) DO NOTHING;
+
+-- Asignar todos los permisos al Administrador Maestro Inicial
+INSERT INTO user_permissions (user_id, permission_id)
+SELECT 
+    'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 
+    p.id 
+FROM permissions p
+ON CONFLICT (user_id, permission_id) DO NOTHING;
+
+-- Indices de optimizacion para modulos de seguridad y auditoria
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_user_permissions_user_id ON user_permissions(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at DESC);
+
 COMMIT;
 
--- INTEGRACION CON LOS VIEWS (no son datos de ejemplo):
--- Shows/Home/Admin: year=season_year, poster=poster_url, banner=banner_url,
--- synopsis=description, dates=dates_label o fechas formateadas de funciones,
--- location=venue. cast se obtiene de event_cast JOIN people, en display_order.
--- No hay synopsisEn/titleEn para obras ni proyectos; adaptar React para usar
--- el contenido unico al cambiar idioma. Las etiquetas UI siguen traducibles.
--- Proyectos: image=image_url, summary=description, year=project_year,
--- participants=participants_count; impactMetrics proviene de project_impact_metrics.
--- Participate: period=period_label, requirements de opportunity_requirements,
--- destacados y edad/becas/foto de opportunities, beneficios de opportunity_features.
--- About: valores de organization_values y equipo de organization_team_members
--- JOIN people. Home/About: cifras editoriales de organization_metrics.
--- Contact: el formulario ya corresponde a contact_messages; informacion publica
--- en contact_channels. No duplicar tablas para el mismo mensaje.
--- Institucion: usar institutional_content (page_slug,section,language).
--- Admin: conservar audit_logs original; user por JOIN users, timestamp=created_at,
--- module se deriva de table_name y details de action/old_values/new_values.
--- La escritura de auditoria es responsabilidad del backend en la transaccion.
---
--- DATOS DERIVADOS, NO NUEVAS TABLAS:
--- Recaudacion: SUM(amount) de donations completadas, separado por moneda.
--- Ventas por obra: tickets activos/usados con purchases.status='paid'.
--- Agregar ventas/capacidades por separado antes de unirlas para no multiplicar filas.
--- Postulantes activos: applications en pending/interview segun regla acordada.
--- Usuarios simultaneos: monitoreo/sesiones con vencimiento, no COUNT(users).
--- Precios y disponibilidad: ticket_inventory, filtrando funcion/tarifa/moneda.
--- Reemplazar precios '10000' y anos '2026' fijos en React por datos de la API.
---
--- DECISIONES CONSERVADAS DEL ORIGINAL:
--- Los importes permanecen DOUBLE PRECISION por compatibilidad con el script
--- inicial. Antes de cobros reales conviene NUMERIC(14,2), revisando redondeo y
--- el contrato de pg (NUMERIC normalmente llega a Node como texto).
--- Se conservan TIMESTAMP y autenticacion del original. Nuevas fechas de
--- funciones/revision usan TIMESTAMPTZ; la aplicacion debe fijar su zona horaria.
--- No se agregan personas, telefonos, porcentajes ni cifras de los mocks:
--- se deben validar con el cliente y cargar mediante INSERT/API posteriormente.
--- Cambiar el script NO cambia automaticamente las consultas existentes ni React.

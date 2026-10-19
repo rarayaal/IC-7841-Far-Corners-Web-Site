@@ -1,10 +1,11 @@
 import express from "express";
 import { pool } from "./db.js";
 import { projectsRouter } from "./routes/projects.routes.js";
-import { usersRouter } from './routes/users.routes.js';
-import donationsRouter from "./routes/donations.routes.js";
-import cookieParser from 'cookie-parser';
 import ticketsRouter from "./routes/tickets.routes.js";
+import donationsRouter from "./routes/donations.routes.js";
+import { usersRouter } from "./routes/users.routes.js";
+import { authRouter, usersRouter as authUsersRouter } from "./routes/auth.routes.js";
+import { adminUsersRouter } from "./routes/admin-users.routes.js";
 import { contactMessagesRouter } from './routes/contactMessages.routes.js';
 import {
   contactChannelsRouter,
@@ -14,25 +15,38 @@ const app = express();
 const port = Number(process.env.PORT ?? 3000);
 
 app.use(express.json());
-app.use(cookieParser());
+
+// Rutas de proyectos, donaciones y boleteria
 app.use("/api/v1/projects", projectsRouter);
-app.use("/api/v1/auth", usersRouter);
+app.use("/api/v1/tickets", ticketsRouter);
 app.use("/api/v1/donations", donationsRouter);
-app.use("/api/v1", ticketsRouter);
+
+// Rutas de registro publico de usuarios (Marcelo)
+app.use("/api/v1/users", usersRouter);
+
+// Rutas de autenticacion y perfil protegido
+app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/me", authUsersRouter);
+app.use("/api/v1/admin", adminUsersRouter);
 app.use('/api/v1/contact-messages', contactMessagesRouter);
 app.use('/api/v1/contact-channels', contactChannelsRouter);
 
 app.get("/", (_req, res) => {
-  res.status(200).json({
-    name: "Far Corners API",
-    version: "1.0.0",
-    status: "online",
-    endpoints: {
-      health: "/api/health",
-      database_health: "/api/health/db",
-      projects: "/api/v1/projects",
-    },
-  });
+	res.status(200).json({
+		name: "Far Corners API",
+		version: "1.0.0",
+		status: "online",
+		endpoints: {
+			health: "/api/health",
+			database_health: "/api/health/db",
+			auth: "/api/v1/auth",
+			admin_users: "/api/v1/admin/users",
+			projects: "/api/v1/projects",
+			tickets: "/api/v1/tickets",
+			donations: "/api/v1/donations",
+			users: "/api/v1/users",
+		},
+	});
 });
 
 app.get("/api/health", (_req, res) => {
