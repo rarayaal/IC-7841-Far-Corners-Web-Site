@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Language, PageView } from '../types';
-import { Mail, Heart, MapPin, Phone, CheckCircle2 } from 'lucide-react';
+import { Mail, CheckCircle2 } from 'lucide-react';
+import { useContactChannels } from '../hooks/useContactChannels';
+import { ContactChannelsList } from './ContactChannelsList';
 
 interface FooterProps {
   language: Language;
@@ -8,6 +10,21 @@ interface FooterProps {
 }
 
 export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
+  const {
+    contactos,
+    cargando: cargandoContactos,
+    error: errorContactos,
+  } = useContactChannels();
+
+  const contactosDeFooter = contactos.filter((contacto) =>
+    ['email', 'phone', 'whatsapp', 'social'].includes(
+      contacto.channel_type
+    )
+  );
+
+  const ubicaciones = contactos.filter(
+    (contacto) => contacto.channel_type === 'international_location'
+  );
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
@@ -145,49 +162,50 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
           <h4 className="font-serif text-base font-bold text-white uppercase tracking-wider mb-4 border-b border-[#77C65E]/40 pb-2">
             {language === 'es' ? 'Presencia Internacional' : 'Global Footprint'}
           </h4>
-          <ul className="space-y-3 text-xs">
-            <li className="flex items-start space-x-2">
-              <MapPin className="w-4 h-4 text-[#77C65E] shrink-0 mt-0.5" />
-              <div>
-                <span className="font-bold text-white block">Costa Rica (Monteverde)</span>
-                <span className="text-slate-300">Sede Principal & Campamento de Verano</span>
-              </div>
-            </li>
-            <li className="flex items-start space-x-2">
-              <MapPin className="w-4 h-4 text-[#4A90D6] shrink-0 mt-0.5" />
-              <div>
-                <span className="font-bold text-white block">China</span>
-                <span className="text-slate-300">Iniciativa Teatral Educativa Rural</span>
-              </div>
-            </li>
-            <li className="flex items-start space-x-2">
-              <MapPin className="w-4 h-4 text-[#DCEB4F] shrink-0 mt-0.5" />
-              <div>
-                <span className="font-bold text-white block">Mozambique</span>
-                <span className="text-slate-300">Talleres Comunitarios de Artes Escénicas</span>
-              </div>
-            </li>
-          </ul>
+          {!cargandoContactos && !errorContactos && (
+            <ContactChannelsList
+              contactos={ubicaciones}
+              language={language}
+            />
+          )}
         </div>
 
         {/* Contact & Info */}
         <div>
           <h4 className="font-serif text-base font-bold text-white uppercase tracking-wider mb-4 border-b border-[#77C65E]/40 pb-2">
-            {language === 'es' ? 'Contacto e Información' : 'Contact & Info'}
+            {language === 'es'
+              ? 'Contacto e Información'
+              : 'Contact & Info'}
           </h4>
-          <div className="space-y-3 text-xs">
-            <p className="flex items-center space-x-2">
-              <Mail className="w-4 h-4 text-[#77C65E]" />
-              <span className="text-slate-200">info@farcornersmusicals.org</span>
+
+          {cargandoContactos && (
+            <p role="status" className="text-xs">
+              {language === 'es' ? 'Cargando...' : 'Loading...'}
             </p>
-            <p className="flex items-center space-x-2">
-              <Phone className="w-4 h-4 text-[#4A90D6]" />
-              <span className="text-slate-200">+506 2645-5000 (Monteverde)</span>
+          )}
+
+          {errorContactos && (
+            <p role="alert" className="text-xs text-red-300">
+              {language === 'es'
+                ? 'No se pudieron cargar los contactos.'
+                : 'Contact information could not be loaded.'}
             </p>
-            <div className="pt-2 text-[11px] text-slate-400 border-t border-white/10 space-y-1">
-              <p>Zeffy, Stripe & SINPE Móvil Habilitados</p>
-            </div>
-          </div>
+          )}
+
+          {!cargandoContactos && !errorContactos && (
+            contactosDeFooter.length > 0 ? (
+              <ContactChannelsList
+                contactos={contactosDeFooter}
+                language={language}
+              />
+            ) : (
+              <p className="text-xs">
+                {language === 'es'
+                  ? 'No hay contactos publicados.'
+                  : 'No contact information is available.'}
+              </p>
+            )
+          )}
         </div>
       </div>
 

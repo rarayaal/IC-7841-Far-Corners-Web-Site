@@ -6,6 +6,10 @@ import donationsRouter from "./routes/donations.routes.js";
 import { usersRouter } from "./routes/users.routes.js";
 import { authRouter, usersRouter as authUsersRouter } from "./routes/auth.routes.js";
 import { adminUsersRouter } from "./routes/admin-users.routes.js";
+import { contactMessagesRouter } from './routes/contactMessages.routes.js';
+import {
+  contactChannelsRouter,
+} from './routes/contactChannels.routes.js';
 
 const app = express();
 const port = Number(process.env.PORT ?? 3000);
@@ -24,6 +28,8 @@ app.use("/api/v1/users", usersRouter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/me", authUsersRouter);
 app.use("/api/v1/admin", adminUsersRouter);
+app.use('/api/v1/contact-messages', contactMessagesRouter);
+app.use('/api/v1/contact-channels', contactChannelsRouter);
 
 app.get("/", (_req, res) => {
 	res.status(200).json({

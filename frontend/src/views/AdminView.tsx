@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import { Language, Show, AuditLogItem, VolunteerApplication } from '../types';
 import { showsData, auditLogsMock, volunteerAppsMock } from '../data/mockData';
 import { Shield, Ticket, Users, Heart, Plus, Edit2, Trash2, CheckCircle2 } from 'lucide-react';
+import { AdminMessagesView } from './AdminMessagesView';
+import { AdminContactChannelsView } from './AdminContactChannelsView';
 
 interface AdminViewProps {
   language: Language;
 }
 
 export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
-  const [activeTab, setActiveTab] = useState<'kpi' | 'ticketing' | 'content' | 'applicants' | 'audit'>('kpi');
+  const [activeTab, setActiveTab] = useState<'kpi' | 'ticketing' | 'content' | 'applicants' | 'audit' | 'messages' | 'contacts'>('kpi');
   
   // Dynamic state for CRUD demo
   const [shows, setShows] = useState<Show[]>(showsData);
@@ -176,9 +178,33 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
         >
           Bitácora de Cambios
         </button>
+
+        <button
+          onClick={() => setActiveTab('messages')}
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+            activeTab === 'messages'
+              ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
+              : 'bg-[#002244] text-slate-300 hover:text-white'
+          }`}
+        >
+          Mensajes
+        </button>
+
+        <button
+          onClick={() => setActiveTab('contacts')}
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+            activeTab === 'contacts'
+              ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
+              : 'bg-[#002244] text-slate-300 hover:text-white'
+          }`}
+        >
+          Medios de contacto
+        </button>
       </div>
 
       {/* TAB 1: KPI OVERVIEW */}
+      {activeTab === 'contacts' && <AdminContactChannelsView />}
+      {activeTab === 'messages' && <AdminMessagesView />}
       {activeTab === 'kpi' && (
         <div className="space-y-8 animate-fadeIn">
           {/* Top KPI Cards */}
