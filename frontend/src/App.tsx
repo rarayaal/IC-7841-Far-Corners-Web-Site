@@ -14,6 +14,8 @@ import { ParticipateView } from './views/ParticipateView';
 import { DonateView } from './views/DonateView';
 import { ContactView } from './views/ContactView';
 import { AdminView } from './views/AdminView';
+import { RegisterView } from './views/RegisterView';
+import { LoginAdminView } from './views/LoginAdminView';
 import { showsData, opportunitiesData } from './data/mockData';
 
 export function App() {
@@ -102,8 +104,16 @@ export function App() {
             {currentPage === 'contact' && (
               <ContactView language={language} />
             )}
-            {currentPage === 'admin' && (
-              <AdminView language={language} />
+            {currentPage === 'register' && (
+              <RegisterView />
+            )}
+            {currentPage === 'loginAdmin' && (
+              <LoginAdminView
+                onLoginCorrecto={() => {
+                  setCurrentPage('admin');
+                  setIsAdminMode(true);
+                }}
+              />
             )}
           </>
         )}
