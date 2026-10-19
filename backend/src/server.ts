@@ -5,6 +5,10 @@ import { usersRouter } from './routes/users.routes.js';
 import donationsRouter from "./routes/donations.routes.js";
 import cookieParser from 'cookie-parser';
 import ticketsRouter from "./routes/tickets.routes.js";
+import { contactMessagesRouter } from './routes/contactMessages.routes.js';
+import {
+  contactChannelsRouter,
+} from './routes/contactChannels.routes.js';
 
 const app = express();
 const port = Number(process.env.PORT ?? 3000);
@@ -15,6 +19,8 @@ app.use("/api/v1/projects", projectsRouter);
 app.use("/api/v1/auth", usersRouter);
 app.use("/api/v1/donations", donationsRouter);
 app.use("/api/v1", ticketsRouter);
+app.use('/api/v1/contact-messages', contactMessagesRouter);
+app.use('/api/v1/contact-channels', contactChannelsRouter);
 
 app.get("/", (_req, res) => {
   res.status(200).json({

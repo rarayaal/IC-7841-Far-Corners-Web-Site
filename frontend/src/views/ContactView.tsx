@@ -1,12 +1,32 @@
 import React, { useState } from 'react';
 import { Language } from '../types';
-import { Mail, Phone, MapPin, Send, CheckCircle2, Clock } from 'lucide-react';
+import { Send, CheckCircle2 } from 'lucide-react';
+import { useContactChannels } from '../hooks/useContactChannels';
+import { ContactChannelsList } from '../components/ContactChannelsList';
 
 interface ContactViewProps {
   language: Language;
 }
 
 export const ContactView: React.FC<ContactViewProps> = ({ language }) => {
+  const {
+  contactos,
+  cargando: cargandoContactos,
+  error: errorContactos,
+} = useContactChannels();
+
+const contactosDePagina = contactos.filter((contacto) =>
+  [
+    'address',
+    'email',
+    'phone',
+    'whatsapp',
+    'office_hours',
+    'performance_hours',
+    'international_location',
+    'social',
+  ].includes(contacto.channel_type)
+);
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -14,11 +34,55 @@ export const ContactView: React.FC<ContactViewProps> = ({ language }) => {
     subject: '',
     message: ''
   });
+const [enviando, setEnviando] = useState(false);
+const [errorEnvio, setErrorEnvio] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+
+  if (enviando) return;
+
+  setErrorEnvio('');
+  setEnviando(true);
+
+  try {
+    const respuesta = await fetch('/api/v1/contact-messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        subject: formData.subject.trim(),
+        message: formData.message.trim(),
+      }),
+    });
+
+    const datos = await respuesta.json().catch(() => null);
+
+    if (!respuesta.ok) {
+      setErrorEnvio(
+        typeof datos?.message === 'string'
+          ? datos.message
+          : language === 'es'
+            ? 'No se pudo enviar el mensaje.'
+            : 'The message could not be sent.'
+      );
+      return;
+    }
+
     setSubmitted(true);
-  };
+  } catch {
+    setErrorEnvio(
+      language === 'es'
+        ? 'No se pudo conectar con la API. Inténtalo nuevamente.'
+        : 'Could not connect to the API. Please try again.'
+    );
+  } finally {
+    setEnviando(false);
+  }
+};
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12 animate-fadeIn">
@@ -40,50 +104,43 @@ export const ContactView: React.FC<ContactViewProps> = ({ language }) => {
       {/* Main Aligned Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
         {/* Contact Information Box */}
-        <div className="bg-[#002244] border border-[#1e4066] rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between">
-          <div className="space-y-6">
-            <h3 className="font-serif text-2xl font-bold text-white border-b border-white/10 pb-3">Información de Contacto</h3>
+        <div className="bg-[#002244] border border-[#1e4066] rounded-3xl p-6 sm:p-8 space-y-6">
+          <h3 className="font-serif text-2xl font-bold text-white border-b border-white/10 pb-3">
+            {language === 'es'
+              ? 'Información de Contacto'
+              : 'Contact Information'}
+          </h3>
 
-            <div className="space-y-5 text-xs text-slate-300">
-              <div className="flex items-start space-x-3.5">
-                <MapPin className="w-5 h-5 text-[#77C65E] shrink-0 mt-0.5" />
-                <div>
-                  <strong className="text-white block text-sm">Sede Central y Teatro:</strong>
-                  <span>Monteverde, Puntarenas, Costa Rica (Cerca de la Reserva Biológica Monteverde)</span>
-                </div>
-              </div>
+          {cargandoContactos && (
+            <p role="status" className="text-xs text-slate-300">
+              {language === 'es'
+                ? 'Cargando contactos...'
+                : 'Loading contact information...'}
+            </p>
+          )}
 
-              <div className="flex items-start space-x-3.5">
-                <Mail className="w-5 h-5 text-[#4A90D6] shrink-0 mt-0.5" />
-                <div>
-                  <strong className="text-white block text-sm">Correo Institucional:</strong>
-                  <span>info@farcornersmusicals.org</span>
-                </div>
-              </div>
+          {errorContactos && (
+            <p role="alert" className="text-xs text-red-300">
+              {language === 'es'
+                ? 'No se pudo cargar la información de contacto.'
+                : 'Contact information could not be loaded.'}
+            </p>
+          )}
 
-              <div className="flex items-start space-x-3.5">
-                <Phone className="w-5 h-5 text-[#DCEB4F] shrink-0 mt-0.5" />
-                <div>
-                  <strong className="text-white block text-sm">Teléfono & WhatsApp:</strong>
-                  <span>+506 2645-5000 / +506 8888-9999</span>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-3.5">
-                <Clock className="w-5 h-5 text-[#77C65E] shrink-0 mt-0.5" />
-                <div>
-                  <strong className="text-white block text-sm">Horario de Taquilla y Oficina:</strong>
-                  <span>Lunes a Viernes: 9:00 AM - 5:00 PM</span>
-                  <p className="text-[10px] text-slate-400">Días de función: Abierto hasta el inicio de la obra</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-xl bg-[#00162e] border border-white/10 text-xs text-slate-300">
-            <span className="font-bold text-white block">Ubicación Internacional:</span>
-            <span>Programas activos en Costa Rica (Monteverde), China y Mozambique.</span>
-          </div>
+          {!cargandoContactos && !errorContactos && (
+            contactosDePagina.length > 0 ? (
+              <ContactChannelsList
+                contactos={contactosDePagina}
+                language={language}
+              />
+            ) : (
+              <p className="text-xs text-slate-300">
+                {language === 'es'
+                  ? 'No hay medios de contacto publicados.'
+                  : 'No contact information is currently available.'}
+              </p>
+            )
+          )}
         </div>
 
         {/* Contact Form Box */}
@@ -99,6 +156,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ language }) => {
                     <input
                       type="text"
                       required
+                      maxLength={200}
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder="Tu nombre..."
@@ -110,6 +168,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ language }) => {
                     <input
                       type="email"
                       required
+                      maxLength={254}
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       placeholder="tu@correo.com"
@@ -123,6 +182,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ language }) => {
                   <input
                     type="text"
                     required
+                    maxLength={255}
                     value={formData.subject}
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                     placeholder="Consulta sobre boletería / campamento / pasantías..."
@@ -135,6 +195,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ language }) => {
                   <textarea
                     required
                     rows={4}
+                    maxLength={10000}
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     placeholder="Escribe aquí tu consulta en detalle..."
@@ -142,12 +203,27 @@ export const ContactView: React.FC<ContactViewProps> = ({ language }) => {
                   ></textarea>
                 </div>
 
+                {errorEnvio && (
+                  <p role="alert" className="text-sm text-red-300">
+                    {errorEnvio}
+                  </p>
+                )}
+
                 <button
                   type="submit"
-                  className="w-full py-3.5 bg-[#77C65E] hover:bg-[#008047] text-[#002244] hover:text-white text-xs font-extrabold rounded-xl shadow-glow-green transition-all flex items-center justify-center space-x-2 uppercase tracking-wider"
+                  disabled={enviando}
+                  className="w-full py-3.5 bg-[#77C65E] hover:bg-[#008047]
+                            text-[#002244] hover:text-white text-xs font-extrabold
+                            rounded-xl shadow-glow-green transition-all flex
+                            items-center justify-center space-x-2 uppercase tracking-wider
+                            disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Send className="w-4 h-4" />
-                  <span>Enviar Mensaje a la Organización</span>
+                  <span>
+                    {enviando
+                      ? language === 'es' ? 'Enviando…' : 'Sending…'
+                      : language === 'es' ? 'Enviar mensaje' : 'Send message'}
+                  </span>
                 </button>
               </form>
             ) : (
@@ -160,7 +236,16 @@ export const ContactView: React.FC<ContactViewProps> = ({ language }) => {
                   Gracias <strong className="text-white">{formData.name}</strong>. Responderemos a tu correo (<span className="text-[#DCEB4F]">{formData.email}</span>) a la brevedad.
                 </p>
                 <button
-                  onClick={() => setSubmitted(false)}
+                  onClick={() => {
+                    setFormData({
+                      name: '',
+                      email: '',
+                      subject: '',
+                      message: '',
+                    });
+                    setErrorEnvio('');
+                    setSubmitted(false);
+                  }}
                   className="px-6 py-2.5 bg-white/10 text-white text-xs font-semibold rounded-xl"
                 >
                   Enviar Otro Mensaje

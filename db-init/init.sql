@@ -424,6 +424,39 @@ CREATE TABLE audit_logs (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+
+CREATE TABLE contact_message_replies (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    contact_message_id UUID NOT NULL
+        REFERENCES contact_messages(id),
+
+    admin_user_id UUID
+        REFERENCES users(id) ON DELETE SET NULL,
+
+    response_text TEXT NOT NULL
+        CHECK (
+            char_length(trim(response_text)) > 0
+            AND char_length(response_text) <= 10000
+        ),
+
+    status VARCHAR(20) NOT NULL DEFAULT 'saved'
+        CHECK (status IN ('saved', 'sent', 'failed')),
+
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    sent_at TIMESTAMP,
+
+    CONSTRAINT reply_sent_at_check CHECK (
+        (status = 'sent' AND sent_at IS NOT NULL)
+        OR
+        (status <> 'sent' AND sent_at IS NULL)
+    )
+);
+
+CREATE INDEX idx_contact_message_replies_message
+    ON contact_message_replies(contact_message_id);
+
 -- INDICES PARA RELACIONES Y CONSULTAS PUBLICAS
 CREATE UNIQUE INDEX applications_opportunity_email_unique
     ON applications (opportunity_id, LOWER(BTRIM(email)));
