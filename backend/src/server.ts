@@ -2,7 +2,9 @@ import express from "express";
 import { pool } from "./db.js";
 import { projectsRouter } from "./routes/projects.routes.js";
 import { usersRouter } from './routes/users.routes.js';
+import donationsRouter from "./routes/donations.routes.js";
 import cookieParser from 'cookie-parser';
+import ticketsRouter from "./routes/tickets.routes.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 3000);
@@ -11,18 +13,20 @@ app.use(express.json());
 app.use(cookieParser());
 app.use("/api/v1/projects", projectsRouter);
 app.use("/api/v1/auth", usersRouter);
+app.use("/api/v1/donations", donationsRouter);
+app.use("/api/v1", ticketsRouter);
 
 app.get("/", (_req, res) => {
-	res.status(200).json({
-		name: "Far Corners API",
-		version: "1.0.0",
-		status: "online",
-		endpoints: {
-			health: "/api/health",
-			database_health: "/api/health/db",
-			projects: "/api/v1/projects",
-		},
-	});
+  res.status(200).json({
+    name: "Far Corners API",
+    version: "1.0.0",
+    status: "online",
+    endpoints: {
+      health: "/api/health",
+      database_health: "/api/health/db",
+      projects: "/api/v1/projects",
+    },
+  });
 });
 
 app.get("/api/health", (_req, res) => {
