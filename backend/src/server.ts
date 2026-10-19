@@ -1,6 +1,9 @@
 import express from "express";
 import { pool } from "./db.js";
 import { projectsRouter } from "./routes/projects.routes.js";
+import { communitiesRouter } from "./routes/communities.routes.js";
+import { volunteersRouter } from "./routes/volunteers.routes.js";
+import { studentsRouter } from "./routes/students.routes.js";
 import ticketsRouter from "./routes/tickets.routes.js";
 import donationsRouter from "./routes/donations.routes.js";
 import { usersRouter } from "./routes/users.routes.js";
@@ -16,8 +19,11 @@ const port = Number(process.env.PORT ?? 3000);
 
 app.use(express.json());
 
-// Rutas de proyectos, donaciones y boleteria
+// Rutas de proyectos, donaciones, comunidades, estudiantes y voluntarios
 app.use("/api/v1/projects", projectsRouter);
+app.use("/api/v1/communities", communitiesRouter);
+app.use("/api/v1/students", studentsRouter);
+app.use("/api/v1/volunteers", volunteersRouter);
 app.use("/api/v1/tickets", ticketsRouter);
 app.use("/api/v1/donations", donationsRouter);
 

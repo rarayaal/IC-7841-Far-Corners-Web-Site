@@ -153,6 +153,16 @@ CREATE TABLE tickets (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Comunidades: RF-07
+CREATE TABLE communities (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    is_published BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Proyectos: title/description/image_url conservados, sin traducciones.
 -- country guarda CR/CN/MZ: el frontend traduce el codigo al nombre del pais.
 -- participants_count es una cifra editorial; NULL significa desconocida.
@@ -510,7 +520,40 @@ CREATE TRIGGER update_metrics_modtime BEFORE UPDATE ON organization_metrics
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_channels_modtime BEFORE UPDATE ON contact_channels
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TABLE student_profiles (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    university VARCHAR(255),
+    start_date DATE,
+    end_date DATE,
+    status VARCHAR(30) NOT NULL DEFAULT 'active'
+        CHECK (status IN ('active', 'inactive')),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_user_profile UNIQUE (user_id)
+);
+
+CREATE TRIGGER update_student_profiles_modtime BEFORE UPDATE ON student_profiles
+FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TABLE volunteer_profiles (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    interests TEXT,
+    availability TEXT,
+    status VARCHAR(30) NOT NULL DEFAULT 'active'
+        CHECK (status IN ('active', 'inactive', 'pending')),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_volunteer_profile UNIQUE (user_id)
+);
+
+CREATE TRIGGER update_volunteer_profiles_modtime BEFORE UPDATE ON volunteer_profiles
+FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 CREATE TRIGGER update_opportunities_modtime BEFORE UPDATE ON opportunities
+FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_communities_modtime BEFORE UPDATE ON communities
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_applications_modtime BEFORE UPDATE ON applications
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
