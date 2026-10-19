@@ -5,6 +5,7 @@ import ticketsRouter from "./routes/tickets.routes.js";
 import donationsRouter from "./routes/donations.routes.js";
 import { usersRouter } from "./routes/users.routes.js";
 import { authRouter, usersRouter as authUsersRouter } from "./routes/auth.routes.js";
+import { adminUsersRouter } from "./routes/admin-users.routes.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 3000);
@@ -19,9 +20,10 @@ app.use("/api/v1/donations", donationsRouter);
 // Rutas de registro publico de usuarios (Marcelo)
 app.use("/api/v1/users", usersRouter);
 
-// Rutas de autenticacion y perfil protegido (Persona 5)
+// Rutas de autenticacion y perfil protegido
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/me", authUsersRouter);
+app.use("/api/v1/admin", adminUsersRouter);
 
 app.get("/", (_req, res) => {
 	res.status(200).json({
@@ -32,6 +34,7 @@ app.get("/", (_req, res) => {
 			health: "/api/health",
 			database_health: "/api/health/db",
 			auth: "/api/v1/auth",
+			admin_users: "/api/v1/admin/users",
 			projects: "/api/v1/projects",
 			tickets: "/api/v1/tickets",
 			donations: "/api/v1/donations",

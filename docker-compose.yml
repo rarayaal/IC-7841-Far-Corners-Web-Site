@@ -29,7 +29,7 @@ services:
       NODE_ENV: development
       PORT: 3000
       DATABASE_URL: postgresql://admin:adminpassword@db:5432/farcorners
-      JWT_SECRET: dev_super_secret_jwt_key_far_corners
+      JWT_SECRET: dev_super_secret_jwt_key_far_corners_community_theatre_2026_tec_costa_rica
       JWT_EXPIRATION_HOURS: 8
 
 volumes:

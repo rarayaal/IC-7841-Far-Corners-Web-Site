@@ -482,7 +482,7 @@ FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_applications_modtime BEFORE UPDATE ON applications
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Semillero de Seguridad: Permisos y Administrador Maestro (Persona 5)
+-- Seed de Seguridad: Permisos y Administrador Maestro
 
 -- Catalogo de permisos segun modulos del sistema
 INSERT INTO permissions (id, code, description) VALUES
@@ -524,7 +524,7 @@ SELECT
 FROM permissions p
 ON CONFLICT (user_id, permission_id) DO NOTHING;
 
--- Indices de optimizacion para modulos de seguridad y auditoria (SAD 8.1 / RR-03)
+-- Indices de optimizacion para modulos de seguridad y auditoria
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_user_permissions_user_id ON user_permissions(user_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
