@@ -59,3 +59,17 @@ export async function obtenerUsuarioPorId(id: string) {
 
   return result.rows[0];
 }
+
+export async function actualizarUsuarioPorId(id: string, fullName: string) {
+  const result = await pool.query(
+    `
+      UPDATE users
+      SET full_name = $1, updated_at = NOW()
+      WHERE id = $2
+      RETURNING id, full_name, email, role, status
+    `,
+    [fullName, id]
+  );
+
+  return result.rows[0];
+}

@@ -1,5 +1,36 @@
 import { Request, Response } from "express";
 import { authenticateLocal, authenticateGoogle, getCurrentUserProfile } from "../services/auth.service.js";
+import { actualizarUsuarioPorId } from "../repositories/users.repository.js";
+
+/**
+ * PUT /api/v1/me - Actualización del perfil del usuario autenticado
+ */
+export async function updateMyProfileController(req: Request, res: Response): Promise<void> {
+  try {
+    const userId = req.user?.userId;
+    const { full_name } = req.body;
+
+    if (!userId) {
+      res.status(401).json({ message: "No autorizado" });
+      return;
+    }
+
+    if (!full_name || typeof full_name !== 'string' || full_name.trim() === '') {
+      res.status(400).json({ message: "El nombre es obligatorio" });
+      return;
+    }
+
+    const updatedUser = await actualizarUsuarioPorId(userId, full_name.trim());
+
+    res.status(200).json({
+      message: "Perfil actualizado correctamente",
+      data: updatedUser,
+    });
+  } catch (error: any) {
+    console.error("Error al actualizar perfil:", error);
+    res.status(500).json({ message: "No se pudo actualizar el perfil" });
+  }
+}
 
 /**
  * POST /api/v1/auth/login - Inicio de sesion mediante credenciales locales

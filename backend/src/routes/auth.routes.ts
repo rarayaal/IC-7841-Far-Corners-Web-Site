@@ -4,6 +4,7 @@ import {
   loginGoogleController,
   logoutController,
   getMyProfileController,
+  updateMyProfileController,
 } from "../controllers/auth.controller.js";
 import { authenticateToken } from "../middlewares/auth.middleware.js";
 
@@ -18,3 +19,4 @@ export const usersRouter = Router();
 
 // Rutas de usuarios
 usersRouter.get("/me", authenticateToken, getMyProfileController);
+usersRouter.put("/me", authenticateToken, updateMyProfileController);
