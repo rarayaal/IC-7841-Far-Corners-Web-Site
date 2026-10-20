@@ -544,7 +544,7 @@ INSERT INTO users (
     'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
     'Administrador General Far Corners',
     'admin@farcornerscr.org',
-    '$2b$12$Z0m08Qy4x6cKzHnF9J7j2.TfRvyE37S4fW3Q8B.bIgeiJ5KzGqC12',
+    '$2b$12$tCIZuiLE8m5WKsu39TJdmeLliZmMWnPDsuQXo8aevwtW98XgtOFOW',
     'admin',
     'active'
 ) ON CONFLICT (email) DO NOTHING;

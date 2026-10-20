@@ -22,15 +22,14 @@ export const LoginAdminView = ({
     setEnviando(true);
 
     try {
-      const respuesta = await fetch('/api/v1/auth/loginAdmin', {
+      const respuesta = await fetch('/api/v1/auth/login', {
         method: 'POST',
-        credentials: 'same-origin',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           email: correo.trim(),
-          contrasenia: password,
+          password: password,
         }),
       });
 
@@ -38,11 +37,18 @@ export const LoginAdminView = ({
 
       if (!respuesta.ok) {
         setError(
-          typeof datos?.message === 'string'
+          typeof datos?.detail === 'string'
+            ? datos.detail
+            : typeof datos?.message === 'string'
             ? datos.message
             : 'No se pudo iniciar sesión.'
         );
         return;
+      }
+
+      if (datos?.data?.token) {
+        localStorage.setItem('auth_token', datos.data.token);
+        localStorage.setItem('auth_user', JSON.stringify(datos.data.user));
       }
 
       setPassword('');
