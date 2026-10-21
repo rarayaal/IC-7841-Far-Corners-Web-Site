@@ -4,6 +4,7 @@ import { projectsRouter } from "./routes/projects.routes.js";
 import { communitiesRouter } from "./routes/communities.routes.js";
 import { volunteersRouter } from "./routes/volunteers.routes.js";
 import { studentsRouter } from "./routes/students.routes.js";
+import { searchRouter } from "./routes/search.routes.js";
 import ticketsRouter from "./routes/tickets.routes.js";
 import donationsRouter from "./routes/donations.routes.js";
 import { usersRouter } from "./routes/users.routes.js";
@@ -24,6 +25,7 @@ app.use("/api/v1/projects", projectsRouter);
 app.use("/api/v1/communities", communitiesRouter);
 app.use("/api/v1/students", studentsRouter);
 app.use("/api/v1/volunteers", volunteersRouter);
+app.use("/api/v1/search", searchRouter);
 app.use("/api/v1/tickets", ticketsRouter);
 app.use("/api/v1/donations", donationsRouter);
 
@@ -32,7 +34,7 @@ app.use("/api/v1/users", usersRouter);
 
 // Rutas de autenticacion y perfil protegido
 app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/me", authUsersRouter);
+app.use("/api/v1/users", authUsersRouter);
 app.use("/api/v1/admin", adminUsersRouter);
 app.use('/api/v1/contact-messages', contactMessagesRouter);
 app.use('/api/v1/contact-channels', contactChannelsRouter);

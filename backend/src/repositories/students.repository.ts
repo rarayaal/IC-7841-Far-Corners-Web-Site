@@ -47,3 +47,35 @@ export async function crearPerfilEstudiante(
 
   return result.rows[0];
 }
+
+export async function actualizarPerfilEstudiante(
+  id: string,
+  university: string | null,
+  start_date: string | null,
+  end_date: string | null
+) {
+  const result = await pool.query(
+    `
+    UPDATE student_profiles
+    SET university = $1, start_date = $2, end_date = $3
+    WHERE id = $4
+    RETURNING *
+    `,
+    [university, start_date, end_date, id]
+  );
+
+  return result.rows[0];
+}
+
+export async function eliminarPerfilEstudiante(id: string) {
+  const result = await pool.query(
+    `
+    DELETE FROM student_profiles
+    WHERE id = $1
+    RETURNING id
+    `,
+    [id]
+  );
+
+  return result.rows[0];
+}

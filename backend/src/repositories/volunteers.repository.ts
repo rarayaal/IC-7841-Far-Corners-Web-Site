@@ -44,3 +44,34 @@ export async function crearPerfilVoluntario(
 
   return result.rows[0];
 }
+
+export async function actualizarPerfilVoluntario(
+  id: string,
+  interests: string | null,
+  availability: string | null
+) {
+  const result = await pool.query(
+    `
+    UPDATE volunteer_profiles
+    SET interests = $1, availability = $2
+    WHERE id = $3
+    RETURNING *
+    `,
+    [interests, availability, id]
+  );
+
+  return result.rows[0];
+}
+
+export async function eliminarPerfilVoluntario(id: string) {
+  const result = await pool.query(
+    `
+    DELETE FROM volunteer_profiles
+    WHERE id = $1
+    RETURNING id
+    `,
+    [id]
+  );
+
+  return result.rows[0];
+}

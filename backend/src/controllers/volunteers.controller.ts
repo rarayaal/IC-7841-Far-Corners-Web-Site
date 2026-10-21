@@ -1,5 +1,10 @@
 import type { Request, Response } from "express";
-import { obtenerVoluntarios, crearPerfilVoluntario } from "../repositories/volunteers.repository.js";
+import {
+  obtenerVoluntarios,
+  crearPerfilVoluntario,
+  actualizarPerfilVoluntario,
+  eliminarPerfilVoluntario,
+} from "../repositories/volunteers.repository.js";
 
 export async function listarVoluntarios(_req: Request, res: Response) {
   try {
@@ -30,5 +35,46 @@ export async function registrarVoluntario(req: Request, res: Response) {
   } catch (error) {
     console.error("Error al registrar perfil de voluntario:", error);
     res.status(500).json({ message: "No se pudo registrar el perfil del voluntario" });
+  }
+}
+
+export async function modificarVoluntario(req: Request<{ id: string }>, res: Response) {
+  try {
+    const { id } = req.params;
+    const { interests, availability } = req.body ?? {};
+
+    const actualizado = await actualizarPerfilVoluntario(
+      id,
+      interests ? String(interests).trim() : null,
+      availability ? String(availability).trim() : null
+    );
+
+    if (!actualizado) {
+      res.status(404).json({ message: 'Perfil de voluntario no encontrado' });
+      return;
+    }
+
+    res.status(200).json(actualizado);
+  } catch (error) {
+    console.error("Error al modificar perfil de voluntario:", error);
+    res.status(500).json({ message: "No se pudo modificar el perfil del voluntario" });
+  }
+}
+
+export async function borrarVoluntario(req: Request<{ id: string }>, res: Response) {
+  try {
+    const { id } = req.params;
+
+    const eliminado = await eliminarPerfilVoluntario(id);
+
+    if (!eliminado) {
+      res.status(404).json({ message: 'Perfil de voluntario no encontrado' });
+      return;
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    console.error("Error al eliminar perfil de voluntario:", error);
+    res.status(500).json({ message: "No se pudo eliminar el perfil del voluntario" });
   }
 }
