@@ -38,6 +38,19 @@ const COLUMNAS = `
   updated_at
 `;
 
+// Imágenes asociadas al contenido (galería, CU-22), listas para mostrarse.
+const IMAGENES_PUBLICAS = `
+  COALESCE((
+    SELECT json_agg(
+      json_build_object('id', m.id, 'url', m.url, 'alt_text', m.alt_text)
+      ORDER BY m.uploaded_at, m.id
+    )
+    FROM media m
+    WHERE m.content_id = institutional_content.id
+      AND m.mime_type LIKE 'image/%'
+  ), '[]'::json) AS images
+`;
+
 // Devuelve el contenido publicado de una sección. Si una página no tiene
 // traducción al idioma pedido se usa la versión en español.
 export async function obtenerContenidoPublicado(
@@ -46,7 +59,7 @@ export async function obtenerContenidoPublicado(
 ) {
   const resultado = await pool.query(
     `
-      SELECT DISTINCT ON (page_slug) ${COLUMNAS}
+      SELECT DISTINCT ON (page_slug) ${COLUMNAS}, ${IMAGENES_PUBLICAS}
       FROM institutional_content
       WHERE section = $1
         AND is_published = TRUE

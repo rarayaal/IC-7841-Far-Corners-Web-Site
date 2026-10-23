@@ -15,6 +15,8 @@ export interface InstitutionalContent {
   display_order: number;
   is_published: boolean;
   updated_at: string;
+  /** Imágenes de la galería asociadas (solo en la lectura pública). */
+  images?: { id: string; url: string; alt_text: string | null }[];
 }
 
 /** Alcances de contenido: page_slug 'about' es general; el impacto se separa por país. */

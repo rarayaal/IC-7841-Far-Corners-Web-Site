@@ -9,6 +9,7 @@ import { AdminStudentsView } from './AdminStudentsView';
 import { AdminVolunteersView } from './AdminVolunteersView';
 import { AdminProfileView } from './AdminProfileView';
 import { AdminInstitutionalView } from './AdminInstitutionalView';
+import { AdminMediaView } from './AdminMediaView';
 import { adminTexts } from '../lib/adminI18n';
 import { tienePermiso } from '../services/permisos';
 
@@ -18,7 +19,7 @@ interface AdminViewProps {
 
 export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
   const txt = adminTexts[language];
-  const [activeTab, setActiveTab] = useState<'kpi' | 'ticketing' | 'content' | 'applicants' | 'audit' | 'messages' | 'contacts' | 'communities' | 'students' | 'volunteers' | 'profile'>('kpi');
+  const [activeTab, setActiveTab] = useState<'kpi' | 'ticketing' | 'content' | 'media' | 'applicants' | 'audit' | 'messages' | 'contacts' | 'communities' | 'students' | 'volunteers' | 'profile'>('kpi');
   
   // Dynamic state for CRUD demo
   const [shows, setShows] = useState<Show[]>(showsData);
@@ -87,6 +88,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
   };
 
   const puedeGestionarContenido = tienePermiso('content:manage');
+  const puedeGestionarMedia = tienePermiso('media:manage');
   const puedeVerMensajes = tienePermiso('contact_messages:read');
   const puedeGestionarContactos = tienePermiso(
     'contact_channels:manage'
@@ -149,6 +151,19 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
             }`}
           >
             {txt.tabs.content}
+          </button>
+        )}
+
+        {puedeGestionarMedia && (
+          <button
+            onClick={() => setActiveTab('media')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              activeTab === 'media'
+                ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
+                : 'bg-[#002244] text-slate-300 hover:text-white'
+            }`}
+          >
+            {txt.tabs.media}
           </button>
         )}
 
@@ -442,6 +457,11 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
       {/* TAB 3: INSTITUTIONAL CONTENT MANAGEMENT (CU-01, CU-02, CU-03) */}
       {activeTab === 'content' && puedeGestionarContenido && (
         <AdminInstitutionalView language={language} />
+      )}
+
+      {/* MULTIMEDIA GALLERY (CU-22) */}
+      {activeTab === 'media' && puedeGestionarMedia && (
+        <AdminMediaView language={language} />
       )}
 
       {/* TAB 4: APPLICANTS MANAGER */}
