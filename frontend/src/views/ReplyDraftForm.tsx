@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { apiAdmin } from '../services/apiAdmin';
 
 interface ReplyDraftFormProps {
   mensajeId: string;
@@ -28,16 +29,15 @@ export const ReplyDraftForm = ({ mensajeId }: ReplyDraftFormProps) => {
     setGuardando(true);
 
     try {
-      const respuesta = await fetch(
+      const respuesta = await apiAdmin(
         `/api/v1/contact-messages/${mensajeId}/replies`,
         {
           method: 'POST',
-          credentials: 'same-origin',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            response_text: respuestaTexto,
+            response_text: texto.trim(),
           }),
         }
       );

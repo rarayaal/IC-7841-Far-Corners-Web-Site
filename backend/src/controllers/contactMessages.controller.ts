@@ -125,11 +125,11 @@ export async function guardarRespuesta(
     return;
   }
 
-  const administrador = res.locals.usuario;
+  const administrador = req.user;
 
-  if (!administrador || administrador.role !== 'admin') {
-    res.status(403).json({
-      message: 'Se requiere una sesión de administrador.',
+  if (!administrador) {
+    res.status(401).json({
+      message: 'Debes iniciar sesión.',
     });
     return;
   }
@@ -137,7 +137,7 @@ export async function guardarRespuesta(
   try {
     const borrador = await crearRespuestaContacto(
       mensajeId,
-      administrador.id,
+      administrador.userId,
       texto
     );
 
