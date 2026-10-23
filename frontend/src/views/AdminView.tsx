@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Language, Show, AuditLogItem, VolunteerApplication } from '../types';
 import { showsData, auditLogsMock, volunteerAppsMock } from '../data/mockData';
-import { Shield, Ticket, Users, Heart, Plus, Edit2, Trash2, CheckCircle2 } from 'lucide-react';
+import { Shield, Ticket, Users, Heart, Plus, Edit2, Trash2 } from 'lucide-react';
 import { AdminMessagesView } from './AdminMessagesView';
 import { AdminContactChannelsView } from './AdminContactChannelsView';
 import { AdminCommunitiesView } from './AdminCommunitiesView';
 import { AdminStudentsView } from './AdminStudentsView';
 import { AdminVolunteersView } from './AdminVolunteersView';
 import { AdminProfileView } from './AdminProfileView';
+import { AdminInstitutionalView } from './AdminInstitutionalView';
 import { adminTexts } from '../lib/adminI18n';
 import { tienePermiso } from '../services/permisos';
 
@@ -30,10 +31,6 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
   const [newShowYear, setNewShowYear] = useState('2026');
   const [newShowGeneral, setNewShowGeneral] = useState('10000');
   const [newShowCapacity, setNewShowCapacity] = useState('100');
-
-  // Edit history content state
-  const [historyText, setHistoryText] = useState('Far Corners es un teatro comunitario que cree en el poder del arte para transformar, inspirar y unir personas. Creamos experiencias escénicas que fortalecen la comunidad, celebran la diversidad y abren espacios de expresión para todos.');
-  const [historySaved, setHistorySaved] = useState(false);
 
   const handleCreateShow = (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,21 +86,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
     setLogs([newLog, ...logs]);
   };
 
-  const handleSaveHistory = (e: React.FormEvent) => {
-    e.preventDefault();
-    setHistorySaved(true);
-    setTimeout(() => setHistorySaved(false), 3000);
-
-    const newLog: AuditLogItem = {
-      id: `LOG-${Math.floor(1000 + Math.random() * 9000)}`,
-      user: 'Administrador General',
-      action: 'UPDATE',
-      module: 'Contenido Institucional',
-      details: 'Actualizada reseña histórica de la organización',
-      timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19)
-    };
-    setLogs([newLog, ...logs]);
-  };
+  const puedeGestionarContenido = tienePermiso('content:manage');
   const puedeVerMensajes = tienePermiso('contact_messages:read');
   const puedeGestionarContactos = tienePermiso(
     'contact_channels:manage'
@@ -156,16 +139,18 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
           Gestión de Boletería
         </button>
 
-        <button
-          onClick={() => setActiveTab('content')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-            activeTab === 'content'
-              ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
-              : 'bg-[#002244] text-slate-300 hover:text-white'
-          }`}
-        >
-          Contenido Institucional
-        </button>
+        {puedeGestionarContenido && (
+          <button
+            onClick={() => setActiveTab('content')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              activeTab === 'content'
+                ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
+                : 'bg-[#002244] text-slate-300 hover:text-white'
+            }`}
+          >
+            {txt.tabs.content}
+          </button>
+        )}
 
         <button
           onClick={() => setActiveTab('applicants')}
@@ -454,38 +439,9 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
         </div>
       )}
 
-      {/* TAB 3: INSTITUTIONAL CONTENT MANAGEMENT */}
-      {activeTab === 'content' && (
-        <div className="space-y-6 animate-fadeIn">
-          <div className="bg-[#002244] p-6 rounded-3xl border border-[#1e4066] space-y-4">
-            <h3 className="font-serif text-xl font-bold text-white">Editar Historia de la Organización</h3>
-            <p className="text-xs text-slate-300">Permite modificar el texto de la reseña institucional del Teatro Far Corners.</p>
-
-            <form onSubmit={handleSaveHistory} className="space-y-4">
-              <textarea
-                rows={6}
-                value={historyText}
-                onChange={(e) => setHistoryText(e.target.value)}
-                className="w-full p-4 bg-[#00162e] border border-[#1e4066] rounded-xl text-xs text-white focus:border-[#77C65E] focus:outline-none"
-              ></textarea>
-
-              <div className="flex items-center space-x-4">
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 bg-[#77C65E] hover:bg-[#008047] text-[#002244] hover:text-white text-xs font-extrabold rounded-xl shadow-glow-green uppercase tracking-wider"
-                >
-                  Publicar Cambios Institucionales
-                </button>
-                {historySaved && (
-                  <span className="text-xs text-[#77C65E] flex items-center gap-1 font-bold">
-                    <CheckCircle2 className="w-4 h-4" />
-                    ¡Cambios guardados y publicados!
-                  </span>
-                )}
-              </div>
-            </form>
-          </div>
-        </div>
+      {/* TAB 3: INSTITUTIONAL CONTENT MANAGEMENT (CU-01, CU-02, CU-03) */}
+      {activeTab === 'content' && puedeGestionarContenido && (
+        <AdminInstitutionalView language={language} />
       )}
 
       {/* TAB 4: APPLICANTS MANAGER */}

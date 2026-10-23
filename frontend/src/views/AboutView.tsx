@@ -2,6 +2,8 @@ import React from 'react';
 import { Language, PageView } from '../types';
 import { projectsData } from '../data/mockData';
 import { Globe, Heart, Users, Lightbulb, Feather } from 'lucide-react';
+import { useInstitutionalContent } from '../hooks/useInstitutionalContent';
+import { ContentParagraphs } from '../components/ContentParagraphs';
 
 interface AboutViewProps {
   language: Language;
@@ -14,6 +16,24 @@ export const AboutView: React.FC<AboutViewProps> = ({
   setCurrentPage,
   onOpenDonate,
 }) => {
+  const { items: historyItems } = useInstitutionalContent('history', language);
+  const { items: impactItems } = useInstitutionalContent('impact', language);
+  const { items: futureItems } = useInstitutionalContent('future', language);
+
+  const history = historyItems[0];
+  const futureVision = futureItems[0];
+
+  // Las rutas internas del botón (/donate) usan la navegación del sitio; el resto son enlaces.
+  const openCta = (target: string) => {
+    const page = target.replace(/^\//, '') as PageView;
+    if (target.startsWith('/') && ['home', 'about', 'shows', 'participate', 'donate', 'contact'].includes(page)) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      window.open(target, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   const brandValues = [
     { title: 'Comunidad', desc: 'Creamos experiencias escénicas que fortalecen el tejido comunitario y celebran la diversidad.', color: '#008047', icon: Users },
     { title: 'Creatividad', desc: 'Fomentamos la imaginación y el talento artístico a través del teatro musical bilingüe.', color: '#4A90D6', icon: Lightbulb },
@@ -51,18 +71,26 @@ export const AboutView: React.FC<AboutViewProps> = ({
         <div className="space-y-6">
           <div className="border-l-4 border-[#77C65E] pl-4">
             <h2 className="font-serif text-2xl font-bold text-white">
-              {language === 'es' ? 'Origen e Historia del Teatro' : 'History & Origins'}
+              {history?.title ?? (language === 'es' ? 'Origen e Historia del Teatro' : 'History & Origins')}
             </h2>
-            <p className="text-xs text-[#DCEB4F] font-mono mt-0.5">Monteverde, Costa Rica • 2013 - 2026</p>
+            <p className="text-xs text-[#DCEB4F] font-mono mt-0.5">
+              {history?.subtitle ?? 'Monteverde, Costa Rica • 2013 - 2026'}
+            </p>
           </div>
 
-          <p className="text-slate-300 text-sm leading-relaxed">
-            El Teatro Comunitario Far Corners nació como una iniciativa sin fines de lucro en la zona alta de Monteverde, Puntarenas. El objetivo inicial fue crear un espacio inclusivo donde la juventud costarricense compartiera escena con estudiantes universitarios e instruidos pasantes internacionales de música, teatro y danza.
-          </p>
+          {history ? (
+            <ContentParagraphs text={history.content} />
+          ) : (
+            <>
+              <p className="text-slate-300 text-sm leading-relaxed">
+                El Teatro Comunitario Far Corners nació como una iniciativa sin fines de lucro en la zona alta de Monteverde, Puntarenas. El objetivo inicial fue crear un espacio inclusivo donde la juventud costarricense compartiera escena con estudiantes universitarios e instruidos pasantes internacionales de música, teatro y danza.
+              </p>
 
-          <p className="text-slate-300 text-sm leading-relaxed">
-            Con el paso de los años, el modelo de campamentos bilingües de verano se expandió con programas educativos itinerantes en zonas rurales de China y talleres de integración de artes tradicionales en Mozambique.
-          </p>
+              <p className="text-slate-300 text-sm leading-relaxed">
+                Con el paso de los años, el modelo de campamentos bilingües de verano se expandió con programas educativos itinerantes en zonas rurales de China y talleres de integración de artes tradicionales en Mozambique.
+              </p>
+            </>
+          )}
 
           <div className="grid grid-cols-2 gap-4 pt-2">
             <div className="bg-[#002244] p-4 rounded-xl border border-[#1e4066]">
@@ -124,20 +152,53 @@ export const AboutView: React.FC<AboutViewProps> = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {projectsData.map(p => (
-            <div key={p.id} className="bg-[#00162e] p-5 rounded-2xl border border-[#1e4066] space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="font-serif text-lg font-bold text-white">{p.country}</span>
-                <span className="text-xs font-mono text-[#77C65E]">{p.year}</span>
-              </div>
-              <p className="text-xs text-slate-300 leading-relaxed">{language === 'es' ? p.summary : p.summaryEn}</p>
-              <div className="pt-2 border-t border-white/5 text-[11px] text-slate-400">
-                <span className="text-white font-bold">{p.participants}+</span> participantes registrados
-              </div>
-            </div>
-          ))}
+          {impactItems.length > 0
+            ? impactItems.map(item => (
+                <div key={item.id} className="bg-[#00162e] p-5 rounded-2xl border border-[#1e4066] space-y-3">
+                  <div className="flex justify-between items-center gap-2">
+                    <span className="font-serif text-lg font-bold text-white">{item.title}</span>
+                    {item.subtitle && <span className="text-xs font-mono text-[#77C65E]">{item.subtitle}</span>}
+                  </div>
+                  <ContentParagraphs text={item.content} className="text-xs text-slate-300 leading-relaxed" />
+                </div>
+              ))
+            : projectsData.map(p => (
+                <div key={p.id} className="bg-[#00162e] p-5 rounded-2xl border border-[#1e4066] space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="font-serif text-lg font-bold text-white">{p.country}</span>
+                    <span className="text-xs font-mono text-[#77C65E]">{p.year}</span>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">{language === 'es' ? p.summary : p.summaryEn}</p>
+                  <div className="pt-2 border-t border-white/5 text-[11px] text-slate-400">
+                    <span className="text-white font-bold">{p.participants}+</span> participantes registrados
+                  </div>
+                </div>
+              ))}
         </div>
       </div>
+
+      {/* Future Vision */}
+      {futureVision && (
+        <div className="bg-[#002244] rounded-3xl p-6 sm:p-8 border border-[#77C65E]/40 space-y-4 text-center max-w-4xl mx-auto">
+          <span className="text-xs font-bold text-[#DCEB4F] uppercase tracking-wider block">
+            {language === 'es' ? 'Visión de futuro' : 'Vision for the future'}
+          </span>
+          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-white">{futureVision.title}</h2>
+          {futureVision.subtitle && <p className="text-sm text-[#77C65E] font-bold">{futureVision.subtitle}</p>}
+          <div className="space-y-3 text-left">
+            <ContentParagraphs text={futureVision.content} />
+          </div>
+          {futureVision.cta_label && futureVision.cta_target && (
+            <button
+              type="button"
+              onClick={() => openCta(futureVision.cta_target!)}
+              className="px-6 py-3 rounded-xl bg-[#77C65E] hover:bg-[#008047] text-[#002244] hover:text-white text-sm font-extrabold transition-colors"
+            >
+              {futureVision.cta_label}
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Board of Directors */}
       <div className="space-y-8">
