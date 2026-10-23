@@ -125,32 +125,32 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
           </h4>
           <ul className="space-y-2.5 text-xs">
             <li>
-              <button onClick={() => setCurrentPage('home')} className="hover:text-[#77C65E] transition-colors">
+              <button onClick={() => setCurrentPage('home')} className="inline-block py-1.5 hover:text-[#77C65E] transition-colors">
                 {language === 'es' ? 'Inicio & Cartelera' : 'Home & Shows'}
               </button>
             </li>
             <li>
-              <button onClick={() => setCurrentPage('about')} className="hover:text-[#77C65E] transition-colors">
+              <button onClick={() => setCurrentPage('about')} className="inline-block py-1.5 hover:text-[#77C65E] transition-colors">
                 {language === 'es' ? 'Historia e Impacto Global' : 'History & Global Impact'}
               </button>
             </li>
             <li>
-              <button onClick={() => setCurrentPage('shows')} className="hover:text-[#77C65E] transition-colors">
+              <button onClick={() => setCurrentPage('shows')} className="inline-block py-1.5 hover:text-[#77C65E] transition-colors">
                 {language === 'es' ? 'Obras Teatrales' : 'Theatrical Productions'}
               </button>
             </li>
             <li>
-              <button onClick={() => setCurrentPage('participate')} className="hover:text-[#77C65E] transition-colors">
+              <button onClick={() => setCurrentPage('participate')} className="inline-block py-1.5 hover:text-[#77C65E] transition-colors">
                 {language === 'es' ? 'Pasantías y Voluntariado' : 'Internships & Volunteering'}
               </button>
             </li>
             <li>
-              <button onClick={() => setCurrentPage('donate')} className="hover:text-[#77C65E] transition-colors">
+              <button onClick={() => setCurrentPage('donate')} className="inline-block py-1.5 hover:text-[#77C65E] transition-colors">
                 {language === 'es' ? 'Donaciones y Registro' : 'Donations'}
               </button>
             </li>
             <li>
-              <button onClick={() => setCurrentPage('contact')} className="hover:text-[#77C65E] transition-colors">
+              <button onClick={() => setCurrentPage('contact')} className="inline-block py-1.5 hover:text-[#77C65E] transition-colors">
                 {language === 'es' ? 'Medios de Contacto' : 'Contact Us'}
               </button>
             </li>

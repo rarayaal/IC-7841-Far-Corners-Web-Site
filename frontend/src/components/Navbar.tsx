@@ -59,8 +59,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Language Selector */}
             <button
               onClick={toggleLanguage}
-              className="flex items-center space-x-1.5 px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 text-[#F8F8F2] transition-colors"
-              title="Seleccionar idioma"
+              className="flex min-h-10 items-center space-x-1.5 px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-[#F8F8F2] transition-colors"
+              title={language === 'es' ? 'Seleccionar idioma' : 'Select language'}
+              aria-label={language === 'es' ? 'Cambiar idioma a inglés' : 'Switch language to Spanish'}
             >
               <Globe className="w-3.5 h-3.5 text-[#77C65E]" />
               <span className="font-semibold text-xs">{language.toUpperCase()}</span>
@@ -78,7 +79,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
                 setCurrentPage('loginAdmin');
               }}
-              className={`flex items-center space-x-1.5 px-2.5 py-1 rounded text-xs transition-colors ${
+              className={`flex min-h-10 items-center space-x-1.5 px-3 py-1 rounded text-xs transition-colors ${
                 isAdminMode
                   ? 'bg-[#77C65E] text-[#002244] font-extrabold shadow-glow-green'
                   : 'bg-white/10 hover:bg-white/20 text-[#F8F8F2]'
@@ -95,12 +96,14 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo Brand Header */}
-          <div
+          <button
+            type="button"
+            aria-label={language === 'es' ? 'Far Corners, ir al inicio' : 'Far Corners, go to home'}
             onClick={() => {
               setIsAdminMode(false);
               setCurrentPage('home');
             }}
-            className="flex shrink-0 items-center space-x-3 cursor-pointer group"
+            className="flex shrink-0 items-center space-x-3 cursor-pointer group text-left"
           >
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#002244] to-[#00162e] p-1 border border-[#77C65E]/50 shadow-glow-green group-hover:scale-105 transition-transform flex items-center justify-center">
               <img
@@ -120,7 +123,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 Teatro Comunitario
               </span>
             </div>
-          </div>
+          </button>
 
           {/* Desktop Nav Items */}
           <nav className="hidden xl:flex items-center space-x-1">
@@ -191,13 +194,20 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex xl:hidden items-center space-x-2">
             <button
               onClick={onOpenSearch}
-              className="p-2 text-slate-200 hover:text-white rounded-lg bg-white/10"
+              aria-label={language === 'es' ? 'Buscar' : 'Search'}
+              className="flex h-11 w-11 items-center justify-center text-slate-200 hover:text-white rounded-lg bg-white/10"
             >
               <Search className="w-5 h-5 text-[#4A90D6]" />
             </button>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-slate-200 hover:text-white rounded-lg bg-white/10"
+              aria-label={
+                mobileMenuOpen
+                  ? (language === 'es' ? 'Cerrar menú' : 'Close menu')
+                  : (language === 'es' ? 'Abrir menú' : 'Open menu')
+              }
+              aria-expanded={mobileMenuOpen}
+              className="flex h-11 w-11 items-center justify-center text-slate-200 hover:text-white rounded-lg bg-white/10"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>

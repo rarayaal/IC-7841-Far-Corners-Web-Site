@@ -47,7 +47,7 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0b0f] text-slate-100 font-sans flex flex-col justify-between selection:bg-[#9e1b32] selection:text-white">
+    <div className="min-h-screen bg-[#00162e] text-[#F8F8F2] font-sans flex flex-col justify-between selection:bg-[#77C65E] selection:text-[#002244]">
       {/* Navigation */}
       <Navbar
         currentPage={currentPage}

@@ -20,7 +20,8 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Outfit', 'Montserrat', 'Inter', 'sans-serif'],
+        // Identidad: solo dos tipografias (acordado con el cliente): Outfit y Playfair Display.
+        sans: ['Outfit', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         serif: ['Playfair Display', 'Georgia', 'serif'],
       },
       boxShadow: {

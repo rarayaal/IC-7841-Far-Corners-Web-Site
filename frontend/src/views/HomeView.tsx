@@ -181,7 +181,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
           <button
             onClick={() => setCurrentPage('shows')}
-            className="text-xs font-bold text-[#4A90D6] hover:text-[#77C65E] flex items-center space-x-1 transition-colors"
+            className="text-xs font-bold text-[#4A90D6] hover:text-[#77C65E] flex items-center space-x-1 py-2.5 transition-colors"
           >
             <span>{language === 'es' ? 'Ver cartelera completa' : 'View full catalog'}</span>
             <ChevronRight className="w-4 h-4" />
@@ -223,7 +223,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 </span>
                 <button
                   onClick={() => onOpenTickets(show)}
-                  className="px-3.5 py-1.5 bg-[#77C65E]/20 hover:bg-[#77C65E] text-[#77C65E] hover:text-[#002244] text-xs font-bold rounded-lg border border-[#77C65E]/40 transition-all"
+                  className="px-3.5 py-2.5 bg-[#77C65E]/20 hover:bg-[#77C65E] text-[#77C65E] hover:text-[#002244] text-xs font-bold rounded-lg border border-[#77C65E]/40 transition-all"
                 >
                   {language === 'es' ? 'Adquirir Boletos' : 'Buy Tickets'}
                 </button>
