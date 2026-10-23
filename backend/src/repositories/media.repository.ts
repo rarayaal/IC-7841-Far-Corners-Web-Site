@@ -36,6 +36,7 @@ const CONSULTA_BASE = `
     m.event_id,
     m.content_id,
     m.uploaded_at,
+    m.is_published,
     COALESCE(p.title, e.title, ic.title) AS association_label,
     ic.section AS content_section
   FROM media m

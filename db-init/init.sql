@@ -228,6 +228,8 @@ CREATE TABLE media (
     storage_key TEXT UNIQUE,
     mime_type VARCHAR(100),
     size_bytes BIGINT CHECK (size_bytes > 0),
+    -- Retiro logico (CU-24): FALSE oculta el recurso sin borrar el archivo.
+    is_published BOOLEAN NOT NULL DEFAULT TRUE,
     CONSTRAINT media_exactly_one_association CHECK (
         (CASE WHEN project_id IS NOT NULL THEN 1 ELSE 0 END)
         + (CASE WHEN event_id IS NOT NULL THEN 1 ELSE 0 END)

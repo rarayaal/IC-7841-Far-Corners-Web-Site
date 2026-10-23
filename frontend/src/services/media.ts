@@ -11,6 +11,7 @@ export interface MediaItem {
   event_id: string | null;
   content_id: string | null;
   uploaded_at: string;
+  is_published: boolean;
   association_label: string | null;
   content_section: string | null;
 }

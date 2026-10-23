@@ -7,6 +7,7 @@ import { studentsRouter } from "./routes/students.routes.js";
 import { searchRouter } from "./routes/search.routes.js";
 import { institutionalRouter } from "./routes/institutional.routes.js";
 import { mediaRouter } from "./routes/media.routes.js";
+import { retirementRouter } from "./routes/retirement.routes.js";
 import ticketsRouter from "./routes/tickets.routes.js";
 import donationsRouter from "./routes/donations.routes.js";
 import { usersRouter } from "./routes/users.routes.js";
@@ -30,6 +31,7 @@ app.use("/api/v1/volunteers", volunteersRouter);
 app.use("/api/v1/search", searchRouter);
 app.use("/api/v1/institutional", institutionalRouter);
 app.use("/api/v1/media", mediaRouter);
+app.use("/api/v1/content-retirement", retirementRouter);
 app.use("/api/v1/tickets", ticketsRouter);
 app.use("/api/v1/donations", donationsRouter);
 
@@ -55,6 +57,7 @@ app.get("/", (_req, res) => {
 			admin_users: "/api/v1/admin/users",
 			institutional: "/api/v1/institutional/:section",
 			media: "/api/v1/media",
+			content_retirement: "/api/v1/content-retirement/:type",
 			projects: "/api/v1/projects",
 			tickets: "/api/v1/tickets",
 			donations: "/api/v1/donations",

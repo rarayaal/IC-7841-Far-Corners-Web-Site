@@ -48,6 +48,7 @@ const IMAGENES_PUBLICAS = `
     FROM media m
     WHERE m.content_id = institutional_content.id
       AND m.mime_type LIKE 'image/%'
+      AND m.is_published
   ), '[]'::json) AS images
 `;
 

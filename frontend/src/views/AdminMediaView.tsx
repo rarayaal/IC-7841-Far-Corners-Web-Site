@@ -543,6 +543,11 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
               <div className="space-y-2 p-4">
                 <p className="truncate text-sm font-bold text-white" title={item.filename}>
                   {item.filename}
+                  {!item.is_published && (
+                    <span className="ml-2 rounded bg-white/10 px-2 py-0.5 text-[10px] font-bold uppercase text-slate-300">
+                      {txt.retirement.withdrawn}
+                    </span>
+                  )}
                 </p>
                 <p className="text-xs text-slate-400">
                   {t.columnAssociation}:{' '}
