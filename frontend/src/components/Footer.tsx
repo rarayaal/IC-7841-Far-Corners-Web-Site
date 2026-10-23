@@ -37,12 +37,12 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
   };
 
   return (
-    <footer className="bg-[#00162e] border-t border-[#1e4066] text-slate-300 text-sm font-sans relative overflow-hidden">
+    <footer className="bg-brand-navyDark border-t border-brand-border text-slate-300 text-sm font-sans relative overflow-hidden">
       {/* Mailchimp Newsletter Section */}
-      <div className="border-b border-[#1e4066] bg-[#002244] py-12 px-4 sm:px-6 lg:px-8">
+      <div className="border-b border-brand-border bg-brand-navy py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-8">
           <div className="max-w-xl text-center lg:text-left">
-            <span className="inline-block px-3 py-1 rounded-full bg-[#77C65E]/20 text-[#DCEB4F] text-xs font-bold uppercase tracking-wider mb-2 border border-[#77C65E]/40">
+            <span className="inline-block px-3 py-1 rounded-full bg-brand-green/20 text-brand-lime text-xs font-bold uppercase tracking-wider mb-2 border border-brand-green/40">
               {language === 'es' ? 'Integración Mailchimp' : 'Mailchimp Newsletter'}
             </span>
             <h3 className="font-serif text-2xl sm:text-3xl font-bold text-white tracking-tight">
@@ -57,13 +57,13 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
 
           <div className="w-full lg:w-auto">
             {subscribed ? (
-              <div className="flex items-center space-x-3 bg-[#77C65E]/20 border border-[#77C65E]/50 text-[#F8F8F2] px-6 py-4 rounded-xl">
-                <CheckCircle2 className="w-6 h-6 text-[#77C65E] shrink-0" />
+              <div className="flex items-center space-x-3 bg-brand-green/20 border border-brand-green/50 text-brand-cream px-6 py-4 rounded-xl">
+                <CheckCircle2 className="w-6 h-6 text-brand-green shrink-0" />
                 <div>
                   <span className="font-bold block">
                     {language === 'es' ? '¡Suscripción confirmada!' : 'Subscription confirmed!'}
                   </span>
-                  <span className="text-xs text-[#77C65E]">
+                  <span className="text-xs text-brand-green">
                     {language === 'es' ? 'Te hemos añadido a la lista oficial del Teatro Far Corners.' : 'Added to official Far Corners Theatre mailing list.'}
                   </span>
                 </div>
@@ -78,12 +78,12 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder={language === 'es' ? 'Tu correo electrónico...' : 'Your email address...'}
-                    className="w-full pl-11 pr-4 py-3 bg-[#00162e] border border-[#1e4066] rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-[#77C65E] focus:ring-1 focus:ring-[#77C65E] transition-colors"
+                    className="w-full pl-11 pr-4 py-3 bg-brand-navyDark border border-brand-border rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green transition-colors"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-[#77C65E] hover:bg-[#008047] text-[#002244] hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all whitespace-nowrap uppercase tracking-wider text-xs"
+                  className="px-6 py-3 bg-brand-green hover:bg-brand-forest text-brand-navy hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all whitespace-nowrap uppercase tracking-wider text-xs"
                 >
                   {language === 'es' ? 'Suscribirse' : 'Subscribe'}
                 </button>
@@ -98,12 +98,12 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
         {/* About Far Corners */}
         <div className="space-y-4">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-lg bg-[#002244] p-1 border border-[#77C65E]/50 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-brand-navy p-1 border border-brand-green/50 flex items-center justify-center">
               <img src="/recursos/IMG_2903.PNG" alt="Logo" className="w-full h-full object-contain" />
             </div>
             <div>
               <span className="font-serif text-xl font-bold text-white tracking-tight">Far Corners</span>
-              <span className="block text-[9px] uppercase tracking-widest text-[#4A90D6] font-bold">Teatro Comunitario</span>
+              <span className="block text-[9px] uppercase tracking-widest text-brand-blue font-bold">Teatro Comunitario</span>
             </div>
           </div>
           <p className="text-xs leading-relaxed text-slate-300">
@@ -112,7 +112,7 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
               : 'Non-profit international theatre organization providing artistic & educational opportunities for youth in Costa Rica, China, and Mozambique.'}
           </p>
           <div className="pt-2">
-            <span className="inline-block text-[11px] px-2.5 py-1 rounded bg-[#002244] text-[#DCEB4F] font-semibold border border-[#1e4066]">
+            <span className="inline-block text-[11px] px-2.5 py-1 rounded bg-brand-navy text-brand-lime font-semibold border border-brand-border">
               Arte que Conecta Comunidades
             </span>
           </div>
@@ -120,37 +120,37 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
 
         {/* Navigation */}
         <div>
-          <h4 className="font-serif text-base font-bold text-white uppercase tracking-wider mb-4 border-b border-[#77C65E]/40 pb-2">
+          <h4 className="font-serif text-base font-bold text-white uppercase tracking-wider mb-4 border-b border-brand-green/40 pb-2">
             {language === 'es' ? 'Navegación Sitio' : 'Site Navigation'}
           </h4>
           <ul className="space-y-2.5 text-xs">
             <li>
-              <button onClick={() => setCurrentPage('home')} className="inline-block py-1.5 hover:text-[#77C65E] transition-colors">
+              <button onClick={() => setCurrentPage('home')} className="inline-block py-1.5 hover:text-brand-green transition-colors">
                 {language === 'es' ? 'Inicio & Cartelera' : 'Home & Shows'}
               </button>
             </li>
             <li>
-              <button onClick={() => setCurrentPage('about')} className="inline-block py-1.5 hover:text-[#77C65E] transition-colors">
+              <button onClick={() => setCurrentPage('about')} className="inline-block py-1.5 hover:text-brand-green transition-colors">
                 {language === 'es' ? 'Historia e Impacto Global' : 'History & Global Impact'}
               </button>
             </li>
             <li>
-              <button onClick={() => setCurrentPage('shows')} className="inline-block py-1.5 hover:text-[#77C65E] transition-colors">
+              <button onClick={() => setCurrentPage('shows')} className="inline-block py-1.5 hover:text-brand-green transition-colors">
                 {language === 'es' ? 'Obras Teatrales' : 'Theatrical Productions'}
               </button>
             </li>
             <li>
-              <button onClick={() => setCurrentPage('participate')} className="inline-block py-1.5 hover:text-[#77C65E] transition-colors">
+              <button onClick={() => setCurrentPage('participate')} className="inline-block py-1.5 hover:text-brand-green transition-colors">
                 {language === 'es' ? 'Pasantías y Voluntariado' : 'Internships & Volunteering'}
               </button>
             </li>
             <li>
-              <button onClick={() => setCurrentPage('donate')} className="inline-block py-1.5 hover:text-[#77C65E] transition-colors">
+              <button onClick={() => setCurrentPage('donate')} className="inline-block py-1.5 hover:text-brand-green transition-colors">
                 {language === 'es' ? 'Donaciones y Registro' : 'Donations'}
               </button>
             </li>
             <li>
-              <button onClick={() => setCurrentPage('contact')} className="inline-block py-1.5 hover:text-[#77C65E] transition-colors">
+              <button onClick={() => setCurrentPage('contact')} className="inline-block py-1.5 hover:text-brand-green transition-colors">
                 {language === 'es' ? 'Medios de Contacto' : 'Contact Us'}
               </button>
             </li>
@@ -159,7 +159,7 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
 
         {/* Global Footprint */}
         <div>
-          <h4 className="font-serif text-base font-bold text-white uppercase tracking-wider mb-4 border-b border-[#77C65E]/40 pb-2">
+          <h4 className="font-serif text-base font-bold text-white uppercase tracking-wider mb-4 border-b border-brand-green/40 pb-2">
             {language === 'es' ? 'Presencia Internacional' : 'Global Footprint'}
           </h4>
           {!cargandoContactos && !errorContactos && (
@@ -172,7 +172,7 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
 
         {/* Contact & Info */}
         <div>
-          <h4 className="font-serif text-base font-bold text-white uppercase tracking-wider mb-4 border-b border-[#77C65E]/40 pb-2">
+          <h4 className="font-serif text-base font-bold text-white uppercase tracking-wider mb-4 border-b border-brand-green/40 pb-2">
             {language === 'es'
               ? 'Contacto e Información'
               : 'Contact & Info'}
@@ -210,7 +210,7 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
       </div>
 
       {/* Bottom Bar */}
-      <div className="bg-[#001021] border-t border-[#1e4066] py-6 px-4 sm:px-6 lg:px-8 text-xs text-center text-slate-400">
+      <div className="bg-brand-navyDeep border-t border-brand-border py-6 px-4 sm:px-6 lg:px-8 text-xs text-center text-slate-400">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <p>© 2026 Far Corners Teatro Comunitario. Todos los derechos reservados.</p>
           <p className="text-[11px] text-slate-300">

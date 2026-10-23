@@ -88,7 +88,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12 animate-fadeIn">
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto space-y-3">
-        <span className="inline-block px-4 py-1.5 rounded-full bg-[#77C65E]/20 text-[#DCEB4F] text-xs font-bold uppercase tracking-wider border border-[#77C65E]/40">
+        <span className="inline-block px-4 py-1.5 rounded-full bg-brand-green/20 text-brand-lime text-xs font-bold uppercase tracking-wider border border-brand-green/40">
           {language === 'es' ? 'Atención a la Comunidad' : 'Get in Touch'}
         </span>
         <h1 className="font-serif text-4xl sm:text-5xl font-bold text-white tracking-tight">
@@ -104,7 +104,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       {/* Main Aligned Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
         {/* Contact Information Box */}
-        <div className="bg-[#002244] border border-[#1e4066] rounded-3xl p-6 sm:p-8 space-y-6">
+        <div className="bg-brand-navy border border-brand-border rounded-3xl p-6 sm:p-8 space-y-6">
           <h3 className="font-serif text-2xl font-bold text-white border-b border-white/10 pb-3">
             {language === 'es'
               ? 'Información de Contacto'
@@ -144,7 +144,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         </div>
 
         {/* Contact Form Box */}
-        <div className="bg-[#002244] border border-[#1e4066] rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between">
+        <div className="bg-brand-navy border border-brand-border rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between">
           <div className="space-y-4">
             <h3 className="font-serif text-2xl font-bold text-white border-b border-white/10 pb-3">Formulario Mensaje Directo</h3>
 
@@ -160,7 +160,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder="Tu nombre..."
-                      className="w-full px-3.5 py-2.5 bg-[#00162e] border border-[#1e4066] rounded-lg text-xs text-white focus:border-[#77C65E] focus:outline-none"
+                      className="w-full px-3.5 py-2.5 bg-brand-navyDark border border-brand-border rounded-lg text-xs text-white focus:border-brand-green focus:outline-none"
                     />
                   </div>
                   <div>
@@ -172,7 +172,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       placeholder="tu@correo.com"
-                      className="w-full px-3.5 py-2.5 bg-[#00162e] border border-[#1e4066] rounded-lg text-xs text-white focus:border-[#77C65E] focus:outline-none"
+                      className="w-full px-3.5 py-2.5 bg-brand-navyDark border border-brand-border rounded-lg text-xs text-white focus:border-brand-green focus:outline-none"
                     />
                   </div>
                 </div>
@@ -186,7 +186,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                     value={formData.subject}
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                     placeholder="Consulta sobre boletería / campamento / pasantías..."
-                    className="w-full px-3.5 py-2.5 bg-[#00162e] border border-[#1e4066] rounded-lg text-xs text-white focus:border-[#77C65E] focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-brand-navyDark border border-brand-border rounded-lg text-xs text-white focus:border-brand-green focus:outline-none"
                   />
                 </div>
 
@@ -199,7 +199,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     placeholder="Escribe aquí tu consulta en detalle..."
-                    className="w-full px-3.5 py-2.5 bg-[#00162e] border border-[#1e4066] rounded-lg text-xs text-white focus:border-[#77C65E] focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-brand-navyDark border border-brand-border rounded-lg text-xs text-white focus:border-brand-green focus:outline-none"
                   ></textarea>
                 </div>
 
@@ -212,8 +212,8 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                 <button
                   type="submit"
                   disabled={enviando}
-                  className="w-full py-3.5 bg-[#77C65E] hover:bg-[#008047]
-                            text-[#002244] hover:text-white text-xs font-extrabold
+                  className="w-full py-3.5 bg-brand-green hover:bg-brand-forest
+                            text-brand-navy hover:text-white text-xs font-extrabold
                             rounded-xl shadow-glow-green transition-all flex
                             items-center justify-center space-x-2 uppercase tracking-wider
                             disabled:opacity-50 disabled:cursor-not-allowed"
@@ -228,12 +228,12 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
               </form>
             ) : (
               <div className="text-center py-8 space-y-4">
-                <div className="inline-flex p-3 rounded-full bg-[#77C65E]/20 text-[#77C65E] border border-[#77C65E]/40">
+                <div className="inline-flex p-3 rounded-full bg-brand-green/20 text-brand-green border border-brand-green/40">
                   <CheckCircle2 className="w-10 h-10" />
                 </div>
                 <h4 className="font-serif text-xl font-bold text-white">¡Mensaje Enviado con Éxito!</h4>
                 <p className="text-xs text-slate-300">
-                  Gracias <strong className="text-white">{formData.name}</strong>. Responderemos a tu correo (<span className="text-[#DCEB4F]">{formData.email}</span>) a la brevedad.
+                  Gracias <strong className="text-white">{formData.name}</strong>. Responderemos a tu correo (<span className="text-brand-lime">{formData.email}</span>) a la brevedad.
                 </p>
                 <button
                   onClick={() => {

@@ -12,8 +12,8 @@ export const RegisterView = () => {
   const [enviando, setEnviando] = useState(false);
 
   const inputClass =
-    'w-full px-4 py-3 bg-[#00162e] border border-[#1e4066] ' +
-    'rounded-xl text-white focus:border-[#77C65E] focus:outline-none';
+    'w-full px-4 py-3 bg-brand-navyDark border border-brand-border ' +
+    'rounded-xl text-white focus:border-brand-green focus:outline-none';
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -86,7 +86,7 @@ export const RegisterView = () => {
         </p>
       </div>
 
-      <div className="bg-[#002244] border border-[#1e4066] rounded-3xl p-6 sm:p-8">
+      <div className="bg-brand-navy border border-brand-border rounded-3xl p-6 sm:p-8">
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label
@@ -197,8 +197,8 @@ export const RegisterView = () => {
           <button
             type="submit"
             disabled={enviando}
-            className="w-full py-3 bg-[#77C65E] hover:bg-[#008047]
-                        text-[#002244] hover:text-white font-bold
+            className="w-full py-3 bg-brand-green hover:bg-brand-forest
+                        text-brand-navy hover:text-white font-bold
                         rounded-xl transition-colors
                         disabled:opacity-50 disabled:cursor-not-allowed"
             >

@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-[#00162e] text-[#F8F8F2] antialiased overflow-x-hidden;
+    @apply bg-brand-navyDark text-brand-cream antialiased overflow-x-hidden;
   }
 }
 
