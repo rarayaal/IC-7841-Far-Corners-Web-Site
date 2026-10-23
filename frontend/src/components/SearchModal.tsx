@@ -1,47 +1,109 @@
-import React, { useState } from 'react';
-import { Language, Show } from '../types';
-import { showsData, projectsData, opportunitiesData } from '../data/mockData';
-import { Search, X, Ticket, Globe, Briefcase, ChevronRight } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Language } from '../types';
+import { api } from '../lib/api';
+import { Search, X, Ticket, Globe, Users, Briefcase } from 'lucide-react';
+
+interface SearchEvent {
+  id: string;
+  title: string;
+  description: string | null;
+  event_date: string | null;
+  venue: string | null;
+}
+
+interface SearchProject {
+  id: string;
+  title: string;
+  description: string | null;
+  country: string | null;
+}
+
+interface SearchCommunity {
+  id: string;
+  name: string;
+  description: string | null;
+}
+
+interface SearchOpportunity {
+  id: string;
+  title: string;
+  description: string | null;
+  type: string | null;
+  location: string | null;
+}
+
+interface SearchResult {
+  events: SearchEvent[];
+  projects: SearchProject[];
+  communities: SearchCommunity[];
+  opportunities: SearchOpportunity[];
+}
 
 interface SearchModalProps {
   isOpen: boolean;
   onClose: () => void;
   language: Language;
-  onSelectShow: (show: Show) => void;
 }
 
-export const SearchModal: React.FC<SearchModalProps> = ({
-  isOpen,
-  onClose,
-  language,
-  onSelectShow,
-}) => {
+const vacio: SearchResult = {
+  events: [],
+  projects: [],
+  communities: [],
+  opportunities: [],
+};
+
+export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, language }) => {
   const [query, setQuery] = useState('');
+  const [resultado, setResultado] = useState<SearchResult>(vacio);
+  const [consultado, setConsultado] = useState(false);
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const texto = query.trim();
+
+    if (texto.length < 2) {
+      setResultado(vacio);
+      setConsultado(false);
+      setError('');
+      return;
+    }
+
+    setConsultado(true);
+    setCargando(true);
+    setError('');
+
+    const controlador = new AbortController();
+    const temporizador = setTimeout(async () => {
+      try {
+        const datos = await api<SearchResult>(`/api/v1/search?q=${encodeURIComponent(texto)}`, {
+          signal: controlador.signal,
+        });
+        setResultado(datos);
+      } catch (e) {
+        if (controlador.signal.aborted) return;
+        setError(e instanceof Error ? e.message : 'No se pudo realizar la búsqueda.');
+        setResultado(vacio);
+      } finally {
+        if (!controlador.signal.aborted) setCargando(false);
+      }
+    }, 300);
+
+    return () => {
+      clearTimeout(temporizador);
+      controlador.abort();
+    };
+  }, [query, isOpen]);
 
   if (!isOpen) return null;
 
-  const filteredShows = query.trim() === ''
-    ? showsData.slice(0, 3)
-    : showsData.filter(s =>
-        s.title.toLowerCase().includes(query.toLowerCase()) ||
-        s.synopsis.toLowerCase().includes(query.toLowerCase()) ||
-        s.year.toString().includes(query)
-      );
-
-  const filteredProjects = query.trim() === ''
-    ? projectsData
-    : projectsData.filter(p =>
-        p.title.toLowerCase().includes(query.toLowerCase()) ||
-        p.country.toLowerCase().includes(query.toLowerCase()) ||
-        p.summary.toLowerCase().includes(query.toLowerCase())
-      );
-
-  const filteredOpps = query.trim() === ''
-    ? opportunitiesData.slice(0, 2)
-    : opportunitiesData.filter(o =>
-        o.title.toLowerCase().includes(query.toLowerCase()) ||
-        o.description.toLowerCase().includes(query.toLowerCase())
-      );
+  const hayResultados =
+    resultado.events.length > 0 ||
+    resultado.projects.length > 0 ||
+    resultado.communities.length > 0 ||
+    resultado.opportunities.length > 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 px-4 bg-black/85 backdrop-blur-md animate-fadeIn">
@@ -54,7 +116,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={language === 'es' ? 'Buscar obras, musicales, proyectos, pasantías...' : 'Search shows, projects, internships...'}
+            placeholder={language === 'es' ? 'Buscar obras, proyectos, comunidades, pasantías...' : 'Search shows, projects, communities, internships...'}
             className="w-full bg-transparent text-white placeholder-slate-400 focus:outline-none text-base font-sans"
           />
           <button
@@ -67,92 +129,115 @@ export const SearchModal: React.FC<SearchModalProps> = ({
 
         {/* Results Container */}
         <div className="max-h-[70vh] overflow-y-auto p-4 space-y-6 divide-y divide-white/10">
-          {/* Shows Section */}
-          {filteredShows.length > 0 && (
+          {query.trim().length < 2 && (
+            <div className="py-8 text-center text-slate-400">
+              <p className="text-sm">
+                {language === 'es' ? 'Escribe al menos 2 caracteres para buscar.' : 'Type at least 2 characters to search.'}
+              </p>
+            </div>
+          )}
+
+          {cargando && (
+            <p role="status" className="py-4 text-center text-sm text-slate-300">
+              Buscando...
+            </p>
+          )}
+
+          {error && (
+            <p role="alert" className="py-4 text-center text-sm text-red-300">
+              {error}
+            </p>
+          )}
+
+          {consultado && !cargando && !error && !hayResultados && (
+            <div className="py-12 text-center text-slate-400">
+              <p className="text-sm">{language === 'es' ? 'No se encontraron resultados para tu búsqueda.' : 'No results found.'}</p>
+            </div>
+          )}
+
+          {resultado.events.length > 0 && (
             <div className="pt-2">
               <div className="flex items-center space-x-2 text-xs font-bold text-[#DCEB4F] uppercase tracking-wider mb-3">
                 <Ticket className="w-4 h-4 text-[#77C65E]" />
-                <span>{language === 'es' ? 'Obras y Musicales' : 'Shows & Musicals'}</span>
+                <span>{language === 'es' ? 'Eventos y Obras' : 'Events & Shows'}</span>
               </div>
               <div className="space-y-2">
-                {filteredShows.map(show => (
-                  <div
-                    key={show.id}
-                    onClick={() => {
-                      onSelectShow(show);
-                      onClose();
-                    }}
-                    className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-[#77C65E]/20 border border-transparent hover:border-[#77C65E]/40 cursor-pointer transition-all group"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded bg-[#00162e] overflow-hidden shrink-0 border border-white/10">
-                        <img src={show.poster} alt={show.title} className="w-full h-full object-cover" />
-                      </div>
-                      <div>
-                        <h4 className="font-serif text-sm font-bold text-white group-hover:text-[#77C65E] transition-colors">
-                          {show.title} ({show.year})
-                        </h4>
-                        <p className="text-xs text-slate-300 line-clamp-1">{show.synopsis}</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-[#4A90D6] group-hover:text-[#77C65E] transition-colors" />
+                {resultado.events.map((evento) => (
+                  <div key={evento.id} className="p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
+                    <h4 className="font-serif text-sm font-bold text-white">{evento.title}</h4>
+                    {evento.venue && (
+                      <p className="text-[11px] text-[#4A90D6] mt-0.5">{evento.venue}</p>
+                    )}
+                    {evento.description && (
+                      <p className="text-xs text-slate-300 mt-1 line-clamp-2">{evento.description}</p>
+                    )}
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Projects Section */}
-          {filteredProjects.length > 0 && (
+          {resultado.projects.length > 0 && (
             <div className="pt-4">
               <div className="flex items-center space-x-2 text-xs font-bold text-[#DCEB4F] uppercase tracking-wider mb-3">
                 <Globe className="w-4 h-4 text-[#4A90D6]" />
                 <span>{language === 'es' ? 'Proyectos e Impacto' : 'Projects & Impact'}</span>
               </div>
               <div className="space-y-2">
-                {filteredProjects.map(proj => (
-                  <div
-                    key={proj.id}
-                    className="p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
-                  >
+                {resultado.projects.map((proyecto) => (
+                  <div key={proyecto.id} className="p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-serif text-sm font-bold text-white">
-                        {language === 'es' ? proj.title : proj.titleEn}
-                      </h4>
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-[#77C65E]/20 text-[#DCEB4F] font-bold">
-                        {proj.country}
-                      </span>
+                      <h4 className="font-serif text-sm font-bold text-white">{proyecto.title}</h4>
+                      {proyecto.country && (
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-[#77C65E]/20 text-[#DCEB4F] font-bold">
+                          {proyecto.country}
+                        </span>
+                      )}
                     </div>
-                    <p className="text-xs text-slate-300 mt-1">{language === 'es' ? proj.summary : proj.summaryEn}</p>
+                    {proyecto.description && (
+                      <p className="text-xs text-slate-300 mt-1 line-clamp-2">{proyecto.description}</p>
+                    )}
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Opportunities Section */}
-          {filteredOpps.length > 0 && (
+          {resultado.communities.length > 0 && (
+            <div className="pt-4">
+              <div className="flex items-center space-x-2 text-xs font-bold text-[#DCEB4F] uppercase tracking-wider mb-3">
+                <Users className="w-4 h-4 text-[#77C65E]" />
+                <span>{language === 'es' ? 'Comunidades' : 'Communities'}</span>
+              </div>
+              <div className="space-y-2">
+                {resultado.communities.map((comunidad) => (
+                  <div key={comunidad.id} className="p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
+                    <h4 className="font-serif text-sm font-bold text-white">{comunidad.name}</h4>
+                    {comunidad.description && (
+                      <p className="text-xs text-slate-300 mt-1 line-clamp-2">{comunidad.description}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {resultado.opportunities.length > 0 && (
             <div className="pt-4">
               <div className="flex items-center space-x-2 text-xs font-bold text-[#DCEB4F] uppercase tracking-wider mb-3">
                 <Briefcase className="w-4 h-4 text-[#77C65E]" />
                 <span>{language === 'es' ? 'Pasantías y Voluntariado' : 'Opportunities'}</span>
               </div>
               <div className="space-y-2">
-                {filteredOpps.map(opp => (
-                  <div key={opp.id} className="p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
-                    <h4 className="font-serif text-sm font-bold text-white">
-                      {language === 'es' ? opp.title : opp.titleEn}
-                    </h4>
-                    <p className="text-xs text-slate-300 mt-0.5">{opp.location} • {opp.period}</p>
+                {resultado.opportunities.map((oportunidad) => (
+                  <div key={oportunidad.id} className="p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
+                    <h4 className="font-serif text-sm font-bold text-white">{oportunidad.title}</h4>
+                    <p className="text-xs text-slate-300 mt-0.5">
+                      {[oportunidad.type, oportunidad.location].filter(Boolean).join(' • ')}
+                    </p>
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-
-          {filteredShows.length === 0 && filteredProjects.length === 0 && filteredOpps.length === 0 && (
-            <div className="py-12 text-center text-slate-400">
-              <p className="text-sm">{language === 'es' ? 'No se encontraron resultados para tu búsqueda.' : 'No results found.'}</p>
             </div>
           )}
         </div>

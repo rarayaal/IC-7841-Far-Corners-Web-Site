@@ -4,13 +4,17 @@ import { showsData, auditLogsMock, volunteerAppsMock } from '../data/mockData';
 import { Shield, Ticket, Users, Heart, Plus, Edit2, Trash2, CheckCircle2 } from 'lucide-react';
 import { AdminMessagesView } from './AdminMessagesView';
 import { AdminContactChannelsView } from './AdminContactChannelsView';
+import { AdminCommunitiesView } from './AdminCommunitiesView';
+import { AdminStudentsView } from './AdminStudentsView';
+import { AdminVolunteersView } from './AdminVolunteersView';
+import { AdminProfileView } from './AdminProfileView';
 
 interface AdminViewProps {
   language: Language;
 }
 
 export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
-  const [activeTab, setActiveTab] = useState<'kpi' | 'ticketing' | 'content' | 'applicants' | 'audit' | 'messages' | 'contacts'>('kpi');
+  const [activeTab, setActiveTab] = useState<'kpi' | 'ticketing' | 'content' | 'applicants' | 'audit' | 'messages' | 'contacts' | 'communities' | 'students' | 'volunteers' | 'profile'>('kpi');
   
   // Dynamic state for CRUD demo
   const [shows, setShows] = useState<Show[]>(showsData);
@@ -200,11 +204,59 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
         >
           Medios de contacto
         </button>
+
+        <button
+          onClick={() => setActiveTab('communities')}
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+            activeTab === 'communities'
+              ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
+              : 'bg-[#002244] text-slate-300 hover:text-white'
+          }`}
+        >
+          Comunidades
+        </button>
+
+        <button
+          onClick={() => setActiveTab('students')}
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+            activeTab === 'students'
+              ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
+              : 'bg-[#002244] text-slate-300 hover:text-white'
+          }`}
+        >
+          Estudiantes
+        </button>
+
+        <button
+          onClick={() => setActiveTab('volunteers')}
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+            activeTab === 'volunteers'
+              ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
+              : 'bg-[#002244] text-slate-300 hover:text-white'
+          }`}
+        >
+          Voluntarios
+        </button>
+
+        <button
+          onClick={() => setActiveTab('profile')}
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+            activeTab === 'profile'
+              ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
+              : 'bg-[#002244] text-slate-300 hover:text-white'
+          }`}
+        >
+          Mi perfil
+        </button>
       </div>
 
       {/* TAB 1: KPI OVERVIEW */}
       {activeTab === 'contacts' && <AdminContactChannelsView />}
       {activeTab === 'messages' && <AdminMessagesView />}
+      {activeTab === 'communities' && <AdminCommunitiesView />}
+      {activeTab === 'students' && <AdminStudentsView />}
+      {activeTab === 'volunteers' && <AdminVolunteersView />}
+      {activeTab === 'profile' && <AdminProfileView />}
       {activeTab === 'kpi' && (
         <div className="space-y-8 animate-fadeIn">
           {/* Top KPI Cards */}

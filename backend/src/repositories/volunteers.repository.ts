@@ -48,19 +48,38 @@ export async function crearPerfilVoluntario(
 export async function actualizarPerfilVoluntario(
   id: string,
   interests: string | null,
-  availability: string | null
+  availability: string | null,
+  status: string | null
 ) {
   const result = await pool.query(
     `
     UPDATE volunteer_profiles
-    SET interests = $1, availability = $2
-    WHERE id = $3
+    SET interests = $1, availability = $2, status = COALESCE($3, status)
+    WHERE id = $4
     RETURNING *
     `,
-    [interests, availability, id]
+    [interests, availability, status, id]
   );
 
   return result.rows[0];
+}
+
+export async function obtenerUsuariosSinPerfilVoluntario() {
+  const result = await pool.query(`
+    SELECT
+      u.id,
+      u.full_name,
+      u.email,
+      u.participant_type
+    FROM users u
+    WHERE u.participant_type IN ('volunteer', 'intern')
+      AND NOT EXISTS (
+        SELECT 1 FROM volunteer_profiles vp WHERE vp.user_id = u.id
+      )
+    ORDER BY u.full_name ASC
+  `);
+
+  return result.rows;
 }
 
 export async function eliminarPerfilVoluntario(id: string) {

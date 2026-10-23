@@ -52,19 +52,38 @@ export async function actualizarPerfilEstudiante(
   id: string,
   university: string | null,
   start_date: string | null,
-  end_date: string | null
+  end_date: string | null,
+  status: string | null
 ) {
   const result = await pool.query(
     `
     UPDATE student_profiles
-    SET university = $1, start_date = $2, end_date = $3
-    WHERE id = $4
+    SET university = $1, start_date = $2, end_date = $3, status = COALESCE($4, status)
+    WHERE id = $5
     RETURNING *
     `,
-    [university, start_date, end_date, id]
+    [university, start_date, end_date, status, id]
   );
 
   return result.rows[0];
+}
+
+export async function obtenerUsuariosSinPerfilEstudiante() {
+  const result = await pool.query(`
+    SELECT
+      u.id,
+      u.full_name,
+      u.email,
+      u.participant_type
+    FROM users u
+    WHERE u.participant_type = 'international_student'
+      AND NOT EXISTS (
+        SELECT 1 FROM student_profiles sp WHERE sp.user_id = u.id
+      )
+    ORDER BY u.full_name ASC
+  `);
+
+  return result.rows;
 }
 
 export async function eliminarPerfilEstudiante(id: string) {

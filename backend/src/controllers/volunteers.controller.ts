@@ -4,6 +4,7 @@ import {
   crearPerfilVoluntario,
   actualizarPerfilVoluntario,
   eliminarPerfilVoluntario,
+  obtenerUsuariosSinPerfilVoluntario,
 } from "../repositories/volunteers.repository.js";
 
 export async function listarVoluntarios(_req: Request, res: Response) {
@@ -13,6 +14,18 @@ export async function listarVoluntarios(_req: Request, res: Response) {
   } catch (error) {
     console.error("Error al consultar voluntarios:", error);
     res.status(500).json({ message: "No se pudieron obtener los voluntarios" });
+  }
+}
+
+const ESTADOS_VALIDOS = ['active', 'inactive', 'pending'] as const;
+
+export async function listarCandidatosVoluntario(_req: Request, res: Response) {
+  try {
+    const candidatos = await obtenerUsuariosSinPerfilVoluntario();
+    res.status(200).json(candidatos);
+  } catch (error) {
+    console.error("Error al consultar candidatos a voluntario:", error);
+    res.status(500).json({ message: "No se pudieron obtener los candidatos" });
   }
 }
 
@@ -41,12 +54,22 @@ export async function registrarVoluntario(req: Request, res: Response) {
 export async function modificarVoluntario(req: Request<{ id: string }>, res: Response) {
   try {
     const { id } = req.params;
-    const { interests, availability } = req.body ?? {};
+    const { interests, availability, status } = req.body ?? {};
+
+    let estado: string | null = null;
+    if (status !== undefined && status !== null) {
+      if (typeof status !== 'string' || !(ESTADOS_VALIDOS as readonly string[]).includes(status)) {
+        res.status(400).json({ message: `El estado debe ser uno de: ${ESTADOS_VALIDOS.join(', ')}` });
+        return;
+      }
+      estado = status;
+    }
 
     const actualizado = await actualizarPerfilVoluntario(
       id,
       interests ? String(interests).trim() : null,
-      availability ? String(availability).trim() : null
+      availability ? String(availability).trim() : null,
+      estado
     );
 
     if (!actualizado) {

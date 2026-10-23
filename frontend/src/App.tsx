@@ -127,7 +127,6 @@ export function App() {
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
         language={language}
-        onSelectShow={(show) => handleOpenTickets(show)}
       />
 
       <TicketModal
