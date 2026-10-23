@@ -1,15 +1,34 @@
+interface OpcionesAdmin {
+  /** Permite llamar endpoints publicos (por ejemplo, la busqueda) sin sesion. */
+  tokenOpcional?: boolean;
+}
+
 export async function apiAdmin(
   ruta: string,
-  opciones: RequestInit = {}
+  opciones: RequestInit = {},
+  { tokenOpcional = false }: OpcionesAdmin = {}
 ): Promise<Response> {
-  const token = localStorage.getItem('auth_token');
+  let token: string | null = null;
 
-  if (!token) {
+  try {
+    token = localStorage.getItem('auth_token');
+  } catch {
+    token = null;
+  }
+
+  if (!token && !tokenOpcional) {
     throw new Error('Debes iniciar sesión.');
   }
 
   const headers = new Headers(opciones.headers);
-  headers.set('Authorization', `Bearer ${token}`);
+
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+
+  if (opciones.body && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
 
   const respuesta = await fetch(ruta, {
     ...opciones,
@@ -27,4 +46,26 @@ export async function apiAdmin(
   }
 
   return respuesta;
+}
+
+/**
+ * Variante tipada de apiAdmin: devuelve el JSON y lanza el mensaje de la API
+ * cuando la respuesta no es exitosa.
+ */
+export async function apiAdminJson<T>(
+  ruta: string,
+  opciones: RequestInit = {},
+  opcionesAdmin: OpcionesAdmin = {}
+): Promise<T> {
+  const respuesta = await apiAdmin(ruta, opciones, opcionesAdmin);
+  const datos = await respuesta.json().catch(() => null);
+
+  if (!respuesta.ok) {
+    const mensaje =
+      (datos && (datos.message || datos.detail)) ||
+      `Error ${respuesta.status} al comunicarse con el servidor.`;
+    throw new Error(mensaje);
+  }
+
+  return datos as T;
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Language } from '../types';
-import { api } from '../lib/api';
+import { apiAdminJson } from '../services/apiAdmin';
 import { Search, X, Ticket, Globe, Users, Briefcase } from 'lucide-react';
 
 interface SearchEvent {
@@ -78,9 +78,11 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, langu
     const controlador = new AbortController();
     const temporizador = setTimeout(async () => {
       try {
-        const datos = await api<SearchResult>(`/api/v1/search?q=${encodeURIComponent(texto)}`, {
-          signal: controlador.signal,
-        });
+        const datos = await apiAdminJson<SearchResult>(
+          `/api/v1/search?q=${encodeURIComponent(texto)}`,
+          { signal: controlador.signal },
+          { tokenOpcional: true }
+        );
         setResultado(datos);
       } catch (e) {
         if (controlador.signal.aborted) return;

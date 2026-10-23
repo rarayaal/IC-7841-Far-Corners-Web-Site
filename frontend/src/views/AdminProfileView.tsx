@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { api } from '../lib/api';
+import { apiAdminJson as api } from '../services/apiAdmin';
 import {
   adminTexts,
   participantTypeLabel,

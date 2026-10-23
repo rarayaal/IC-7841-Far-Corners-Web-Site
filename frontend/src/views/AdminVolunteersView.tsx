@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Plus, Pencil, Trash2, X } from 'lucide-react';
-import { api } from '../lib/api';
+import { apiAdminJson as api } from '../services/apiAdmin';
 import { adminTexts, statusLabel } from '../lib/adminI18n';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { Toast, ToastRegion } from '../components/Toast';
