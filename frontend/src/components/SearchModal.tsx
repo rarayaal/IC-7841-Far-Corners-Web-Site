@@ -84,7 +84,13 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, langu
         setResultado(datos);
       } catch (e) {
         if (controlador.signal.aborted) return;
-        setError(e instanceof Error ? e.message : 'No se pudo realizar la búsqueda.');
+        setError(
+          e instanceof Error
+            ? e.message
+            : language === 'es'
+              ? 'No se pudo realizar la búsqueda.'
+              : 'The search could not be completed.'
+        );
         setResultado(vacio);
       } finally {
         if (!controlador.signal.aborted) setCargando(false);
@@ -95,7 +101,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, langu
       clearTimeout(temporizador);
       controlador.abort();
     };
-  }, [query, isOpen]);
+  }, [query, isOpen, language]);
 
   if (!isOpen) return null;
 
@@ -139,7 +145,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, langu
 
           {cargando && (
             <p role="status" className="py-4 text-center text-sm text-slate-300">
-              Buscando...
+              {language === 'es' ? 'Buscando...' : 'Searching...'}
             </p>
           )}
 

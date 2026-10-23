@@ -36,7 +36,7 @@ export const RegisterView = () => {
     setEnviando(true);
 
     try {
-        const respuesta = await fetch('/api/v1/auth/register', {
+        const respuesta = await fetch('/api/v1/users/register', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

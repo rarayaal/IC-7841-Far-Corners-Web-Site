@@ -1,6 +1,10 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Plus, Pencil, Trash2, X } from 'lucide-react';
 import { api } from '../lib/api';
+import { adminTexts, statusLabel } from '../lib/adminI18n';
+import { ConfirmDialog } from '../components/ConfirmDialog';
+import { Toast, ToastRegion } from '../components/Toast';
+import type { Language } from '../types';
 
 interface Community {
   id: string;
@@ -22,13 +26,16 @@ const formVacio = (): CommunityForm => ({
   is_published: false,
 });
 
-export const AdminCommunitiesView = () => {
+export const AdminCommunitiesView = ({ language }: { language: Language }) => {
+  const txt = adminTexts[language];
   const [comunidades, setComunidades] = useState<Community[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
   const [aviso, setAviso] = useState('');
   const [guardando, setGuardando] = useState(false);
   const [formulario, setFormulario] = useState<CommunityForm | null>(null);
+  const [porEliminar, setPorEliminar] = useState<Community | null>(null);
+  const [borrando, setBorrando] = useState(false);
 
   useEffect(() => {
     let activo = true;
@@ -38,7 +45,8 @@ export const AdminCommunitiesView = () => {
         const datos = await api<Community[]>('/api/v1/communities');
         if (activo) setComunidades(datos);
       } catch (e) {
-        if (activo) setError(e instanceof Error ? e.message : 'No se pudieron cargar las comunidades.');
+        if (activo)
+          setError(e instanceof Error ? e.message : txt.communities.loadError);
       } finally {
         if (activo) setCargando(false);
       }
@@ -73,7 +81,7 @@ export const AdminCommunitiesView = () => {
 
     const nombre = formulario.name.trim();
     if (!nombre) {
-      setError('El nombre es obligatorio.');
+      setError(txt.communities.nameRequired);
       return;
     }
 
@@ -98,36 +106,41 @@ export const AdminCommunitiesView = () => {
         setComunidades((actuales) =>
           actuales.map((c) => (c.id === actualizada.id ? actualizada : c))
         );
-        setAviso('Comunidad actualizada correctamente.');
+        setAviso(txt.communities.updated);
       } else {
         const creada = await api<Community>('/api/v1/communities', {
           method: 'POST',
           body,
         });
         setComunidades((actuales) => [...actuales, creada]);
-        setAviso('Comunidad creada correctamente.');
+        setAviso(txt.communities.created);
       }
 
       setFormulario(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'No se pudo guardar la comunidad.');
+      setError(e instanceof Error ? e.message : txt.communities.saveError);
     } finally {
       setGuardando(false);
     }
   }
 
-  async function borrar(comunidad: Community) {
-    if (!window.confirm(`¿Eliminar la comunidad "${comunidad.name}"?`)) return;
+  async function confirmarBorrado() {
+    if (!porEliminar || borrando) return;
 
+    setBorrando(true);
     setError('');
-    setAviso('');
 
     try {
-      await api<void>(`/api/v1/communities/${comunidad.id}`, { method: 'DELETE' });
-      setComunidades((actuales) => actuales.filter((c) => c.id !== comunidad.id));
-      setAviso('Comunidad eliminada.');
+      await api<void>(`/api/v1/communities/${porEliminar.id}`, {
+        method: 'DELETE',
+      });
+      setComunidades((actuales) => actuales.filter((c) => c.id !== porEliminar.id));
+      setAviso(txt.communities.deleted);
+      setPorEliminar(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'No se pudo eliminar la comunidad.');
+      setError(e instanceof Error ? e.message : txt.communities.deleteError);
+    } finally {
+      setBorrando(false);
     }
   }
 
@@ -138,28 +151,35 @@ export const AdminCommunitiesView = () => {
     <section className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="font-serif text-xl font-bold text-white">Comunidades</h2>
-          <p className="text-sm text-slate-300">
-            Administra las comunidades que aparecen en el sitio.
-          </p>
+          <h2 className="font-serif text-xl font-bold text-white">
+            {txt.communities.title}
+          </h2>
+          <p className="text-sm text-slate-300">{txt.communities.subtitle}</p>
         </div>
 
         <button
           type="button"
           onClick={abrirNueva}
-          className="flex items-center gap-2 rounded-xl bg-[#77C65E] px-4 py-2 text-sm font-bold text-[#002244] hover:bg-[#008047] hover:text-white transition-colors"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#77C65E] px-4 py-2 text-sm font-bold text-[#002244] transition-colors hover:bg-[#008047] hover:text-white sm:w-auto"
         >
           <Plus className="w-4 h-4" />
-          Nueva comunidad
+          {txt.communities.newItem}
         </button>
       </div>
 
-      {cargando && <p role="status" className="text-slate-300">Cargando comunidades...</p>}
-      {error && <p role="alert" className="text-sm text-red-300">{error}</p>}
-      {aviso && <p role="status" className="text-sm text-[#77C65E]">{aviso}</p>}
+      {cargando && (
+        <p role="status" className="text-slate-300">
+          {txt.communities.loading}
+        </p>
+      )}
+      {error && (
+        <p role="alert" className="text-sm text-red-300">
+          {error}
+        </p>
+      )}
 
       {!cargando && comunidades.length === 0 && !error && (
-        <p className="text-slate-300">No hay comunidades registradas.</p>
+        <p className="text-slate-300">{txt.communities.empty}</p>
       )}
 
       {formulario && (
@@ -169,7 +189,9 @@ export const AdminCommunitiesView = () => {
         >
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-white">
-              {formulario.id ? 'Editar comunidad' : 'Nueva comunidad'}
+              {formulario.id
+                ? txt.communities.editTitle
+                : txt.communities.createTitle}
             </h3>
             <button
               type="button"
@@ -182,8 +204,11 @@ export const AdminCommunitiesView = () => {
 
           <fieldset disabled={guardando} className="space-y-4">
             <div>
-              <label htmlFor="comunidad-nombre" className="mb-1 block text-sm text-slate-300">
-                Nombre *
+              <label
+                htmlFor="comunidad-nombre"
+                className="mb-1 block text-sm text-slate-300"
+              >
+                {txt.communities.name}
               </label>
               <input
                 id="comunidad-nombre"
@@ -191,20 +216,27 @@ export const AdminCommunitiesView = () => {
                 required
                 maxLength={255}
                 value={formulario.name}
-                onChange={(e) => setFormulario({ ...formulario, name: e.target.value })}
+                onChange={(e) =>
+                  setFormulario({ ...formulario, name: e.target.value })
+                }
                 className={inputClass}
               />
             </div>
 
             <div>
-              <label htmlFor="comunidad-descripcion" className="mb-1 block text-sm text-slate-300">
-                Descripción
+              <label
+                htmlFor="comunidad-descripcion"
+                className="mb-1 block text-sm text-slate-300"
+              >
+                {txt.communities.description}
               </label>
               <textarea
                 id="comunidad-descripcion"
                 rows={3}
                 value={formulario.description}
-                onChange={(e) => setFormulario({ ...formulario, description: e.target.value })}
+                onChange={(e) =>
+                  setFormulario({ ...formulario, description: e.target.value })
+                }
                 className={inputClass}
               />
             </div>
@@ -213,24 +245,29 @@ export const AdminCommunitiesView = () => {
               <input
                 type="checkbox"
                 checked={formulario.is_published}
-                onChange={(e) => setFormulario({ ...formulario, is_published: e.target.checked })}
+                onChange={(e) =>
+                  setFormulario({
+                    ...formulario,
+                    is_published: e.target.checked,
+                  })
+                }
               />
-              Publicada en el sitio
+              {txt.communities.published}
             </label>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row">
               <button
                 type="submit"
                 className="rounded-xl bg-[#77C65E] px-4 py-2 text-sm font-bold text-[#002244] disabled:opacity-50"
               >
-                {guardando ? 'Guardando...' : 'Guardar'}
+                {guardando ? txt.common.saving : txt.common.save}
               </button>
               <button
                 type="button"
                 onClick={() => setFormulario(null)}
                 className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold text-white hover:bg-white/20"
               >
-                Cancelar
+                {txt.common.cancel}
               </button>
             </div>
           </fieldset>
@@ -238,24 +275,34 @@ export const AdminCommunitiesView = () => {
       )}
 
       {comunidades.length > 0 && (
-        <div className="overflow-hidden rounded-2xl border border-[#1e4066] bg-[#002244]">
+        <div className="overflow-x-auto rounded-2xl border border-[#1e4066] bg-[#002244]">
           <table className="w-full text-left text-xs text-slate-300">
             <thead className="bg-[#00162e] text-slate-300 font-mono text-[11px] uppercase border-b border-white/10">
               <tr>
-                <th className="p-4">Nombre</th>
-                <th className="p-4">Descripción</th>
-                <th className="p-4">Estado</th>
-                <th className="p-4 text-right">Acciones</th>
+                <th className="p-3 sm:p-4">{txt.communities.columnName}</th>
+                <th className="hidden p-4 md:table-cell">
+                  {txt.communities.columnDescription}
+                </th>
+                <th className="p-3 sm:p-4">{txt.common.status}</th>
+                <th className="p-3 text-right sm:p-4">{txt.common.actions}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
               {comunidades.map((comunidad) => (
-                <tr key={comunidad.id} className="hover:bg-white/5 transition-colors">
-                  <td className="p-4 font-bold text-white">{comunidad.name}</td>
-                  <td className="p-4 text-slate-300 max-w-xs truncate">
+                <tr
+                  key={comunidad.id}
+                  className="hover:bg-white/5 transition-colors"
+                >
+                  <td className="p-3 sm:p-4">
+                    <span className="font-bold text-white">{comunidad.name}</span>
+                    <span className="mt-1 block line-clamp-2 text-[11px] text-slate-400 md:hidden">
+                      {comunidad.description ?? '—'}
+                    </span>
+                  </td>
+                  <td className="hidden p-4 text-slate-300 max-w-xs truncate md:table-cell">
                     {comunidad.description ?? '—'}
                   </td>
-                  <td className="p-4">
+                  <td className="p-3 sm:p-4">
                     <span
                       className={`px-2.5 py-1 rounded text-[10px] uppercase font-bold ${
                         comunidad.is_published
@@ -263,32 +310,67 @@ export const AdminCommunitiesView = () => {
                           : 'bg-white/10 text-slate-300'
                       }`}
                     >
-                      {comunidad.is_published ? 'Publicada' : 'Oculta'}
+                      {statusLabel(
+                        comunidad.is_published ? 'published' : 'hidden',
+                        language
+                      )}
                     </span>
                   </td>
-                  <td className="p-4 text-right space-x-1">
-                    <button
-                      type="button"
-                      onClick={() => abrirEdicion(comunidad)}
-                      className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-white/20"
-                    >
-                      <Pencil className="w-3 h-3" />
-                      Editar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => borrar(comunidad)}
-                      className="inline-flex items-center gap-1 rounded-lg bg-red-500/20 px-2.5 py-1.5 text-[10px] font-bold text-red-300 hover:bg-red-500/30"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                      Eliminar
-                    </button>
+                  <td className="p-3 text-right sm:p-4">
+                    <div className="flex justify-end gap-1">
+                      <button
+                        type="button"
+                        onClick={() => abrirEdicion(comunidad)}
+                        aria-label={txt.common.edit}
+                        className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-white/20"
+                      >
+                        <Pencil className="w-3 h-3" />
+                        <span className="hidden sm:inline">{txt.common.edit}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPorEliminar(comunidad)}
+                        aria-label={txt.common.delete}
+                        className="inline-flex items-center gap-1 rounded-lg bg-red-500/20 px-2.5 py-1.5 text-[10px] font-bold text-red-300 hover:bg-red-500/30"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span className="hidden sm:inline">{txt.common.delete}</span>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      )}
+
+      <ConfirmDialog
+        open={Boolean(porEliminar)}
+        title={txt.common.confirmDeleteTitle}
+        message={
+          porEliminar
+            ? txt.communities.deleteMessage.replace('{name}', porEliminar.name)
+            : ''
+        }
+        confirmLabel={txt.common.delete}
+        busyLabel={txt.common.deleting}
+        cancelLabel={txt.common.cancel}
+        busy={borrando}
+        onConfirm={confirmarBorrado}
+        onCancel={() => {
+          if (!borrando) setPorEliminar(null);
+        }}
+      />
+
+      {aviso && (
+        <ToastRegion>
+          <Toast
+            message={aviso}
+            onClose={() => setAviso('')}
+            closeLabel={txt.common.closeNotification}
+          />
+        </ToastRegion>
       )}
     </section>
   );

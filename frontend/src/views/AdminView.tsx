@@ -8,12 +8,14 @@ import { AdminCommunitiesView } from './AdminCommunitiesView';
 import { AdminStudentsView } from './AdminStudentsView';
 import { AdminVolunteersView } from './AdminVolunteersView';
 import { AdminProfileView } from './AdminProfileView';
+import { adminTexts } from '../lib/adminI18n';
 
 interface AdminViewProps {
   language: Language;
 }
 
 export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
+  const txt = adminTexts[language];
   const [activeTab, setActiveTab] = useState<'kpi' | 'ticketing' | 'content' | 'applicants' | 'audit' | 'messages' | 'contacts' | 'communities' | 'students' | 'volunteers' | 'profile'>('kpi');
   
   // Dynamic state for CRUD demo
@@ -213,7 +215,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
               : 'bg-[#002244] text-slate-300 hover:text-white'
           }`}
         >
-          Comunidades
+          {txt.tabs.communities}
         </button>
 
         <button
@@ -224,7 +226,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
               : 'bg-[#002244] text-slate-300 hover:text-white'
           }`}
         >
-          Estudiantes
+          {txt.tabs.students}
         </button>
 
         <button
@@ -235,7 +237,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
               : 'bg-[#002244] text-slate-300 hover:text-white'
           }`}
         >
-          Voluntarios
+          {txt.tabs.volunteers}
         </button>
 
         <button
@@ -246,17 +248,17 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
               : 'bg-[#002244] text-slate-300 hover:text-white'
           }`}
         >
-          Mi perfil
+          {txt.tabs.profile}
         </button>
       </div>
 
       {/* TAB 1: KPI OVERVIEW */}
       {activeTab === 'contacts' && <AdminContactChannelsView />}
       {activeTab === 'messages' && <AdminMessagesView />}
-      {activeTab === 'communities' && <AdminCommunitiesView />}
-      {activeTab === 'students' && <AdminStudentsView />}
-      {activeTab === 'volunteers' && <AdminVolunteersView />}
-      {activeTab === 'profile' && <AdminProfileView />}
+      {activeTab === 'communities' && <AdminCommunitiesView language={language} />}
+      {activeTab === 'students' && <AdminStudentsView language={language} />}
+      {activeTab === 'volunteers' && <AdminVolunteersView language={language} />}
+      {activeTab === 'profile' && <AdminProfileView language={language} />}
       {activeTab === 'kpi' && (
         <div className="space-y-8 animate-fadeIn">
           {/* Top KPI Cards */}
