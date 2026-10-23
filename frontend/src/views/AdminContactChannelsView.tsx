@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import type { ContactChannel } from '../hooks/useContactChannels';
+import { apiAdmin } from '../services/apiAdmin';
 
 interface ContactoAdmin extends ContactChannel {
   is_published: boolean;
@@ -26,13 +27,9 @@ export const AdminContactChannelsView = () => {
 
     async function cargarContactos() {
       try {
-        const respuesta = await fetch(
-          '/api/v1/contact-channels/admin',
-          {
-            credentials: 'same-origin',
-            signal: controller.signal,
-          }
-        );
+        const respuesta = await apiAdmin('/api/v1/contact-channels/admin', {
+          signal: controller.signal,
+        });
 
         const datos = await respuesta.json().catch(() => null);
 
@@ -83,7 +80,7 @@ export const AdminContactChannelsView = () => {
     setGuardando(true);
 
     try {
-      const respuesta = await fetch(
+      const respuesta = await apiAdmin(
         `/api/v1/contact-channels/${editando.id}`,
         {
           method: 'PUT',

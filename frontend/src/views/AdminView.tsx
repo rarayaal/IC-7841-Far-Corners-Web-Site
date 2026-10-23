@@ -9,6 +9,7 @@ import { AdminStudentsView } from './AdminStudentsView';
 import { AdminVolunteersView } from './AdminVolunteersView';
 import { AdminProfileView } from './AdminProfileView';
 import { adminTexts } from '../lib/adminI18n';
+import { tienePermiso } from '../services/permisos';
 
 interface AdminViewProps {
   language: Language;
@@ -103,7 +104,10 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
     };
     setLogs([newLog, ...logs]);
   };
-
+  const puedeVerMensajes = tienePermiso('contact_messages:read');
+  const puedeGestionarContactos = tienePermiso(
+    'contact_channels:manage'
+  );
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 animate-fadeIn">
       {/* Admin Panel Header */}
@@ -185,27 +189,31 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
           Bitácora de Cambios
         </button>
 
-        <button
-          onClick={() => setActiveTab('messages')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-            activeTab === 'messages'
-              ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
-              : 'bg-[#002244] text-slate-300 hover:text-white'
-          }`}
-        >
-          Mensajes
-        </button>
+        {puedeVerMensajes && (
+          <button
+            onClick={() => setActiveTab('messages')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              activeTab === 'messages'
+                ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
+                : 'bg-[#002244] text-slate-300 hover:text-white'
+            }`}
+          >
+            Mensajes
+          </button>
+        )}
 
-        <button
-          onClick={() => setActiveTab('contacts')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-            activeTab === 'contacts'
-              ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
-              : 'bg-[#002244] text-slate-300 hover:text-white'
-          }`}
-        >
-          Medios de contacto
-        </button>
+        {puedeGestionarContactos && (
+          <button
+            onClick={() => setActiveTab('contacts')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              activeTab === 'contacts'
+                ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
+                : 'bg-[#002244] text-slate-300 hover:text-white'
+            }`}
+          >
+            Medios de contacto
+          </button>
+        )}
 
         <button
           onClick={() => setActiveTab('communities')}
@@ -253,8 +261,13 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
       </div>
 
       {/* TAB 1: KPI OVERVIEW */}
-      {activeTab === 'contacts' && <AdminContactChannelsView />}
-      {activeTab === 'messages' && <AdminMessagesView />}
+      {activeTab === 'contacts' && puedeGestionarContactos && (
+        <AdminContactChannelsView />
+      )}
+
+      {activeTab === 'messages' && puedeVerMensajes && (
+        <AdminMessagesView />
+      )}
       {activeTab === 'communities' && <AdminCommunitiesView language={language} />}
       {activeTab === 'students' && <AdminStudentsView language={language} />}
       {activeTab === 'volunteers' && <AdminVolunteersView language={language} />}

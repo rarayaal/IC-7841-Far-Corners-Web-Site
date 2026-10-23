@@ -4,18 +4,34 @@ import {
   listarMensajes,
   guardarRespuesta,
 } from '../controllers/contactMessages.controller.js';
-import { requerirAdmin } from '../middleware/auth.middleware.js';
+import {
+  authenticateToken,
+} from '../middlewares/auth.middleware.js';
+import {
+  requireRoles,
+  requirePermission,
+} from '../middlewares/rbac.middleware.js';
 
 export const contactMessagesRouter = Router();
 
-// Público: cualquier visitante puede enviar una consulta.
+// Público.
 contactMessagesRouter.post('/', enviarMensaje);
 
-// Protegido: únicamente los administradores pueden leerlas.
-contactMessagesRouter.get('/', requerirAdmin, listarMensajes);
+// Leer mensajes.
+contactMessagesRouter.get(
+  '/',
+  authenticateToken,
+  requireRoles(['admin', 'manager']),
+  requirePermission('contact_messages:read'),
+  listarMensajes
+);
 
+// Guardar una respuesta.
 contactMessagesRouter.post(
   '/:mensajeId/replies',
-  requerirAdmin,
+  authenticateToken,
+  requireRoles(['admin', 'manager']),
+  requirePermission('contact_messages:read'),
+  requirePermission('contact_messages:reply'),
   guardarRespuesta
 );

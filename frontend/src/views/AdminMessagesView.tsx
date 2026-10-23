@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ReplyDraftForm } from './ReplyDraftForm';
+import { tienePermiso } from '../services/permisos';
+import { apiAdmin } from '../services/apiAdmin';
 
 interface MensajeContacto {
   id: string;
@@ -27,8 +29,7 @@ export const AdminMessagesView = () => {
 
     async function cargarMensajes() {
       try {
-        const respuesta = await fetch('/api/v1/contact-messages', {
-          credentials: 'same-origin',
+        const respuesta = await apiAdmin('/api/v1/contact-messages', {
           signal: controller.signal,
         });
 
@@ -72,7 +73,9 @@ export const AdminMessagesView = () => {
 
     return () => controller.abort();
   }, []);
-
+  const puedeResponder =
+  tienePermiso('contact_messages:read') &&
+  tienePermiso('contact_messages:reply');
   return (
     <section className="space-y-5">
       <div>
@@ -128,7 +131,9 @@ export const AdminMessagesView = () => {
               {mensaje.message}
             </p>
 
-            <ReplyDraftForm mensajeId={mensaje.id} />
+            {puedeResponder && (
+              <ReplyDraftForm mensajeId={mensaje.id} />
+            )}
           </div>
         </details>
       ))}

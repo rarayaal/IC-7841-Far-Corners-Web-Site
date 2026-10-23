@@ -571,7 +571,10 @@ INSERT INTO permissions (id, code, description) VALUES
     ('11111111-1111-1111-1111-111111110007', 'tickets:manage', 'Gestionar inventario y precios de boleteria'),
     ('11111111-1111-1111-1111-111111110008', 'donations:manage', 'Gestionar donaciones e informacion financiera'),
     ('11111111-1111-1111-1111-111111110009', 'community:manage', 'Gestionar programas de voluntarios y estudiantes'),
-    ('11111111-1111-1111-1111-111111110010', 'media:manage', 'Gestionar galeria multimedia y almacenamiento')
+    ('11111111-1111-1111-1111-111111110010', 'media:manage', 'Gestionar galeria multimedia y almacenamiento'),
+    ('11111111-1111-1111-1111-111111110011', 'contact_channels:manage', 'Consultar y editar los medios de contacto'),
+    ('11111111-1111-1111-1111-111111110012', 'contact_messages:read', 'Consultar mensajes de contacto'),
+    ('11111111-1111-1111-1111-111111110013', 'contact_messages:reply', 'Responder mensajes de contacto')
 ON CONFLICT (code) DO NOTHING;
 
 -- Usuario Administrador Maestro Inicial (password: Admin123*!)
