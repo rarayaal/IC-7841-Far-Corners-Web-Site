@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Language } from '../types';
-import { Heart, ShieldCheck, CheckCircle2, CreditCard, Send, Upload } from 'lucide-react';
+import { Heart, ShieldCheck, CheckCircle2, CreditCard, Send, Upload, AlertCircle } from 'lucide-react';
 
 interface DonateViewProps {
   language: Language;
@@ -14,10 +14,47 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onOpenDonateMo
   const [amount, setAmount] = useState('50');
   const [paymentMethod, setPaymentMethod] = useState<'sinpe' | 'zeffy' | 'card'>('sinpe');
   const [refNumber, setRefNumber] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
-  const handleSubmitDonation = (e: React.FormEvent) => {
+  const handleSubmitDonation = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setLoading(true);
+    setErrorMsg('');
+
+    try {
+      const parsedAmount = parseFloat(amount);
+      if (isNaN(parsedAmount) || parsedAmount <= 0) {
+        throw new Error('El monto debe ser mayor a 0');
+      }
+
+      const res = await fetch('/api/v1/donations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          donor_name: donorName.trim() || null,
+          donor_email: donorEmail.trim() || null,
+          amount: parsedAmount,
+          currency: 'USD',
+          payment_provider: paymentMethod === 'sinpe' ? 'sinpe' : paymentMethod === 'zeffy' ? 'zeffy' : 'stripe',
+          payment_method: paymentMethod,
+          payment_reference: refNumber.trim() || null,
+          status: paymentMethod === 'sinpe' ? 'pending' : 'completed',
+          message: 'Donación recibida desde el portal institucional',
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || data?.message || 'Error al procesar la donación');
+      }
+
+      setSubmitted(true);
+    } catch (err: any) {
+      setErrorMsg(err.message || 'No se pudo registrar la donación. Intenta de nuevo.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -175,12 +212,24 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onOpenDonateMo
               </div>
             </div>
 
+            {errorMsg && (
+              <div className="p-3 bg-red-500/20 border border-red-500/40 rounded-xl flex items-center space-x-2 text-red-300 text-xs">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{errorMsg}</span>
+              </div>
+            )}
+
             <button
               type="submit"
-              className="w-full py-3.5 bg-[#77C65E] hover:bg-[#008047] text-[#002244] hover:text-white text-xs font-extrabold rounded-xl shadow-glow-green transition-all flex items-center justify-center space-x-2 uppercase tracking-wider"
+              disabled={loading}
+              className="w-full py-3.5 bg-[#77C65E] hover:bg-[#008047] disabled:opacity-50 text-[#002244] hover:text-white text-xs font-extrabold rounded-xl shadow-glow-green transition-all flex items-center justify-center space-x-2 uppercase tracking-wider"
             >
               <Send className="w-4 h-4" />
-              <span>Completar Registro de Donación (${amount} USD)</span>
+              <span>
+                {loading
+                  ? 'Procesando Donación...'
+                  : `Completar Registro de Donación ($${amount} USD)`}
+              </span>
             </button>
           </form>
         ) : (
