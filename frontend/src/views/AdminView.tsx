@@ -226,7 +226,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
               : 'bg-[#002244] text-slate-300 hover:text-white'
           }`}
         >
-          {language === 'es' ? 'Donaciones (CU-14)' : 'Donations'}
+          {language === 'es' ? 'Donaciones' : 'Donations'}
         </button>
 
         <button
@@ -237,7 +237,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
               : 'bg-[#002244] text-slate-300 hover:text-white'
           }`}
         >
-          {language === 'es' ? 'Proyectos (CU-04)' : 'Projects'}
+          {language === 'es' ? 'Proyectos' : 'Projects'}
         </button>
 
 

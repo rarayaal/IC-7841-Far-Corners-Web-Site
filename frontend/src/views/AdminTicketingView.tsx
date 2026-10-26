@@ -138,7 +138,7 @@ export const AdminTicketingView: React.FC = () => {
             <Ticket className="w-5 h-5 text-[#77C65E]" />
             <span>Gestión de Inventario de Boletería</span>
           </h3>
-          <p className="text-xs text-slate-400 mt-0.5">CU-16 / RF-16 — Control de disponibilidad y precios por evento</p>
+          <p className="text-xs text-slate-400 mt-0.5">Control de disponibilidad y precios por evento</p>
         </div>
         <div className="flex items-center space-x-2">
           <button
@@ -348,7 +348,7 @@ export const AdminTicketingView: React.FC = () => {
       <div className="bg-[#001a35] border border-[#1e4066] rounded-2xl p-4 flex items-start space-x-3 text-xs text-slate-400">
         <TrendingUp className="w-5 h-5 text-[#77C65E] flex-shrink-0 mt-0.5" />
         <div>
-          <p className="font-bold text-slate-300 mb-0.5">Control de Concurrencia Activo (CU-17 / RF-17)</p>
+          <p className="font-bold text-slate-300 mb-0.5">Control de Concurrencia Activo</p>
           <p>
             Las compras públicas usan transacciones PostgreSQL con{' '}
             <code className="font-mono text-[#DCEB4F] text-[11px]">SELECT … FOR UPDATE</code>,

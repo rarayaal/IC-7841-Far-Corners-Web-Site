@@ -199,7 +199,7 @@ export const AdminProjectsView = ({ language }: { language: Language }) => {
           </div>
           <div>
             <h2 className="font-serif text-xl font-bold text-white">
-              {isEs ? 'Catálogo de Proyectos (CU-04 / RF-04)' : 'Projects Directory'}
+              {isEs ? 'Catálogo de Proyectos' : 'Projects Directory'}
             </h2>
             <p className="text-xs text-slate-300">
               {isEs
