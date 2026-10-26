@@ -5,6 +5,7 @@ import { communitiesRouter } from "./routes/communities.routes.js";
 import { volunteersRouter } from "./routes/volunteers.routes.js";
 import { studentsRouter } from "./routes/students.routes.js";
 import { searchRouter } from "./routes/search.routes.js";
+import { institutionalRouter } from "./routes/institutional.routes.js";
 import ticketsRouter from "./routes/tickets.routes.js";
 import donationsRouter from "./routes/donations.routes.js";
 import { usersRouter } from "./routes/users.routes.js";
@@ -25,6 +26,7 @@ app.use("/api/v1/communities", communitiesRouter);
 app.use("/api/v1/students", studentsRouter);
 app.use("/api/v1/volunteers", volunteersRouter);
 app.use("/api/v1/search", searchRouter);
+app.use("/api/v1/institutional", institutionalRouter);
 app.use("/api/v1/tickets", ticketsRouter);
 app.use("/api/v1/donations", donationsRouter);
 app.use("/api/v1/contact-messages", contactMessagesRouter);
@@ -49,6 +51,7 @@ app.get("/", (_req, res) => {
 			database_health: "/api/health/db",
 			auth: "/api/v1/auth",
 			admin_users: "/api/v1/admin/users",
+			institutional: "/api/v1/institutional/:section",
 			audit: "/api/v1/audit/logs",
 			projects: "/api/v1/projects",
 			tickets: "/api/v1/tickets",
