@@ -11,6 +11,7 @@ export default {
           navy: "#002244",       // Confianza (Dark Deep Navy Blue)
           navyDark: "#00162e",   // Deeper background navy
           navyCard: "#002d57",   // Card navy
+          navyDeep: "#001021",   // Deepest navy (overlays)
           green: "#77C65E",      // Crecimiento (Vibrant Fresh Green)
           blue: "#4A90D6",       // Creatividad (Bright Sky/Cerulean Blue)
           lime: "#DCEB4F",       // Energía (Chartreuse / Lime Yellow)
@@ -20,7 +21,8 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Outfit', 'Montserrat', 'Inter', 'sans-serif'],
+        // Identidad: solo dos tipografias (acordado con el cliente): Outfit y Playfair Display.
+        sans: ['Outfit', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         serif: ['Playfair Display', 'Georgia', 'serif'],
       },
       boxShadow: {
