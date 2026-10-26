@@ -10,6 +10,9 @@ import { AdminVolunteersView } from './AdminVolunteersView';
 import { AdminProfileView } from './AdminProfileView';
 import { AdminUsersManagementView } from './AdminUsersManagementView';
 import { AdminAuditView } from './AdminAuditView';
+import { AdminProjectsView } from './AdminProjectsView';
+import { AdminDonationsView } from './AdminDonationsView';
+import { AdminTicketingView } from './AdminTicketingView';
 import { adminTexts } from '../lib/adminI18n';
 import { tienePermiso } from '../services/permisos';
 
@@ -19,8 +22,7 @@ interface AdminViewProps {
 
 export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
   const txt = adminTexts[language];
-  const [activeTab, setActiveTab] = useState<'kpi' | 'ticketing' | 'content' | 'applicants' | 'audit' | 'messages' | 'contacts' | 'communities' | 'students' | 'volunteers' | 'profile' | 'users'>('kpi');
-
+  const [activeTab, setActiveTab] = useState<'kpi' | 'donations' | 'projects' | 'ticketing' | 'content' | 'applicants' | 'audit' | 'messages' | 'contacts' | 'communities' | 'students' | 'volunteers' | 'profile' | 'users'>('kpi');
   // Dynamic state for CRUD demo
   const [shows, setShows] = useState<Show[]>(showsData);
   const [apps, setApps] = useState<VolunteerApplication[]>(volunteerAppsMock);
@@ -245,6 +247,29 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
         )}
 
         <button
+          onClick={() => setActiveTab('donations')}
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+            activeTab === 'donations'
+              ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
+              : 'bg-[#002244] text-slate-300 hover:text-white'
+          }`}
+        >
+          {language === 'es' ? 'Donaciones' : 'Donations'}
+        </button>
+
+        <button
+          onClick={() => setActiveTab('projects')}
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+            activeTab === 'projects'
+              ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
+              : 'bg-[#002244] text-slate-300 hover:text-white'
+          }`}
+        >
+          {language === 'es' ? 'Proyectos' : 'Projects'}
+        </button>
+
+
+        <button
           onClick={() => setActiveTab('communities')}
           className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
             activeTab === 'communities'
@@ -289,7 +314,9 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
         </button>
       </div>
 
-      {/* TAB 1: KPI OVERVIEW */}
+      {/* Renderizado de vistas */}
+      {activeTab === 'donations' && <AdminDonationsView language={language} />}
+      {activeTab === 'projects' && <AdminProjectsView language={language} />}
       {activeTab === 'contacts' && puedeGestionarContactos && (
         <AdminContactChannelsView />
       )}
@@ -382,105 +409,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
 
       {/* TAB 2: TICKETING MANAGEMENT */}
       {activeTab === 'ticketing' && (
-        <div className="space-y-6 animate-fadeIn">
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="font-serif text-xl font-bold text-white">Inventario y Eventos de Boletería</h3>
-              <p className="text-xs text-slate-300">Crear, editar disponibilidad y administrar valor de boletos</p>
-            </div>
-            <button
-              onClick={() => setShowFormOpen(!showFormOpen)}
-              className="px-4 py-2 bg-[#77C65E] hover:bg-[#008047] text-[#002244] hover:text-white text-xs font-extrabold rounded-xl shadow-glow-green flex items-center space-x-1.5 uppercase tracking-wider"
-            >
-              <Plus className="w-4 h-4" />
-              <span>{showFormOpen ? 'Cancelar' : 'Agregar Obra a Cartelera'}</span>
-            </button>
-          </div>
-
-          {/* New Show Form */}
-          {showFormOpen && (
-            <form onSubmit={handleCreateShow} className="bg-[#00162e] p-5 rounded-2xl border border-[#77C65E]/40 space-y-4 text-xs">
-              <h4 className="font-serif text-sm font-bold text-[#DCEB4F]">Registrar Nueva Producción Teatral</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-slate-300 mb-1">Título de la Obra *</label>
-                  <input
-                    type="text"
-                    required
-                    value={newShowTitle}
-                    onChange={(e) => setNewShowTitle(e.target.value)}
-                    placeholder="Ej. El Fantasma de la Ópera"
-                    className="w-full px-3 py-2 bg-[#002244] border border-[#1e4066] rounded text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 mb-1">Año de Temporada *</label>
-                  <input
-                    type="number"
-                    required
-                    value={newShowYear}
-                    onChange={(e) => setNewShowYear(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#002244] border border-[#1e4066] rounded text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 mb-1">Capacidad Total de Boletos *</label>
-                  <input
-                    type="number"
-                    required
-                    value={newShowCapacity}
-                    onChange={(e) => setNewShowCapacity(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#002244] border border-[#1e4066] rounded text-white"
-                  />
-                </div>
-              </div>
-              <button type="submit" className="px-5 py-2 bg-[#77C65E] text-[#002244] font-extrabold rounded-lg">
-                Guardar Obra en Sistema
-              </button>
-            </form>
-          )}
-
-          {/* Shows Inventory Table */}
-          <div className="bg-[#002244] border border-[#1e4066] rounded-2xl overflow-hidden">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="bg-[#00162e] text-slate-300 font-mono text-[11px] uppercase border-b border-white/10">
-                <tr>
-                  <th className="p-4">Obra / Producción</th>
-                  <th className="p-4">Año</th>
-                  <th className="p-4">Tarifa General</th>
-                  <th className="p-4">Boletos Libres</th>
-                  <th className="p-4">Estado</th>
-                  <th className="p-4 text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5 font-sans">
-                {shows.map((s) => (
-                  <tr key={s.id} className="hover:bg-white/5 transition-colors">
-                    <td className="p-4 font-bold text-white">{s.title}</td>
-                    <td className="p-4 font-mono text-[#DCEB4F]">{s.year}</td>
-                    <td className="p-4 font-mono">₡{s.priceGeneral.toLocaleString()}</td>
-                    <td className="p-4 font-mono font-bold text-[#77C65E]">{s.availableTickets} entradas</td>
-                    <td className="p-4">
-                      <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${
-                        s.status === 'current' ? 'bg-[#77C65E]/20 text-[#DCEB4F]' : 'bg-[#00162e] text-slate-400'
-                      }`}>
-                        {s.status}
-                      </span>
-                    </td>
-                    <td className="p-4 text-right space-x-2">
-                      <button className="p-1.5 rounded bg-white/10 hover:bg-white/20 text-slate-200">
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button className="p-1.5 rounded bg-red-500/20 hover:bg-red-500/30 text-red-300">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <AdminTicketingView />
       )}
 
       {/* TAB 3: INSTITUTIONAL CONTENT MANAGEMENT */}
