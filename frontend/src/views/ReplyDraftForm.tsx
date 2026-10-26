@@ -70,7 +70,7 @@ export const ReplyDraftForm = ({ mensajeId }: ReplyDraftFormProps) => {
   return (
     <form
       onSubmit={guardarBorrador}
-      className="mt-5 space-y-3 border-t border-[#1e4066] pt-5"
+      className="mt-5 space-y-3 border-t border-brand-border pt-5"
     >
       <label
         htmlFor={`respuesta-${mensajeId}`}
@@ -91,7 +91,7 @@ export const ReplyDraftForm = ({ mensajeId }: ReplyDraftFormProps) => {
         rows={5}
         disabled={guardando}
         placeholder="Escribe una respuesta para este mensaje..."
-        className="w-full rounded-xl border border-[#1e4066] bg-[#00162e] p-3 text-sm text-white focus:border-[#77C65E] focus:outline-none disabled:opacity-60"
+        className="w-full rounded-xl border border-brand-border bg-brand-navyDark p-3 text-sm text-white focus:border-brand-green focus:outline-none disabled:opacity-60"
       />
 
       <p className="text-xs text-slate-300">
@@ -106,7 +106,7 @@ export const ReplyDraftForm = ({ mensajeId }: ReplyDraftFormProps) => {
       )}
 
       {confirmacion && (
-        <p role="status" className="text-sm text-[#77C65E]">
+        <p role="status" className="text-sm text-brand-green">
           {confirmacion}
         </p>
       )}
@@ -114,7 +114,7 @@ export const ReplyDraftForm = ({ mensajeId }: ReplyDraftFormProps) => {
       <button
         type="submit"
         disabled={guardando || !texto.trim()}
-        className="rounded-xl bg-[#77C65E] px-4 py-2 text-sm font-bold text-[#002244] hover:bg-[#008047] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+        className="rounded-xl bg-brand-green px-4 py-2 text-sm font-bold text-brand-navy hover:bg-brand-forest hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
       >
         {guardando ? 'Guardando...' : 'Guardar respuesta'}
       </button>

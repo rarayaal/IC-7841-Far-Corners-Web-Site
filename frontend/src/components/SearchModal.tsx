@@ -115,10 +115,10 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, langu
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 px-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-      <div className="bg-[#002244] border border-[#1e4066] w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden text-[#F8F8F2]">
+      <div className="bg-brand-navy border border-brand-border w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden text-brand-cream">
         {/* Header Search Bar */}
-        <div className="p-4 border-b border-white/10 flex items-center gap-3 bg-[#00162e]">
-          <Search className="w-5 h-5 text-[#77C65E] shrink-0" />
+        <div className="p-4 border-b border-white/10 flex items-center gap-3 bg-brand-navyDark">
+          <Search className="w-5 h-5 text-brand-green shrink-0" />
           <input
             type="text"
             autoFocus
@@ -165,8 +165,8 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, langu
 
           {resultado.events.length > 0 && (
             <div className="pt-2">
-              <div className="flex items-center space-x-2 text-xs font-bold text-[#DCEB4F] uppercase tracking-wider mb-3">
-                <Ticket className="w-4 h-4 text-[#77C65E]" />
+              <div className="flex items-center space-x-2 text-xs font-bold text-brand-lime uppercase tracking-wider mb-3">
+                <Ticket className="w-4 h-4 text-brand-green" />
                 <span>{language === 'es' ? 'Eventos y Obras' : 'Events & Shows'}</span>
               </div>
               <div className="space-y-2">
@@ -174,7 +174,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, langu
                   <div key={evento.id} className="p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
                     <h4 className="font-serif text-sm font-bold text-white">{evento.title}</h4>
                     {evento.venue && (
-                      <p className="text-[11px] text-[#4A90D6] mt-0.5">{evento.venue}</p>
+                      <p className="text-[11px] text-brand-blue mt-0.5">{evento.venue}</p>
                     )}
                     {evento.description && (
                       <p className="text-xs text-slate-300 mt-1 line-clamp-2">{evento.description}</p>
@@ -187,8 +187,8 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, langu
 
           {resultado.projects.length > 0 && (
             <div className="pt-4">
-              <div className="flex items-center space-x-2 text-xs font-bold text-[#DCEB4F] uppercase tracking-wider mb-3">
-                <Globe className="w-4 h-4 text-[#4A90D6]" />
+              <div className="flex items-center space-x-2 text-xs font-bold text-brand-lime uppercase tracking-wider mb-3">
+                <Globe className="w-4 h-4 text-brand-blue" />
                 <span>{language === 'es' ? 'Proyectos e Impacto' : 'Projects & Impact'}</span>
               </div>
               <div className="space-y-2">
@@ -197,7 +197,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, langu
                     <div className="flex items-center justify-between">
                       <h4 className="font-serif text-sm font-bold text-white">{proyecto.title}</h4>
                       {proyecto.country && (
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-[#77C65E]/20 text-[#DCEB4F] font-bold">
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-brand-green/20 text-brand-lime font-bold">
                           {proyecto.country}
                         </span>
                       )}
@@ -213,8 +213,8 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, langu
 
           {resultado.communities.length > 0 && (
             <div className="pt-4">
-              <div className="flex items-center space-x-2 text-xs font-bold text-[#DCEB4F] uppercase tracking-wider mb-3">
-                <Users className="w-4 h-4 text-[#77C65E]" />
+              <div className="flex items-center space-x-2 text-xs font-bold text-brand-lime uppercase tracking-wider mb-3">
+                <Users className="w-4 h-4 text-brand-green" />
                 <span>{language === 'es' ? 'Comunidades' : 'Communities'}</span>
               </div>
               <div className="space-y-2">
@@ -232,8 +232,8 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, langu
 
           {resultado.opportunities.length > 0 && (
             <div className="pt-4">
-              <div className="flex items-center space-x-2 text-xs font-bold text-[#DCEB4F] uppercase tracking-wider mb-3">
-                <Briefcase className="w-4 h-4 text-[#77C65E]" />
+              <div className="flex items-center space-x-2 text-xs font-bold text-brand-lime uppercase tracking-wider mb-3">
+                <Briefcase className="w-4 h-4 text-brand-green" />
                 <span>{language === 'es' ? 'Pasantías y Voluntariado' : 'Opportunities'}</span>
               </div>
               <div className="space-y-2">
@@ -251,7 +251,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, langu
         </div>
 
         {/* Footer info */}
-        <div className="p-3 bg-[#00162e] border-t border-white/10 text-[11px] text-center text-slate-400 font-mono">
+        <div className="p-3 bg-brand-navyDark border-t border-white/10 text-[11px] text-center text-slate-400 font-mono">
           {language === 'es' ? 'Presiona ESC o la X para cerrar la búsqueda' : 'Press ESC or X to close'}
         </div>
       </div>
