@@ -32,10 +32,10 @@ export const AboutView: React.FC<AboutViewProps> = ({
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16 animate-fadeIn">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-12 sm:space-y-16 animate-fadeIn">
       {/* Header Banner */}
       <div className="text-center max-w-4xl mx-auto space-y-4">
-        <span className="inline-block px-4 py-1.5 rounded-full bg-[#77C65E]/20 text-[#DCEB4F] text-xs font-bold uppercase tracking-wider border border-[#77C65E]/40">
+        <span className="inline-block px-4 py-1.5 rounded-full bg-brand-green/20 text-brand-lime text-xs font-bold uppercase tracking-wider border border-brand-green/40">
           Nuestra Esencia & Historia
         </span>
         <h1 className="font-serif text-4xl sm:text-6xl font-bold text-white tracking-tight">
@@ -49,11 +49,11 @@ export const AboutView: React.FC<AboutViewProps> = ({
       {/* Main Story */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
         <div className="space-y-6">
-          <div className="border-l-4 border-[#77C65E] pl-4">
+          <div className="border-l-4 border-brand-green pl-4">
             <h2 className="font-serif text-2xl font-bold text-white">
               {language === 'es' ? 'Origen e Historia del Teatro' : 'History & Origins'}
             </h2>
-            <p className="text-xs text-[#DCEB4F] font-mono mt-0.5">Monteverde, Costa Rica • 2013 - 2026</p>
+            <p className="text-xs text-brand-lime font-mono mt-0.5">Monteverde, Costa Rica • 2013 - 2026</p>
           </div>
 
           <p className="text-slate-300 text-sm leading-relaxed">
@@ -65,19 +65,19 @@ export const AboutView: React.FC<AboutViewProps> = ({
           </p>
 
           <div className="grid grid-cols-2 gap-4 pt-2">
-            <div className="bg-[#002244] p-4 rounded-xl border border-[#1e4066]">
-              <span className="font-mono text-2xl font-bold text-[#77C65E] block">100%</span>
+            <div className="bg-brand-navy p-4 rounded-xl border border-brand-border">
+              <span className="font-mono text-2xl font-bold text-brand-green block">100%</span>
               <span className="text-xs text-slate-300">Becas gratuitas para participantes locales</span>
             </div>
-            <div className="bg-[#002244] p-4 rounded-xl border border-[#1e4066]">
-              <span className="font-mono text-2xl font-bold text-[#4A90D6] block">+150</span>
+            <div className="bg-brand-navy p-4 rounded-xl border border-brand-border">
+              <span className="font-mono text-2xl font-bold text-brand-blue block">+150</span>
               <span className="text-xs text-slate-300">Pasantes internacionales capacitados</span>
             </div>
           </div>
         </div>
 
         <div className="relative">
-          <div className="aspect-[4/3] rounded-2xl overflow-hidden border border-[#77C65E]/50 shadow-2xl group">
+          <div className="aspect-[4/3] rounded-2xl overflow-hidden border border-brand-green/50 shadow-2xl group">
             <img
               src="/recursos/IMG_2904.PNG"
               alt="Ensayo Far Corners"
@@ -102,9 +102,9 @@ export const AboutView: React.FC<AboutViewProps> = ({
           {brandValues.map((val, idx) => {
             const IconComp = val.icon;
             return (
-              <div key={idx} className="bg-[#002244] p-5 rounded-2xl border border-[#1e4066] hover:border-[#77C65E] transition-all space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-[#77C65E]">
-                  <IconComp className="w-5 h-5 text-[#DCEB4F]" />
+              <div key={idx} className="bg-brand-navy p-5 rounded-2xl border border-brand-border hover:border-brand-green transition-all space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-brand-green">
+                  <IconComp className="w-5 h-5 text-brand-lime" />
                 </div>
                 <h3 className="font-serif text-base font-bold text-white">{val.title}</h3>
                 <p className="text-xs text-slate-300 leading-relaxed">{val.desc}</p>
@@ -115,9 +115,9 @@ export const AboutView: React.FC<AboutViewProps> = ({
       </div>
 
       {/* Global Outreach */}
-      <div className="bg-[#002244] rounded-3xl p-8 border border-[#1e4066] space-y-8">
+      <div className="bg-brand-navy rounded-3xl p-8 border border-brand-border space-y-8">
         <div className="border-b border-white/10 pb-4">
-          <span className="text-xs font-bold text-[#DCEB4F] uppercase tracking-wider block">
+          <span className="text-xs font-bold text-brand-lime uppercase tracking-wider block">
             {language === 'es' ? 'Impacto Geográfico' : 'Geographic Reach'}
           </span>
           <h2 className="font-serif text-2xl font-bold text-white">Costa Rica, China y Mozambique</h2>
@@ -125,10 +125,10 @@ export const AboutView: React.FC<AboutViewProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {projectsData.map(p => (
-            <div key={p.id} className="bg-[#00162e] p-5 rounded-2xl border border-[#1e4066] space-y-3">
+            <div key={p.id} className="bg-brand-navyDark p-5 rounded-2xl border border-brand-border space-y-3">
               <div className="flex justify-between items-center">
                 <span className="font-serif text-lg font-bold text-white">{p.country}</span>
-                <span className="text-xs font-mono text-[#77C65E]">{p.year}</span>
+                <span className="text-xs font-mono text-brand-green">{p.year}</span>
               </div>
               <p className="text-xs text-slate-300 leading-relaxed">{language === 'es' ? p.summary : p.summaryEn}</p>
               <div className="pt-2 border-t border-white/5 text-[11px] text-slate-400">
@@ -142,7 +142,7 @@ export const AboutView: React.FC<AboutViewProps> = ({
       {/* Board of Directors */}
       <div className="space-y-8">
         <div className="text-center max-w-2xl mx-auto">
-          <span className="text-xs font-bold text-[#77C65E] uppercase tracking-wider block mb-1">
+          <span className="text-xs font-bold text-brand-green uppercase tracking-wider block mb-1">
             Liderazgo & Equipo Académico
           </span>
           <h2 className="font-serif text-3xl font-bold text-white">
@@ -152,12 +152,12 @@ export const AboutView: React.FC<AboutViewProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {boardMembers.map((m, idx) => (
-            <div key={idx} className="bg-[#002244] p-5 rounded-2xl border border-[#1e4066] hover:border-[#4A90D6]/60 transition-all space-y-2">
-              <div className="w-10 h-10 rounded-full bg-[#77C65E]/20 text-[#77C65E] flex items-center justify-center font-serif font-bold text-sm border border-[#77C65E]/40">
+            <div key={idx} className="bg-brand-navy p-5 rounded-2xl border border-brand-border hover:border-brand-blue/60 transition-all space-y-2">
+              <div className="w-10 h-10 rounded-full bg-brand-green/20 text-brand-green flex items-center justify-center font-serif font-bold text-sm border border-brand-green/40">
                 {m.name.charAt(0)}
               </div>
               <h3 className="font-serif text-base font-bold text-white">{m.name}</h3>
-              <p className="text-xs text-[#DCEB4F] font-bold">{m.role}</p>
+              <p className="text-xs text-brand-lime font-bold">{m.role}</p>
               <p className="text-xs text-slate-300 leading-relaxed">{m.bio}</p>
             </div>
           ))}

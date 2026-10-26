@@ -50,7 +50,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         aria-labelledby="confirm-dialog-title"
         aria-describedby="confirm-dialog-message"
         onClick={(evento) => evento.stopPropagation()}
-        className="w-full max-w-md rounded-2xl border border-[#1e4066] bg-[#002244] p-6 shadow-2xl text-[#F8F8F2]"
+        className="w-full max-w-md rounded-2xl border border-brand-border bg-brand-navy p-6 shadow-2xl text-brand-cream"
       >
         <div className="flex items-start gap-3">
           <div className="shrink-0 rounded-full bg-red-500/20 p-2 text-red-300">

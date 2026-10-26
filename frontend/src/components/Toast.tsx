@@ -34,7 +34,7 @@ export const Toast: React.FC<ToastProps> = ({
       className={`flex items-start gap-3 rounded-xl border p-4 shadow-2xl animate-fadeIn ${
         esError
           ? 'border-red-400/40 bg-red-500 text-white'
-          : 'border-[#DCEB4F] bg-[#77C65E] text-[#002244]'
+          : 'border-brand-lime bg-brand-green text-brand-navy'
       }`}
     >
       <Icono className="mt-0.5 h-5 w-5 shrink-0" />

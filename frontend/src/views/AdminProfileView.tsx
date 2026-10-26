@@ -102,7 +102,7 @@ export const AdminProfileView = ({ language }: { language: Language }) => {
       {perfil && (
         <form
           onSubmit={guardar}
-          className="space-y-4 rounded-2xl border border-[#1e4066] bg-[#002244] p-6"
+          className="space-y-4 rounded-2xl border border-brand-border bg-brand-navy p-6"
         >
           <div>
             <label
@@ -118,24 +118,24 @@ export const AdminProfileView = ({ language }: { language: Language }) => {
               maxLength={200}
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
-              className="w-full rounded-lg border border-[#1e4066] bg-[#00162e] p-3 text-sm text-white focus:border-[#77C65E] focus:outline-none"
+              className="w-full rounded-lg border border-brand-border bg-brand-navyDark p-3 text-sm text-white focus:border-brand-green focus:outline-none"
             />
           </div>
 
           <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-3">
-            <div className="rounded-xl bg-[#00162e] border border-[#1e4066] p-3">
+            <div className="rounded-xl bg-brand-navyDark border border-brand-border p-3">
               <p className="text-[11px] uppercase font-mono text-slate-400">
                 {txt.profile.email}
               </p>
               <p className="text-white break-words">{perfil.email}</p>
             </div>
-            <div className="rounded-xl bg-[#00162e] border border-[#1e4066] p-3">
+            <div className="rounded-xl bg-brand-navyDark border border-brand-border p-3">
               <p className="text-[11px] uppercase font-mono text-slate-400">
                 {txt.profile.role}
               </p>
               <p className="text-white">{roleLabel(perfil.role, language)}</p>
             </div>
-            <div className="rounded-xl bg-[#00162e] border border-[#1e4066] p-3">
+            <div className="rounded-xl bg-brand-navyDark border border-brand-border p-3">
               <p className="text-[11px] uppercase font-mono text-slate-400">
                 {txt.profile.participantType}
               </p>
@@ -150,7 +150,7 @@ export const AdminProfileView = ({ language }: { language: Language }) => {
           <button
             type="submit"
             disabled={guardando}
-            className="rounded-xl bg-[#77C65E] px-4 py-2 text-sm font-bold text-[#002244] disabled:opacity-50"
+            className="rounded-xl bg-brand-green px-4 py-2 text-sm font-bold text-brand-navy disabled:opacity-50"
           >
             {guardando ? txt.common.saving : txt.profile.save}
           </button>
