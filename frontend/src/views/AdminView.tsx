@@ -8,6 +8,8 @@ import { AdminCommunitiesView } from './AdminCommunitiesView';
 import { AdminStudentsView } from './AdminStudentsView';
 import { AdminVolunteersView } from './AdminVolunteersView';
 import { AdminProfileView } from './AdminProfileView';
+import { AdminUsersManagementView } from './AdminUsersManagementView';
+import { AdminAuditView } from './AdminAuditView';
 import { adminTexts } from '../lib/adminI18n';
 import { tienePermiso } from '../services/permisos';
 
@@ -17,8 +19,8 @@ interface AdminViewProps {
 
 export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
   const txt = adminTexts[language];
-  const [activeTab, setActiveTab] = useState<'kpi' | 'ticketing' | 'content' | 'applicants' | 'audit' | 'messages' | 'contacts' | 'communities' | 'students' | 'volunteers' | 'profile'>('kpi');
-  
+  const [activeTab, setActiveTab] = useState<'kpi' | 'ticketing' | 'content' | 'applicants' | 'audit' | 'messages' | 'contacts' | 'communities' | 'students' | 'volunteers' | 'profile' | 'users'>('kpi');
+
   // Dynamic state for CRUD demo
   const [shows, setShows] = useState<Show[]>(showsData);
   const [apps, setApps] = useState<VolunteerApplication[]>(volunteerAppsMock);
@@ -108,6 +110,9 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
   const puedeGestionarContactos = tienePermiso(
     'contact_channels:manage'
   );
+  const puedeGestionarUsuarios = tienePermiso('users:manage');
+  const puedeVerAuditoria = tienePermiso('audit:read');
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 animate-fadeIn">
       {/* Admin Panel Header */}
@@ -128,7 +133,16 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
 
         <div className="flex items-center space-x-2 bg-[#00162e] px-3.5 py-2 rounded-xl border border-[#1e4066] text-xs">
           <span className="w-2.5 h-2.5 rounded-full bg-[#77C65E] animate-pulse"></span>
-          <span className="text-slate-200 font-mono">Alicia Salazar (Admin General)</span>
+          <span className="text-slate-200 font-mono">
+            {(() => {
+              try {
+                const u = JSON.parse(localStorage.getItem('auth_user') || '{}');
+                return u?.full_name ? `${u.full_name} (${u.role === 'admin' ? 'Admin General' : 'Admin de Área'})` : 'Administrador';
+              } catch {
+                return 'Administrador';
+              }
+            })()}
+          </span>
         </div>
       </div>
 
@@ -178,16 +192,31 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
           Postulaciones
         </button>
 
-        <button
-          onClick={() => setActiveTab('audit')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-            activeTab === 'audit'
-              ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
-              : 'bg-[#002244] text-slate-300 hover:text-white'
-          }`}
-        >
-          Bitácora de Cambios
-        </button>
+        {puedeGestionarUsuarios && (
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              activeTab === 'users'
+                ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
+                : 'bg-[#002244] text-slate-300 hover:text-white'
+            }`}
+          >
+            Usuarios Administrativos
+          </button>
+        )}
+
+        {puedeVerAuditoria && (
+          <button
+            onClick={() => setActiveTab('audit')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              activeTab === 'audit'
+                ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
+                : 'bg-[#002244] text-slate-300 hover:text-white'
+            }`}
+          >
+            Bitácora de Cambios
+          </button>
+        )}
 
         {puedeVerMensajes && (
           <button
@@ -552,55 +581,28 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
         </div>
       )}
 
-      {/* TAB 5: AUDIT LOG */}
+           {/* TAB: AUDIT LOG */}
       {activeTab === 'audit' && (
-        <div className="space-y-6 animate-fadeIn">
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="font-serif text-xl font-bold text-white">Bitácora de Auditoría</h3>
-              <p className="text-xs text-slate-300">Registro detallado de acciones administrativas y mutaciones de datos</p>
-            </div>
-            <span className="text-xs text-[#77C65E] font-mono flex items-center gap-1 font-bold">
-              <Shield className="w-3.5 h-3.5" />
-              Auditoría Registrada
-            </span>
+        puedeVerAuditoria ? (
+          <AdminAuditView />
+        ) : (
+          <div className="bg-[#00162e] border border-white/10 rounded-2xl p-8 text-center text-rose-400">
+            No tienes permisos para ver la bitácora de auditoría. Inicia sesión como administrador general.
           </div>
-
-          <div className="bg-[#002244] border border-[#1e4066] rounded-2xl overflow-hidden">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="bg-[#00162e] text-slate-300 font-mono text-[11px] uppercase border-b border-white/10">
-                <tr>
-                  <th className="p-4">Log ID</th>
-                  <th className="p-4">Usuario</th>
-                  <th className="p-4">Acción</th>
-                  <th className="p-4">Módulo</th>
-                  <th className="p-4">Detalle de Operación</th>
-                  <th className="p-4">Fecha y Hora</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5 font-mono text-[11px]">
-                {logs.map((log) => (
-                  <tr key={log.id} className="hover:bg-white/5 transition-colors">
-                    <td className="p-4 text-[#DCEB4F] font-bold">{log.id}</td>
-                    <td className="p-4 text-white font-sans font-semibold">{log.user}</td>
-                    <td className="p-4">
-                      <span className={`px-2 py-0.5 rounded font-bold ${
-                        log.action === 'CREATE' || log.action === 'INSERT' ? 'bg-[#77C65E]/20 text-[#77C65E]' :
-                        log.action === 'UPDATE' ? 'bg-[#4A90D6]/20 text-[#4A90D6]' : 'bg-red-500/20 text-red-300'
-                      }`}>
-                        {log.action}
-                      </span>
-                    </td>
-                    <td className="p-4 text-slate-200 font-sans">{log.module}</td>
-                    <td className="p-4 text-slate-300 font-sans">{log.details}</td>
-                    <td className="p-4 text-slate-400">{log.timestamp}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        )
       )}
+
+      {/* TAB: GESTIÓN DE USUARIOS */}
+      {activeTab === 'users' && (
+        puedeGestionarUsuarios ? (
+          <AdminUsersManagementView />
+        ) : (
+          <div className="bg-[#00162e] border border-white/10 rounded-2xl p-8 text-center text-rose-400">
+            No tienes permisos para gestionar usuarios administrativos. Inicia sesión como administrador general.
+          </div>
+        )
+      )}
+
     </div>
   );
 };
