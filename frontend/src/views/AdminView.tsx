@@ -13,6 +13,9 @@ import { AdminMediaView } from './AdminMediaView';
 import { AdminRetirementView, canRetireSomething } from './AdminRetirementView';
 import { AdminUsersManagementView } from './AdminUsersManagementView';
 import { AdminAuditView } from './AdminAuditView';
+import { AdminProjectsView } from './AdminProjectsView';
+import { AdminDonationsView } from './AdminDonationsView';
+import { AdminTicketingView } from './AdminTicketingView';
 import { adminTexts } from '../lib/adminI18n';
 import { tienePermiso } from '../services/permisos';
 
@@ -260,6 +263,29 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
         )}
 
         <button
+          onClick={() => setActiveTab('donations')}
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+            activeTab === 'donations'
+              ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
+              : 'bg-[#002244] text-slate-300 hover:text-white'
+          }`}
+        >
+          {language === 'es' ? 'Donaciones' : 'Donations'}
+        </button>
+
+        <button
+          onClick={() => setActiveTab('projects')}
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+            activeTab === 'projects'
+              ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
+              : 'bg-[#002244] text-slate-300 hover:text-white'
+          }`}
+        >
+          {language === 'es' ? 'Proyectos' : 'Projects'}
+        </button>
+
+
+        <button
           onClick={() => setActiveTab('communities')}
           className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
             activeTab === 'communities'
@@ -304,7 +330,9 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
         </button>
       </div>
 
-      {/* TAB 1: KPI OVERVIEW */}
+      {/* Renderizado de vistas */}
+      {activeTab === 'donations' && <AdminDonationsView language={language} />}
+      {activeTab === 'projects' && <AdminProjectsView language={language} />}
       {activeTab === 'contacts' && puedeGestionarContactos && (
         <AdminContactChannelsView />
       )}

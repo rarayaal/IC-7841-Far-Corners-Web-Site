@@ -1,6 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { Language, Show } from '../types';
-import { X, Ticket, Calendar, CheckCircle2, ShieldCheck, QrCode, CreditCard, Clock, Upload, AlertTriangle } from 'lucide-react';
+import { X, Ticket, Calendar, CheckCircle2, ShieldCheck, QrCode, CreditCard, Clock, Upload, AlertTriangle, Loader2 } from 'lucide-react';
+
+// Tipos devueltos por la API
+interface TicketInventoryItem {
+  id: string;
+  event_id: string;
+  ticket_type: string;
+  price: number;
+  quantity_available: number;
+  quantity_sold: number;
+  currency: string;
+}
+
+interface PurchaseResult {
+  purchase: {
+    id: string;
+    event_id: string;
+    total_amount: number;
+    status: string;
+    payment_intent_id: string;
+    currency: string;
+    buyer_name: string | null;
+    buyer_email: string | null;
+    created_at: string;
+  };
+  tickets: {
+    id: string;
+    qr_code: string;
+    status: string;
+  }[];
+}
 
 interface TicketModalProps {
   isOpen: boolean;
@@ -19,21 +49,55 @@ export const TicketModal: React.FC<TicketModalProps> = ({
   const [quantity, setQuantity] = useState(2);
   const [selectedDate, setSelectedDate] = useState('2026-07-18');
   const [paymentMethod, setPaymentMethod] = useState<'sinpe' | 'zeffy' | 'card'>('sinpe');
-  
+
   // User info
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  
-  // SINPE Confirmation info (Step 3)
+
+  // Inventory from API
+  const [inventory, setInventory] = useState<TicketInventoryItem[]>([]);
+  const [selectedInventoryId, setSelectedInventoryId] = useState<string>('');
+  const [loadingInventory, setLoadingInventory] = useState(false);
+
+  // Purchase result from API
+  const [purchaseResult, setPurchaseResult] = useState<PurchaseResult | null>(null);
+  const [purchasing, setPurchasing] = useState(false);
+  const [purchaseError, setPurchaseError] = useState('');
+
+  // SINPE Confirmation
   const [sinpeRef, setSinpeRef] = useState('');
   const [sinpeFileName, setSinpeFileName] = useState('');
   const [sinpeCompleted, setSinpeCompleted] = useState(false);
 
   // 5 Minute Timer for SINPE Payment
-  const [timeLeft, setTimeLeft] = useState<number>(300); // 300 seconds = 5 minutes
+  const [timeLeft, setTimeLeft] = useState<number>(300);
   const [isTimerExpired, setIsTimerExpired] = useState(false);
 
+  // Load ticket inventory when modal opens
+  useEffect(() => {
+    if (!isOpen || !show) return;
+
+    async function fetchInventory() {
+      setLoadingInventory(true);
+      try {
+        const res = await fetch(`/api/v1/tickets/events/${show!.id}`);
+        if (res.ok) {
+          const data: TicketInventoryItem[] = await res.json();
+          setInventory(data);
+          if (data.length > 0) setSelectedInventoryId(data[0].id);
+        }
+      } catch {
+        // Si falla, seguimos con precios del show
+      } finally {
+        setLoadingInventory(false);
+      }
+    }
+
+    void fetchInventory();
+  }, [isOpen, show]);
+
+  // SINPE countdown timer
   useEffect(() => {
     let interval: any = null;
     if (step === 3 && paymentMethod === 'sinpe' && !sinpeCompleted && timeLeft > 0) {
@@ -53,8 +117,11 @@ export const TicketModal: React.FC<TicketModalProps> = ({
 
   if (!isOpen || !show) return null;
 
-  const pricePerTicket = show.priceGeneral || 10000;
+  // Use real inventory price or fall back to show price
+  const selectedInventory = inventory.find(i => i.id === selectedInventoryId);
+  const pricePerTicket = selectedInventory ? selectedInventory.price : (show.priceGeneral || 10000);
   const totalPrice = pricePerTicket * quantity;
+  const availableQty = selectedInventory ? selectedInventory.quantity_available : show.availableTickets;
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -68,13 +135,63 @@ export const TicketModal: React.FC<TicketModalProps> = ({
       setStep(2);
     } else if (step === 2) {
       setStep(3);
-      setTimeLeft(300); // Reset 5-minute countdown on reaching Step 3
+      setTimeLeft(300);
       setIsTimerExpired(false);
+      // Si no es SINPE, procesar la compra al llegar al paso 3
+      if (paymentMethod !== 'sinpe') {
+        void procesarCompra();
+      }
     }
   };
 
-  const handleFinishSinpe = (e: React.FormEvent) => {
+  async function procesarCompra(sinpeReference?: string) {
+    if (!show || !selectedInventoryId) return;
+
+    setPurchasing(true);
+    setPurchaseError('');
+
+    try {
+      const res = await fetch('/api/v1/tickets/purchases', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event_id: show.id,
+          ticket_inventory_id: selectedInventoryId,
+          quantity,
+          buyer_name: name.trim() || null,
+          buyer_email: email.trim() || null,
+          payment_intent_id: sinpeReference
+            ? `SINPE-${sinpeReference}`
+            : `TXN-${paymentMethod.toUpperCase()}-${Date.now()}`,
+          currency: selectedInventory?.currency || 'CRC',
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (res.status === 409) {
+          throw new Error('No hay suficientes boletos disponibles para esta función.');
+        }
+        if (res.status === 404) {
+          throw new Error('El evento o tipo de boleto seleccionado ya no está disponible.');
+        }
+        throw new Error(data?.error || 'Error al procesar la compra.');
+      }
+
+      setPurchaseResult(data as PurchaseResult);
+    } catch (err: any) {
+      setPurchaseError(err.message || 'No se pudo completar la compra. Intenta de nuevo.');
+      // Si falla la compra, volvemos al paso 2
+      if (step === 3) setStep(2);
+    } finally {
+      setPurchasing(false);
+    }
+  }
+
+  const handleFinishSinpe = async (e: React.FormEvent) => {
     e.preventDefault();
+    await procesarCompra(sinpeRef);
     setSinpeCompleted(true);
   };
 
@@ -85,8 +202,12 @@ export const TicketModal: React.FC<TicketModalProps> = ({
     setSinpeCompleted(false);
     setTimeLeft(300);
     setIsTimerExpired(false);
+    setPurchaseResult(null);
+    setPurchaseError('');
+    setPurchasing(false);
     onClose();
   };
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
@@ -422,11 +543,23 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                     </div>
                   </div>
 
+                  {purchaseError && (
+                    <div className="p-3 bg-red-500/20 border border-red-500/40 rounded-xl flex items-center space-x-2 text-red-300 text-xs">
+                      <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                      <span>{purchaseError}</span>
+                    </div>
+                  )}
+
                   <button
                     type="submit"
                     className="w-full py-3.5 btn-green text-brand-navy hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all uppercase tracking-wider text-xs"
                   >
-                    Completar Registro de Pago SINPE
+                    {purchasing ? (
+                      <span className="flex items-center justify-center space-x-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Procesando Compra...</span>
+                      </span>
+                    ) : 'Completar Registro de Pago SINPE'}
                   </button>
                 </form>
               ) : (
@@ -484,15 +617,23 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                     <span className="text-slate-300 block text-[10px]">Entradas:</span>
                     <span className="font-semibold text-white">{quantity} x (Entrada General)</span>
                   </div>
-                  <div>
-                    <span className="text-slate-300 block text-[10px]">Fecha:</span>
-                    <span className="font-semibold text-white">{selectedDate}</span>
+                  <button
+                    onClick={() => { setPurchaseError(''); setStep(2); }}
+                    className="w-full py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl"
+                  >
+                    Volver e Intentar de Nuevo
+                  </button>
+                </div>
+              ) : purchaseResult ? (
+                <>
+                  <div className="inline-flex p-3 rounded-full bg-[#77C65E]/20 text-[#77C65E] border border-[#77C65E]/40">
+                    <CheckCircle2 className="w-10 h-10" />
                   </div>
+
                   <div>
                     <span className="text-slate-300 block text-[10px]">Total:</span>
                     <span className="font-mono font-bold text-brand-lime">₡{totalPrice.toLocaleString()}</span>
                   </div>
-                </div>
 
                 {/* QR Simulation */}
                 <div className="flex items-center justify-between bg-black/40 p-3 rounded-xl border border-white/10">
@@ -502,9 +643,20 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                       <span className="block text-white font-mono font-bold">Código de Acceso QR</span>
                       <span>Muestra este código al ingresar al teatro</span>
                     </div>
+
+                    {/* Real QR codes from DB */}
+                    {purchaseResult.tickets.map((t, i) => (
+                      <div key={t.id} className="flex items-center justify-between bg-black/40 p-3 rounded-xl border border-white/10 mb-2">
+                        <div className="flex items-center space-x-3">
+                          <QrCode className="w-10 h-10 text-[#77C65E]" />
+                          <div className="text-[10px] text-slate-300">
+                            <span className="block text-white font-mono font-bold">Boleto #{i + 1}</span>
+                            <span className="font-mono text-[#DCEB4F]">{t.qr_code}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </div>
-              </div>
 
               <button
                 onClick={resetAndClose}
