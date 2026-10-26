@@ -18,6 +18,8 @@ export interface Show {
   director: string;
   synopsis: string;
   synopsisEn: string;
+  /** PDF del programa de mano; se usa cuando la obra no tiene boletería. */
+  programUrl?: string;
   cast: { name: string; role: string; photo?: string }[];
 }
 

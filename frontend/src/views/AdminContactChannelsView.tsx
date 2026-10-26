@@ -159,7 +159,7 @@ export const AdminContactChannelsView = () => {
       )}
 
       {confirmacion && (
-        <p role="status" className="text-sm text-[#77C65E]">
+        <p role="status" className="text-sm text-brand-green">
           {confirmacion}
         </p>
       )}
@@ -173,7 +173,7 @@ export const AdminContactChannelsView = () => {
       {!editando && contactos.map((contacto) => (
         <article
           key={contacto.id}
-          className="flex flex-col gap-4 rounded-2xl border border-[#1e4066] bg-[#002244] p-5 sm:flex-row sm:items-start sm:justify-between"
+          className="flex flex-col gap-4 rounded-2xl border border-brand-border bg-brand-navy p-5 sm:flex-row sm:items-start sm:justify-between"
         >
           <div className="min-w-0 space-y-1">
             <h3 className="font-bold text-white break-words">
@@ -184,7 +184,7 @@ export const AdminContactChannelsView = () => {
               {contacto.value}
             </p>
 
-            <p className="text-xs text-[#77C65E]">
+            <p className="text-xs text-brand-green">
               {contacto.is_published ? 'Publicado' : 'Oculto'}
               {' · Orden: '}
               {contacto.display_order}
@@ -204,7 +204,7 @@ export const AdminContactChannelsView = () => {
       {editando && (
         <form
           onSubmit={guardarCambios}
-          className="space-y-4 rounded-2xl border border-[#1e4066] bg-[#002244] p-5"
+          className="space-y-4 rounded-2xl border border-brand-border bg-brand-navy p-5"
         >
           <h3 className="font-bold text-white">
             Editar medio de contacto
@@ -233,7 +233,7 @@ export const AdminContactChannelsView = () => {
                       actual ? { ...actual, [campo]: valor } : actual
                     );
                   }}
-                  className="w-full rounded-lg border border-[#1e4066] bg-[#00162e] p-3 text-sm text-white focus:border-[#77C65E] focus:outline-none"
+                  className="w-full rounded-lg border border-brand-border bg-brand-navyDark p-3 text-sm text-white focus:border-brand-green focus:outline-none"
                 />
               </div>
             ))}
@@ -265,7 +265,7 @@ export const AdminContactChannelsView = () => {
                     actual ? { ...actual, display_order: orden } : actual
                   );
                 }}
-                className="w-full rounded-lg border border-[#1e4066] bg-[#00162e] p-3 text-sm text-white"
+                className="w-full rounded-lg border border-brand-border bg-brand-navyDark p-3 text-sm text-white"
               />
             </div>
 
@@ -287,7 +287,7 @@ export const AdminContactChannelsView = () => {
             <div className="flex flex-wrap gap-3">
               <button
                 type="submit"
-                className="rounded-xl bg-[#77C65E] px-4 py-2 text-sm font-bold text-[#002244] disabled:opacity-50"
+                className="rounded-xl bg-brand-green px-4 py-2 text-sm font-bold text-brand-navy disabled:opacity-50"
               >
                 {guardando ? 'Guardando...' : 'Guardar cambios'}
               </button>

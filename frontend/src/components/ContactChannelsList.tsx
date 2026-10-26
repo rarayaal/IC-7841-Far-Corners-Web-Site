@@ -60,7 +60,7 @@ export const ContactChannelsList = ({
           >
             <Icono
               aria-hidden="true"
-              className="mt-0.5 h-4 w-4 shrink-0 text-[#77C65E]"
+              className="mt-0.5 h-4 w-4 shrink-0 text-brand-green"
             />
 
             <div className="min-w-0">
@@ -71,7 +71,7 @@ export const ContactChannelsList = ({
               {enlacePermitido ? (
                 <a
                   href={enlace}
-                  className="whitespace-pre-wrap break-words hover:text-[#77C65E] underline"
+                  className="whitespace-pre-wrap break-words hover:text-brand-green underline"
                 >
                   {contenido}
                 </a>
