@@ -174,7 +174,7 @@ export const AdminVolunteersView = ({ language }: { language: Language }) => {
   }
 
   const inputClass =
-    'w-full rounded-lg border border-[#1e4066] bg-[#00162e] p-3 text-sm text-white focus:border-[#77C65E] focus:outline-none';
+    'w-full rounded-lg border border-brand-border bg-brand-navyDark p-3 text-sm text-white focus:border-brand-green focus:outline-none';
 
   return (
     <section className="space-y-5">
@@ -189,7 +189,7 @@ export const AdminVolunteersView = ({ language }: { language: Language }) => {
         <button
           type="button"
           onClick={abrirNueva}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#77C65E] px-4 py-2 text-sm font-bold text-[#002244] transition-colors hover:bg-[#008047] hover:text-white sm:w-auto"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-green px-4 py-2 text-sm font-bold text-brand-navy transition-colors hover:bg-brand-forest hover:text-white sm:w-auto"
         >
           <Plus className="w-4 h-4" />
           {txt.volunteers.newItem}
@@ -214,7 +214,7 @@ export const AdminVolunteersView = ({ language }: { language: Language }) => {
       {formulario && (
         <form
           onSubmit={guardar}
-          className="space-y-4 rounded-2xl border border-[#1e4066] bg-[#002244] p-5"
+          className="space-y-4 rounded-2xl border border-brand-border bg-brand-navy p-5"
         >
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-white">
@@ -334,7 +334,7 @@ export const AdminVolunteersView = ({ language }: { language: Language }) => {
             <div className="flex flex-col gap-3 sm:flex-row">
               <button
                 type="submit"
-                className="rounded-xl bg-[#77C65E] px-4 py-2 text-sm font-bold text-[#002244] disabled:opacity-50"
+                className="rounded-xl bg-brand-green px-4 py-2 text-sm font-bold text-brand-navy disabled:opacity-50"
               >
                 {guardando ? txt.common.saving : txt.common.save}
               </button>
@@ -351,9 +351,9 @@ export const AdminVolunteersView = ({ language }: { language: Language }) => {
       )}
 
       {voluntarios.length > 0 && (
-        <div className="overflow-x-auto rounded-2xl border border-[#1e4066] bg-[#002244]">
+        <div className="overflow-x-auto rounded-2xl border border-brand-border bg-brand-navy">
           <table className="w-full text-left text-xs text-slate-300">
-            <thead className="bg-[#00162e] text-slate-300 font-mono text-[11px] uppercase border-b border-white/10">
+            <thead className="bg-brand-navyDark text-slate-300 font-mono text-[11px] uppercase border-b border-white/10">
               <tr>
                 <th className="p-3 sm:p-4">{txt.volunteers.columnVolunteer}</th>
                 <th className="hidden p-4 md:table-cell">
@@ -396,9 +396,9 @@ export const AdminVolunteersView = ({ language }: { language: Language }) => {
                     <span
                       className={`px-2.5 py-1 rounded text-[10px] uppercase font-bold ${
                         voluntario.status === 'active'
-                          ? 'bg-[#77C65E]/20 text-[#77C65E]'
+                          ? 'bg-brand-green/20 text-brand-green'
                           : voluntario.status === 'pending'
-                            ? 'bg-[#4A90D6]/20 text-[#4A90D6]'
+                            ? 'bg-brand-blue/20 text-brand-blue'
                             : 'bg-white/10 text-slate-300'
                       }`}
                     >
