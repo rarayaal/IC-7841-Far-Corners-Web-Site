@@ -486,7 +486,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
       {/* TAB 3: INSTITUTIONAL CONTENT MANAGEMENT (CU-01, CU-02, CU-03) */}
       {activeTab === 'content' && puedeGestionarContenido && (
         <AdminInstitutionalView language={language} />
-      )}
+       )}
 
       {/* MULTIMEDIA GALLERY (CU-22) */}
       {activeTab === 'media' && puedeGestionarMedia && (
