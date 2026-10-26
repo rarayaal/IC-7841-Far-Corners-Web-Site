@@ -13,17 +13,16 @@ import donationsRouter from "./routes/donations.routes.js";
 import { usersRouter } from "./routes/users.routes.js";
 import { authRouter, usersRouter as authUsersRouter } from "./routes/auth.routes.js";
 import { adminUsersRouter } from "./routes/admin-users.routes.js";
-import { contactMessagesRouter } from './routes/contactMessages.routes.js';
-import {
-  contactChannelsRouter,
-} from './routes/contactChannels.routes.js';
+import { auditRouter } from "./routes/audit.routes.js";
+import { contactMessagesRouter } from "./routes/contactMessages.routes.js";
+import { contactChannelsRouter } from "./routes/contactChannels.routes.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 3000);
 
 app.use(express.json());
 
-// Rutas de proyectos, donaciones, comunidades, estudiantes y voluntarios
+// Rutas de contenido y modulos publicos
 app.use("/api/v1/projects", projectsRouter);
 app.use("/api/v1/communities", communitiesRouter);
 app.use("/api/v1/students", studentsRouter);
@@ -34,16 +33,17 @@ app.use("/api/v1/media", mediaRouter);
 app.use("/api/v1/content-retirement", retirementRouter);
 app.use("/api/v1/tickets", ticketsRouter);
 app.use("/api/v1/donations", donationsRouter);
+app.use("/api/v1/contact-messages", contactMessagesRouter);
+app.use("/api/v1/contact-channels", contactChannelsRouter);
 
-// Rutas de registro publico de usuarios (Marcelo)
+// Rutas de registro publico de usuarios
 app.use("/api/v1/users", usersRouter);
 
-// Rutas de autenticacion y perfil protegido
+// Rutas de seguridad, administracion y auditoria
 app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/users", authUsersRouter);
+app.use("/api/v1/me", authUsersRouter);
 app.use("/api/v1/admin", adminUsersRouter);
-app.use('/api/v1/contact-messages', contactMessagesRouter);
-app.use('/api/v1/contact-channels', contactChannelsRouter);
+app.use("/api/v1/audit", auditRouter);
 
 app.get("/", (_req, res) => {
 	res.status(200).json({
@@ -58,6 +58,7 @@ app.get("/", (_req, res) => {
 			institutional: "/api/v1/institutional/:section",
 			media: "/api/v1/media",
 			content_retirement: "/api/v1/content-retirement/:type",
+			audit: "/api/v1/audit/logs",
 			projects: "/api/v1/projects",
 			tickets: "/api/v1/tickets",
 			donations: "/api/v1/donations",

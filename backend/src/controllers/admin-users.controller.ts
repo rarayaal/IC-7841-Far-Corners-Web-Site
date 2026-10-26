@@ -7,6 +7,7 @@ import {
   changeAdminStatus,
   updateAdminPermissions,
 } from "../services/admin-users.service.js";
+import { logAuditAction } from "../services/audit.service.js";
 
 /**
  * GET /api/v1/admin/users - Listar usuarios administrativos
@@ -78,6 +79,17 @@ export async function createAdminUserController(req: Request, res: Response): Pr
       Array.isArray(permissions) ? permissions : []
     );
 
+    // Registrar accion en bitacora de auditoria
+    await logAuditAction(
+      req.user?.userId ?? "sistema",
+      "create",
+      "users",
+      createdUser.id,
+      null,
+      { full_name: createdUser.full_name, email: createdUser.email, role: createdUser.role },
+      req.ip ?? null
+    );
+
     res.status(201).json({
       message: "Usuario administrativo registrado exitosamente",
       data: createdUser,
@@ -122,6 +134,17 @@ export async function updateAdminUserController(req: Request, res: Response): Pr
 
     const updatedUser = await modifyAdminUser(id, full_name, email, role);
 
+    // Registrar accion en bitacora de auditoria
+    await logAuditAction(
+      req.user?.userId ?? "sistema",
+      "update",
+      "users",
+      updatedUser.id,
+      null,
+      { full_name: updatedUser.full_name, email: updatedUser.email, role: updatedUser.role },
+      req.ip ?? null
+    );
+
     res.status(200).json({
       message: "Usuario administrativo actualizado exitosamente",
       data: updatedUser,
@@ -157,6 +180,17 @@ export async function updateAdminStatusController(req: Request, res: Response): 
 
     await changeAdminStatus(id, status, currentUserId ?? "");
 
+    // Registrar accion en bitacora de auditoria
+    await logAuditAction(
+      currentUserId ?? "sistema",
+      "update",
+      "users",
+      id,
+      null,
+      { status },
+      req.ip ?? null
+    );
+
     res.status(200).json({
       message: `El estado del usuario se actualizó a '${status}' exitosamente`,
     });
@@ -189,6 +223,17 @@ export async function updateAdminRolesController(req: Request, res: Response): P
     }
 
     const updatedUser = await updateAdminPermissions(id, permissions);
+
+        // Registrar accion en bitacora de auditoria (CU-25)
+    await logAuditAction(
+      req.user?.userId ?? "sistema",
+      "update",
+      "user_permissions",
+      id,
+      null,
+      { permissions },
+      req.ip ?? null
+    );
 
     res.status(200).json({
       message: "Permisos del usuario actualizados exitosamente",
