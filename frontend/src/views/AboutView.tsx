@@ -107,8 +107,8 @@ export const AboutView: React.FC<AboutViewProps> = ({
         <div className="relative">
           <div className="aspect-[4/3] rounded-2xl overflow-hidden border border-brand-green/50 shadow-2xl group">
             <img
-              src="/recursos/IMG_2904.PNG"
-              alt="Ensayo Far Corners"
+              src={history?.images?.[0]?.url ?? '/recursos/IMG_2904.PNG'}
+              alt={history?.images?.[0]?.alt_text ?? 'Ensayo Far Corners'}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
           </div>
