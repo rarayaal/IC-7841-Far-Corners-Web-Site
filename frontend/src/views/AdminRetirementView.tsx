@@ -154,8 +154,8 @@ export const AdminRetirementView = ({ language }: { language: Language }) => {
   const chip = (activo: boolean) =>
     `whitespace-nowrap rounded-xl px-4 py-2 text-xs font-bold transition-all ${
       activo
-        ? 'bg-[#77C65E] text-[#002244]'
-        : 'bg-[#002244] text-slate-300 hover:text-white'
+        ? 'bg-brand-green text-brand-navy'
+        : 'bg-brand-navy text-slate-300 hover:text-white'
     }`;
 
   const mensajeConfirmacion = porRetirar
@@ -226,9 +226,9 @@ export const AdminRetirementView = ({ language }: { language: Language }) => {
       )}
 
       {items.length > 0 && (
-        <div className="overflow-x-auto rounded-2xl border border-[#1e4066] bg-[#002244]">
+        <div className="overflow-x-auto rounded-2xl border border-brand-border bg-brand-navy">
           <table className="w-full text-left text-xs text-slate-300">
-            <thead className="border-b border-white/10 bg-[#00162e] font-mono text-[11px] uppercase text-slate-300">
+            <thead className="border-b border-white/10 bg-brand-navyDark font-mono text-[11px] uppercase text-slate-300">
               <tr>
                 <th className="p-3 sm:p-4">{t.columnTitle}</th>
                 <th className="hidden p-4 md:table-cell">{t.columnDetail}</th>
@@ -269,7 +269,7 @@ export const AdminRetirementView = ({ language }: { language: Language }) => {
                         disabled={procesando === item.id}
                         onClick={() => cambiarEstado(item, 'restore')}
                         aria-label={`${t.restore}: ${item.title}`}
-                        className="inline-flex items-center gap-1 rounded-lg bg-[#77C65E]/20 px-2.5 py-1.5 text-[10px] font-bold text-[#77C65E] hover:bg-[#77C65E]/30 disabled:opacity-50"
+                        className="inline-flex items-center gap-1 rounded-lg bg-brand-green/20 px-2.5 py-1.5 text-[10px] font-bold text-brand-green hover:bg-brand-green/30 disabled:opacity-50"
                       >
                         <RotateCcw className="w-3 h-3" />
                         {t.restore}

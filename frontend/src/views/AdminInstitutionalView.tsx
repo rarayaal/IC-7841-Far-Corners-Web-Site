@@ -189,7 +189,7 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
   }
 
   const inputClass =
-    'w-full rounded-lg border border-[#1e4066] bg-[#00162e] p-3 text-sm text-white focus:border-[#77C65E] focus:outline-none';
+    'w-full rounded-lg border border-brand-border bg-brand-navyDark p-3 text-sm text-white focus:border-brand-green focus:outline-none';
   const labelClass = 'mb-1 block text-sm text-slate-300';
   const scopeLabel = (slug: string) =>
     (t.scopes as Record<string, string>)[slug] ?? slug;
@@ -205,7 +205,7 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
         <button
           type="button"
           onClick={abrirNuevo}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#77C65E] px-4 py-2 text-sm font-bold text-[#002244] transition-colors hover:bg-[#008047] hover:text-white sm:w-auto"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-green px-4 py-2 text-sm font-bold text-brand-navy transition-colors hover:bg-brand-forest hover:text-white sm:w-auto"
         >
           <Plus className="w-4 h-4" />
           {t.newItem}
@@ -225,8 +225,8 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
             onClick={() => setSeccion(s)}
             className={`whitespace-nowrap rounded-xl px-4 py-2 text-xs font-bold transition-all ${
               seccion === s
-                ? 'bg-[#77C65E] text-[#002244]'
-                : 'bg-[#002244] text-slate-300 hover:text-white'
+                ? 'bg-brand-green text-brand-navy'
+                : 'bg-brand-navy text-slate-300 hover:text-white'
             }`}
           >
             {t.sections[s]}
@@ -252,7 +252,7 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
       {formulario && (
         <form
           onSubmit={guardar}
-          className="space-y-4 rounded-2xl border border-[#1e4066] bg-[#002244] p-4 sm:p-5"
+          className="space-y-4 rounded-2xl border border-brand-border bg-brand-navy p-4 sm:p-5"
         >
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-white">
@@ -443,7 +443,7 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
             <div className="flex flex-col gap-3 sm:flex-row">
               <button
                 type="submit"
-                className="rounded-xl bg-[#77C65E] px-4 py-2 text-sm font-bold text-[#002244] disabled:opacity-50"
+                className="rounded-xl bg-brand-green px-4 py-2 text-sm font-bold text-brand-navy disabled:opacity-50"
               >
                 {guardando ? txt.common.saving : txt.common.save}
               </button>
@@ -460,9 +460,9 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
       )}
 
       {items.length > 0 && (
-        <div className="overflow-x-auto rounded-2xl border border-[#1e4066] bg-[#002244]">
+        <div className="overflow-x-auto rounded-2xl border border-brand-border bg-brand-navy">
           <table className="w-full text-left text-xs text-slate-300">
-            <thead className="border-b border-white/10 bg-[#00162e] font-mono text-[11px] uppercase text-slate-300">
+            <thead className="border-b border-white/10 bg-brand-navyDark font-mono text-[11px] uppercase text-slate-300">
               <tr>
                 <th className="p-3 sm:p-4">{t.columnTitle}</th>
                 <th className="hidden p-4 md:table-cell">{t.columnScope}</th>
@@ -491,7 +491,7 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
                     <span
                       className={`rounded px-2.5 py-1 text-[10px] font-bold uppercase ${
                         item.is_published
-                          ? 'bg-[#77C65E]/20 text-[#77C65E]'
+                          ? 'bg-brand-green/20 text-brand-green'
                           : 'bg-white/10 text-slate-300'
                       }`}
                     >

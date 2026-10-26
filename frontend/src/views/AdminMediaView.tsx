@@ -252,7 +252,7 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
   }
 
   const inputClass =
-    'w-full rounded-lg border border-[#1e4066] bg-[#00162e] p-3 text-sm text-white focus:border-[#77C65E] focus:outline-none';
+    'w-full rounded-lg border border-brand-border bg-brand-navyDark p-3 text-sm text-white focus:border-brand-green focus:outline-none';
   const labelClass = 'mb-1 block text-sm text-slate-300';
   const opciones = subida ? targets.filter((x) => x.kind === subida.kind) : [];
   const subeImagen = Boolean(subida?.file && isImage(subida.file.type));
@@ -268,7 +268,7 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
         <button
           type="button"
           onClick={abrirSubida}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#77C65E] px-4 py-2 text-sm font-bold text-[#002244] transition-colors hover:bg-[#008047] hover:text-white sm:w-auto"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-green px-4 py-2 text-sm font-bold text-brand-navy transition-colors hover:bg-brand-forest hover:text-white sm:w-auto"
         >
           <Plus className="w-4 h-4" />
           {t.upload}
@@ -289,7 +289,7 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
       {subida && (
         <form
           onSubmit={subir}
-          className="space-y-4 rounded-2xl border border-[#1e4066] bg-[#002244] p-4 sm:p-5"
+          className="space-y-4 rounded-2xl border border-brand-border bg-brand-navy p-4 sm:p-5"
         >
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-white">{t.upload}</h3>
@@ -316,7 +316,7 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
                 onChange={(e) =>
                   setSubida({ ...subida, file: e.target.files?.[0] ?? null })
                 }
-                className={`${inputClass} file:mr-3 file:rounded-lg file:border-0 file:bg-[#77C65E] file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-[#002244]`}
+                className={`${inputClass} file:mr-3 file:rounded-lg file:border-0 file:bg-brand-green file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-brand-navy`}
               />
               <p className="mt-1 text-xs text-slate-400">{t.fileHint}</p>
             </div>
@@ -404,24 +404,24 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
                   aria-valuemin={0}
                   aria-valuemax={100}
                   aria-valuenow={progreso}
-                  className="h-2 overflow-hidden rounded-full bg-[#00162e]"
+                  className="h-2 overflow-hidden rounded-full bg-brand-navyDark"
                 >
                   <div
-                    className="h-full bg-[#77C65E] transition-all"
+                    className="h-full bg-brand-green transition-all"
                     style={{ width: `${progreso}%` }}
                   />
                 </div>
                 <p className="text-xs text-slate-300">
                   {progreso < 100 ? `${t.uploading} ${progreso}%` : t.registering}
                 </p>
-                {lenta && <p className="text-xs text-[#DCEB4F]">{t.slowUpload}</p>}
+                {lenta && <p className="text-xs text-brand-lime">{t.slowUpload}</p>}
               </div>
             )}
 
             <div className="flex flex-col gap-3 sm:flex-row">
               <button
                 type="submit"
-                className="rounded-xl bg-[#77C65E] px-4 py-2 text-sm font-bold text-[#002244] disabled:opacity-50"
+                className="rounded-xl bg-brand-green px-4 py-2 text-sm font-bold text-brand-navy disabled:opacity-50"
               >
                 {subiendo ? t.uploading : t.upload}
               </button>
@@ -440,7 +440,7 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
       {edicion && (
         <form
           onSubmit={guardarEdicion}
-          className="space-y-4 rounded-2xl border border-[#1e4066] bg-[#002244] p-4 sm:p-5"
+          className="space-y-4 rounded-2xl border border-brand-border bg-brand-navy p-4 sm:p-5"
         >
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-white">{t.editTitle}</h3>
@@ -491,7 +491,7 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
             <div className="flex flex-col gap-3 sm:flex-row">
               <button
                 type="submit"
-                className="rounded-xl bg-[#77C65E] px-4 py-2 text-sm font-bold text-[#002244] disabled:opacity-50"
+                className="rounded-xl bg-brand-green px-4 py-2 text-sm font-bold text-brand-navy disabled:opacity-50"
               >
                 {guardando ? txt.common.saving : txt.common.save}
               </button>
@@ -516,9 +516,9 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
           {items.map((item) => (
             <li
               key={item.id}
-              className="overflow-hidden rounded-2xl border border-[#1e4066] bg-[#002244]"
+              className="overflow-hidden rounded-2xl border border-brand-border bg-brand-navy"
             >
-              <div className="flex aspect-[4/3] items-center justify-center bg-[#00162e]">
+              <div className="flex aspect-[4/3] items-center justify-center bg-brand-navyDark">
                 {isImage(item.mime_type) ? (
                   <img
                     src={item.url}
