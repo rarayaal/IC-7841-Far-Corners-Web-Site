@@ -37,7 +37,7 @@ export const VolunteerModal: React.FC<VolunteerModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-      <div className="bg-brand-navy border border-brand-border w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden text-brand-cream">
+      <div className="bg-brand-navy border border-brand-border w-full max-w-xl max-h-[92vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden text-brand-cream">
         {/* Header */}
         <div className="p-5 border-b border-white/10 bg-brand-navyDark flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -58,7 +58,7 @@ export const VolunteerModal: React.FC<VolunteerModalProps> = ({
           </button>
         </div>
 
-        <div className="p-6">
+        <div className="p-5 sm:p-6 overflow-y-auto">
           {!submitted ? (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="bg-brand-navyDark p-3.5 rounded-xl border border-white/10 text-xs text-slate-300">
@@ -141,7 +141,7 @@ export const VolunteerModal: React.FC<VolunteerModalProps> = ({
 
               <button
                 type="submit"
-                className="w-full py-3.5 bg-brand-green hover:bg-brand-forest text-brand-navy hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all uppercase tracking-wider text-xs"
+                className="w-full py-3.5 btn-green text-brand-navy hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all uppercase tracking-wider text-xs"
               >
                 Enviar Postulación Oficial
               </button>

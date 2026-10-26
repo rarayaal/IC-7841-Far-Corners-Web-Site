@@ -197,7 +197,7 @@ export const RegisterView = () => {
           <button
             type="submit"
             disabled={enviando}
-            className="w-full py-3 bg-brand-green hover:bg-brand-forest
+            className="w-full py-3 btn-green
                         text-brand-navy hover:text-white font-bold
                         rounded-xl transition-colors
                         disabled:opacity-50 disabled:cursor-not-allowed"

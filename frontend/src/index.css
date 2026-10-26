@@ -8,6 +8,26 @@
   }
 }
 
+@layer components {
+  /* Botón principal: degradado sutil verde de marca -> mezcla con verde bosque */
+  .btn-green {
+    background-color: theme('colors.brand.green');
+    background-image: linear-gradient(
+      180deg,
+      theme('colors.brand.green') 0%,
+      color-mix(in srgb, theme('colors.brand.green') 80%, theme('colors.brand.forest')) 100%
+    );
+    transition: background-image 0.2s, color 0.2s, box-shadow 0.2s, transform 0.2s;
+  }
+  .btn-green:hover {
+    background-image: linear-gradient(
+      180deg,
+      color-mix(in srgb, theme('colors.brand.green') 55%, theme('colors.brand.forest')) 0%,
+      theme('colors.brand.forest') 100%
+    );
+  }
+}
+
 /* Foco visible con el verde de marca para quien navega con teclado */
 :focus-visible {
   outline: 2px solid #77C65E;

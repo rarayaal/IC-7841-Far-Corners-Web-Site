@@ -83,7 +83,7 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
                 </div>
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-brand-green hover:bg-brand-forest text-brand-navy hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all whitespace-nowrap uppercase tracking-wider text-xs"
+                  className="px-6 py-3 btn-green text-brand-navy hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all whitespace-nowrap uppercase tracking-wider text-xs"
                 >
                   {language === 'es' ? 'Suscribirse' : 'Subscribe'}
                 </button>

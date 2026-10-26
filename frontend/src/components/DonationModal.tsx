@@ -38,7 +38,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-      <div className="bg-brand-navy border border-brand-border w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden text-brand-cream">
+      <div className="bg-brand-navy border border-brand-border w-full max-w-xl max-h-[92vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden text-brand-cream">
         {/* Header */}
         <div className="p-5 border-b border-white/10 bg-brand-navyDark flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -60,7 +60,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-5 sm:p-6 overflow-y-auto">
           {!isSubmitted ? (
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Preset Amounts in USD ($) */}
@@ -207,7 +207,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({
 
               <button
                 type="submit"
-                className="w-full py-3.5 bg-brand-green hover:bg-brand-forest text-brand-navy hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all uppercase tracking-wider text-xs flex items-center justify-center space-x-2"
+                className="w-full py-3.5 btn-green text-brand-navy hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all uppercase tracking-wider text-xs flex items-center justify-center space-x-2"
               >
                 <Heart className="w-4 h-4 fill-current" />
                 <span>Completar Donación de ${activeAmount} USD</span>

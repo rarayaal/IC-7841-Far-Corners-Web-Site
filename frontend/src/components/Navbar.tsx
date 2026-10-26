@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { PageView, Language } from '../types';
-import { Globe, Search, Shield, Menu, X, Heart, Ticket, Calendar, Info, Users, Mail, Sparkles } from 'lucide-react';
+import { Globe, Search, Shield, Menu, X, Heart, Ticket, Calendar, Info, Users, UserPlus } from 'lucide-react';
 
 interface NavbarProps {
   currentPage: PageView;
@@ -26,22 +26,46 @@ export const Navbar: React.FC<NavbarProps> = ({
   setIsAdminMode,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  // Al bajar, el menú pasa a vidrio esmerilado: fondo translúcido y desenfoque.
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const navItems = [
     { id: 'home' as PageView, labelEs: 'Inicio', labelEn: 'Home', icon: Calendar },
     { id: 'about' as PageView, labelEs: 'Historia e Impacto', labelEn: 'About & Impact', icon: Info },
-    { id: 'shows' as PageView, labelEs: 'Cartelera y Boletos', labelEn: 'Shows & Tickets', icon: Ticket },
-    { id: 'participate' as PageView, labelEs: 'Programas y Comunidad', labelEn: 'Participate', icon: Users },
-    { id: 'donate' as PageView, labelEs: 'Donaciones', labelEn: 'Donate', icon: Heart },
-    { id: 'contact' as PageView, labelEs: 'Contacto', labelEn: 'Contact', icon: Mail },
+    { id: 'shows' as PageView, labelEs: 'Cartelera', labelEn: 'Shows', icon: Ticket },
+    { id: 'participate' as PageView, labelEs: 'Programas y Comunidad', labelEn: 'Programs & Community', icon: Users },
+    { id: 'register' as PageView, labelEs: 'Únete', labelEn: 'Join us', icon: UserPlus },
   ];
+
+  // "Donar" lleva a la sección de donaciones; desde ahí se continúa a Zeffy.
+  const goToDonate = () => {
+    setIsAdminMode(false);
+    setCurrentPage('donate');
+    setMobileMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const toggleLanguage = () => {
     setLanguage(language === 'es' ? 'en' : 'es');
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-brand-navyDark/95 backdrop-blur-md border-b border-brand-border transition-all duration-300">
+    <header
+      className={`sticky top-0 z-40 border-b backdrop-blur-xl transition-all duration-300 ${
+        scrolled
+          ? 'bg-brand-navyDark/60 border-white/10 shadow-glow-navy'
+          : 'bg-brand-navyDark/95 border-brand-border'
+      }`}
+    >
       {/* Top Brand Tagline Bar */}
       <div className="bg-brand-navy border-b border-white/10 py-1.5 px-4 text-xs font-sans text-slate-200">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -167,26 +191,12 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
 
             <button
-              onClick={onOpenDonate}
-              className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-gradient-to-r from-brand-green to-brand-forest hover:from-brand-forest hover:to-brand-green text-brand-navy font-extrabold text-sm shadow-glow-green transition-all transform hover:-translate-y-0.5"
+              onClick={goToDonate}
+              aria-current={currentPage === 'donate' && !isAdminMode ? 'page' : undefined}
+              className="btn-green flex items-center space-x-2 px-4 py-2 rounded-xl text-brand-navy hover:text-white font-extrabold text-sm shadow-glow-green transform hover:-translate-y-0.5"
             >
               <Heart className="w-4 h-4 fill-brand-navy" />
               <span>{language === 'es' ? 'Donar' : 'Donate'}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setIsAdminMode(false);
-                setCurrentPage('register');
-                setMobileMenuOpen(false);
-              }}
-              className="shrink-0 whitespace-nowrap px-4 py-2 rounded-xl
-                        border border-brand-green text-brand-green
-                        hover:bg-brand-green hover:text-brand-navy
-                        text-sm font-semibold transition-colors"
-            >
-              {language === 'es' ? 'Crear cuenta' : 'Sign up'}
             </button>
           </div>
 
@@ -254,29 +264,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
 
             <button
-              onClick={() => {
-                onOpenDonate();
-                setMobileMenuOpen(false);
-              }}
-              className="flex items-center justify-center space-x-2 px-3 py-2.5 rounded-xl bg-brand-green text-brand-navy text-sm font-extrabold"
+              onClick={goToDonate}
+              className="btn-green flex items-center justify-center space-x-2 px-3 py-2.5 rounded-xl text-brand-navy text-sm font-extrabold"
             >
               <Heart className="w-4 h-4 fill-brand-navy" />
               <span>{language === 'es' ? 'Donar' : 'Donate'}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setIsAdminMode(false);
-                setCurrentPage('register');
-                setMobileMenuOpen(false);
-              }}
-              className="col-span-2 w-full px-4 py-3 rounded-xl
-                        border border-brand-green text-brand-green
-                        hover:bg-brand-green hover:text-brand-navy
-                        text-sm font-semibold transition-colors"
-            >
-              {language === 'es' ? 'Crear cuenta' : 'Sign up'}
             </button>
           </div>
         </div>

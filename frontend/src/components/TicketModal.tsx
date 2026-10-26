@@ -90,7 +90,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-      <div className="bg-brand-navy border border-brand-border w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden text-brand-cream">
+      <div className="bg-brand-navy border border-brand-border w-full max-w-xl max-h-[92vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden text-brand-cream">
         {/* Modal Header */}
         <div className="p-5 border-b border-white/10 bg-brand-navyDark flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -125,7 +125,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <div className="p-6">
+        <div className="p-5 sm:p-6 overflow-y-auto">
           {step === 1 && (
             <form onSubmit={handleNextStep} className="space-y-5">
               {/* Date Selection */}
@@ -204,7 +204,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
 
               <button
                 type="submit"
-                className="w-full py-3.5 bg-brand-green hover:bg-brand-forest text-brand-navy hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all text-sm uppercase tracking-wider"
+                className="w-full py-3.5 btn-green text-brand-navy hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all text-sm uppercase tracking-wider"
               >
                 {language === 'es' ? 'Continuar a Datos del Comprador' : 'Proceed to Patron Info'}
               </button>
@@ -330,7 +330,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="w-2/3 py-3 bg-brand-green hover:bg-brand-forest text-brand-navy hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all"
+                  className="w-2/3 py-3 btn-green text-brand-navy hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all"
                 >
                   Confirmar Reserva de Boletos
                 </button>
@@ -424,7 +424,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
 
                   <button
                     type="submit"
-                    className="w-full py-3.5 bg-brand-green hover:bg-brand-forest text-brand-navy hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all uppercase tracking-wider text-xs"
+                    className="w-full py-3.5 btn-green text-brand-navy hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all uppercase tracking-wider text-xs"
                   >
                     Completar Registro de Pago SINPE
                   </button>
@@ -508,7 +508,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
 
               <button
                 onClick={resetAndClose}
-                className="w-full py-3 bg-brand-green hover:bg-brand-forest text-brand-navy hover:text-white font-extrabold rounded-xl"
+                className="w-full py-3 btn-green text-brand-navy hover:text-white font-extrabold rounded-xl"
               >
                 Cerrar y Volver
               </button>

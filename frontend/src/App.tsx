@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { PageView, Language, Show, Opportunity } from './types';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
@@ -22,6 +22,11 @@ export function App() {
   const [currentPage, setCurrentPage] = useState<PageView>('home');
   const [language, setLanguage] = useState<Language>('es');
   const [isAdminMode, setIsAdminMode] = useState<boolean>(false);
+
+  // Cada sección se abre desde arriba, no donde quedó el scroll de la anterior.
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [currentPage, isAdminMode]);
 
   // Modals state
   const [isSearchOpen, setIsSearchOpen] = useState(false);

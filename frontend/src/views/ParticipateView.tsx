@@ -13,7 +13,7 @@ export const ParticipateView: React.FC<ParticipateViewProps> = ({
   onSelectOpportunity,
 }) => {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16 animate-fadeIn">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-12 sm:space-y-16 animate-fadeIn">
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto space-y-3">
         <span className="inline-block px-4 py-1.5 rounded-full bg-brand-green/20 text-brand-lime text-xs font-bold uppercase tracking-wider border border-brand-green/40">
@@ -69,7 +69,7 @@ export const ParticipateView: React.FC<ParticipateViewProps> = ({
           <div className="pt-4">
             <button
               onClick={() => onSelectOpportunity(opportunitiesData[0])}
-              className="px-7 py-3 bg-brand-green hover:bg-brand-forest text-brand-navy hover:text-white text-xs font-extrabold rounded-xl shadow-glow-green transition-all flex items-center space-x-2 uppercase tracking-wider"
+              className="px-7 py-3 btn-green text-brand-navy hover:text-white text-xs font-extrabold rounded-xl shadow-glow-green transition-all flex items-center space-x-2 uppercase tracking-wider"
             >
               <span>{language === 'es' ? 'Postular al Campamento 2026' : 'Apply for Theatre Camp 2026'}</span>
               <ArrowRight className="w-4 h-4" />
@@ -139,7 +139,7 @@ export const ParticipateView: React.FC<ParticipateViewProps> = ({
               <div className="pt-4 border-t border-white/5">
                 <button
                   onClick={() => onSelectOpportunity(opp)}
-                  className="w-full py-2.5 bg-brand-green hover:bg-brand-forest text-brand-navy hover:text-white text-xs font-extrabold rounded-xl shadow-glow-green transition-all uppercase tracking-wider"
+                  className="w-full py-2.5 btn-green text-brand-navy hover:text-white text-xs font-extrabold rounded-xl shadow-glow-green transition-all uppercase tracking-wider"
                 >
                   {language === 'es' ? 'Postular a este Puesto' : 'Apply for this Role'}
                 </button>

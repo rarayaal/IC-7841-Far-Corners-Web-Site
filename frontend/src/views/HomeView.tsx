@@ -1,7 +1,10 @@
 import React from 'react';
 import { Language, Show, PageView } from '../types';
 import { showsData, projectsData } from '../data/mockData';
-import { Ticket, Users, Sparkles, ChevronRight, Star } from 'lucide-react';
+import { Ticket, Users, Sparkles, ChevronRight, Star, FileText } from 'lucide-react';
+import { CountUp } from '../components/CountUp';
+import { ShowsCarousel } from '../components/ShowsCarousel';
+import { hasTickets, openProgram } from '../lib/shows';
 
 interface HomeViewProps {
   language: Language;
@@ -22,7 +25,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const upcomingShows = showsData.slice(0, 3);
 
   return (
-    <div className="space-y-20 pb-16 animate-fadeIn">
+    <div className="space-y-12 sm:space-y-16 pb-12 sm:pb-16 animate-fadeIn">
       {/* Brand Hero Section */}
       <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-radial-gradient">
         {/* Background stage image & gradient overlay */}
@@ -65,7 +68,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
               onClick={() => onOpenTickets(currentShow)}
-              className="w-full sm:w-auto px-8 py-4 bg-brand-green hover:bg-brand-forest text-brand-navy hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all transform hover:-translate-y-1 flex items-center justify-center space-x-3 text-base uppercase tracking-wider"
+              className="w-full sm:w-auto px-8 py-4 btn-green text-brand-navy hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all transform hover:-translate-y-1 flex items-center justify-center space-x-3 text-base uppercase tracking-wider"
             >
               <Ticket className="w-5 h-5 text-brand-navy fill-current" />
               <span>{language === 'es' ? 'Comprar Boletos 2026' : 'Buy Tickets 2026'}</span>
@@ -83,25 +86,25 @@ export const HomeView: React.FC<HomeViewProps> = ({
           {/* Stats Bar */}
           <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 p-6 rounded-2xl bg-brand-navy/90 border border-brand-border backdrop-blur-md max-w-4xl mx-auto shadow-2xl">
             <div className="text-center p-2 border-r border-white/10 last:border-r-0">
-              <span className="block font-mono text-3xl font-extrabold text-brand-green">3</span>
+              <CountUp value="3" className="block font-mono text-4xl sm:text-5xl font-extrabold text-brand-green" />
               <span className="text-xs text-slate-300 uppercase font-semibold">
                 {language === 'es' ? 'Países de Impacto' : 'Countries'}
               </span>
             </div>
             <div className="text-center p-2 border-r border-white/10 last:border-r-0">
-              <span className="block font-mono text-3xl font-extrabold text-brand-blue">+15</span>
+              <CountUp value="+15" className="block font-mono text-4xl sm:text-5xl font-extrabold text-brand-blue" />
               <span className="text-xs text-slate-300 uppercase font-semibold">
                 {language === 'es' ? 'Obras Producidas' : 'Shows Produced'}
               </span>
             </div>
             <div className="text-center p-2 border-r border-white/10 last:border-r-0">
-              <span className="block font-mono text-3xl font-extrabold text-brand-lime">+5,000</span>
+              <CountUp value="+5,000" className="block font-mono text-4xl sm:text-5xl font-extrabold text-brand-lime" />
               <span className="text-xs text-slate-300 uppercase font-semibold">
                 {language === 'es' ? 'Jóvenes Beneficiados' : 'Youth Impacted'}
               </span>
             </div>
             <div className="text-center p-2">
-              <span className="block font-mono text-3xl font-extrabold text-brand-green">100%</span>
+              <CountUp value="100%" className="block font-mono text-4xl sm:text-5xl font-extrabold text-brand-green" />
               <span className="text-xs text-slate-300 uppercase font-semibold">
                 {language === 'es' ? 'Becas Sociales' : 'Social Scholarships'}
               </span>
@@ -112,9 +115,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
       {/* Season Production Banner (Current Show) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-gradient-to-r from-brand-navy via-brand-navyCard to-brand-navy rounded-3xl border border-brand-green/40 p-8 lg:p-12 shadow-2xl relative overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          <div className="lg:col-span-5 relative">
-            <div className="aspect-[3/4] rounded-2xl overflow-hidden shadow-glow-green border border-white/10 group">
+        <div className="bg-gradient-to-r from-brand-navy via-brand-navyCard to-brand-navy rounded-3xl border border-brand-green/40 p-6 lg:p-8 shadow-2xl relative overflow-hidden grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 items-center">
+          <div className="md:col-span-4 relative max-w-xs mx-auto w-full">
+            <div className="aspect-[3/4] max-h-[420px] rounded-2xl overflow-hidden shadow-glow-green border border-white/10 group">
               <img
                 src={currentShow.poster}
                 alt={currentShow.title}
@@ -126,12 +129,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </div>
           </div>
 
-          <div className="lg:col-span-7 space-y-6">
+          <div className="md:col-span-8 space-y-5">
             <div>
               <span className="text-xs font-bold text-brand-lime uppercase tracking-widest block mb-1">
                 {currentShow.dates} • {currentShow.location}
               </span>
-              <h2 className="font-serif text-3xl sm:text-5xl font-bold text-white tracking-tight">
+              <h2 className="font-serif text-3xl sm:text-4xl font-bold text-white tracking-tight">
                 {currentShow.title}
               </h2>
             </div>
@@ -158,7 +161,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <div className="pt-2">
               <button
                 onClick={() => onOpenTickets(currentShow)}
-                className="px-8 py-3.5 bg-brand-green hover:bg-brand-forest text-brand-navy hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all flex items-center space-x-2 text-xs uppercase tracking-wider"
+                className="px-8 py-3.5 btn-green text-brand-navy hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all flex items-center space-x-2 text-xs uppercase tracking-wider"
               >
                 <Ticket className="w-5 h-5 text-brand-navy fill-current" />
                 <span>{language === 'es' ? 'Reservar Boletos Ahora' : 'Reserve Tickets Now'}</span>
@@ -188,49 +191,29 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {upcomingShows.map((show) => (
-            <div
-              key={show.id}
-              className="bg-brand-navy border border-brand-border rounded-2xl overflow-hidden hover:border-brand-green/60 transition-all duration-300 hover:-translate-y-1 group shadow-card-dark flex flex-col justify-between"
-            >
-              <div>
-                <div className="aspect-[16/9] relative overflow-hidden bg-slate-900">
-                  <img
-                    src={show.banner || show.poster}
-                    alt={show.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-brand-navy via-transparent to-transparent"></div>
-                  <span className="absolute top-3 right-3 px-2.5 py-1 rounded bg-brand-navyDark/90 text-brand-lime text-xs font-mono font-bold border border-brand-border">
-                    {show.year}
-                  </span>
-                </div>
-
-                <div className="p-5 space-y-3">
-                  <h3 className="font-serif text-xl font-bold text-white group-hover:text-brand-green transition-colors">
-                    {show.title}
-                  </h3>
-                  <p className="text-xs text-slate-300 line-clamp-3">
-                    {language === 'es' ? show.synopsis : show.synopsisEn}
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-5 pt-0 border-t border-white/5 mt-4 flex items-center justify-between">
-                <span className="text-[11px] text-slate-300">
-                  {show.location}
-                </span>
-                <button
-                  onClick={() => onOpenTickets(show)}
-                  className="px-3.5 py-2.5 bg-brand-green/20 hover:bg-brand-green text-brand-green hover:text-brand-navy text-xs font-bold rounded-lg border border-brand-green/40 transition-all"
-                >
-                  {language === 'es' ? 'Adquirir Boletos' : 'Buy Tickets'}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+        <ShowsCarousel
+          shows={upcomingShows}
+          language={language}
+          renderAction={(show) =>
+            hasTickets(show) ? (
+              <button
+                onClick={() => onOpenTickets(show)}
+                className="btn-green inline-flex items-center gap-2 px-6 py-3 text-brand-navy hover:text-white text-xs font-extrabold rounded-xl uppercase tracking-wider"
+              >
+                <Ticket className="w-4 h-4 fill-current" />
+                {language === 'es' ? 'Adquirir Boletos' : 'Buy Tickets'}
+              </button>
+            ) : (
+              <button
+                onClick={() => openProgram(show, () => setCurrentPage('shows'))}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-brand-navyDark hover:bg-brand-navyCard border border-brand-blue/60 text-brand-blue hover:text-white text-xs font-bold rounded-xl uppercase tracking-wider transition-colors"
+              >
+                <FileText className="w-4 h-4" />
+                {language === 'es' ? 'Ver programa de mano' : 'View program'}
+              </button>
+            )
+          }
+        />
       </section>
 
       {/* Global Impact Highlights */}
@@ -293,7 +276,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
             <button
               onClick={() => setCurrentPage('participate')}
-              className="px-8 py-3.5 bg-brand-green hover:bg-brand-forest text-brand-navy hover:text-white font-extrabold rounded-xl shadow-lg transition-all uppercase tracking-wider text-xs"
+              className="px-8 py-3.5 btn-green text-brand-navy hover:text-white font-extrabold rounded-xl shadow-lg transition-all uppercase tracking-wider text-xs"
             >
               {language === 'es' ? 'Postularse a Pasantía' : 'Apply for Internship'}
             </button>

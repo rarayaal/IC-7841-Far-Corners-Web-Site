@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Language, Show } from '../types';
 import { showsData } from '../data/mockData';
-import { Ticket, Calendar, Users, Info, X } from 'lucide-react';
+import { Ticket, Calendar, Users, Info, X, FileText } from 'lucide-react';
+import { hasTickets, openProgram } from '../lib/shows';
 
 interface ShowsViewProps {
   language: Language;
@@ -24,7 +25,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
     : allShows;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10 animate-fadeIn">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-12 sm:space-y-16 animate-fadeIn">
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto space-y-3">
         <span className="inline-block px-4 py-1.5 rounded-full bg-brand-green/20 text-brand-lime text-xs font-bold uppercase tracking-wider border border-brand-green/40">
@@ -77,7 +78,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
       </div>
 
       {/* Shows Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
         {filteredShows.map((show) => (
           <div
             key={show.id}
@@ -85,11 +86,11 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
           >
             <div>
               {/* Poster image container */}
-              <div className="aspect-[3/4] relative overflow-hidden bg-slate-900 cursor-pointer" onClick={() => setSelectedShow(show)}>
+              <div className="aspect-[4/3] relative overflow-hidden bg-slate-900 cursor-pointer" onClick={() => setSelectedShow(show)}>
                 <img
                   src={show.poster}
                   alt={show.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-brand-navy via-transparent to-transparent"></div>
 
@@ -139,13 +140,23 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
                   <span>Ver Ficha</span>
                 </button>
 
-                <button
-                  onClick={() => onOpenTickets(show)}
-                  className="px-4 py-2 bg-brand-green hover:bg-brand-forest text-brand-navy hover:text-white text-xs font-extrabold rounded-lg shadow-glow-green transition-all flex items-center space-x-1.5 uppercase tracking-wider"
-                >
-                  <Ticket className="w-3.5 h-3.5 text-brand-navy fill-current" />
-                  <span>{show.status === 'current' ? 'Comprar Boletos' : 'Ver Detalles'}</span>
-                </button>
+                {hasTickets(show) ? (
+                  <button
+                    onClick={() => onOpenTickets(show)}
+                    className="px-4 py-2.5 btn-green text-brand-navy hover:text-white text-xs font-extrabold rounded-lg shadow-glow-green flex items-center space-x-1.5 uppercase tracking-wider"
+                  >
+                    <Ticket className="w-3.5 h-3.5 text-brand-navy fill-current" />
+                    <span>{language === 'es' ? 'Comprar Boletos' : 'Buy Tickets'}</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => openProgram(show, () => setSelectedShow(show))}
+                    className="px-4 py-2.5 bg-brand-navyDark hover:bg-brand-navyCard border border-brand-blue/60 text-brand-blue hover:text-white text-xs font-bold rounded-lg flex items-center space-x-1.5 uppercase tracking-wider transition-colors"
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>{language === 'es' ? 'Ver programa de mano' : 'View program'}</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -221,17 +232,31 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
               >
                 Cerrar
               </button>
-              <button
-                onClick={() => {
-                  const s = selectedShow;
-                  setSelectedShow(null);
-                  onOpenTickets(s);
-                }}
-                className="px-6 py-2.5 rounded-xl bg-brand-green hover:bg-brand-forest text-brand-navy hover:text-white text-xs font-extrabold shadow-glow-green flex items-center space-x-2 uppercase tracking-wider"
-              >
-                <Ticket className="w-4 h-4 text-brand-navy fill-current" />
-                <span>Adquirir Boletos</span>
-              </button>
+              {hasTickets(selectedShow) ? (
+                <button
+                  onClick={() => {
+                    const s = selectedShow;
+                    setSelectedShow(null);
+                    onOpenTickets(s);
+                  }}
+                  className="px-6 py-2.5 rounded-xl btn-green text-brand-navy hover:text-white text-xs font-extrabold shadow-glow-green flex items-center space-x-2 uppercase tracking-wider"
+                >
+                  <Ticket className="w-4 h-4 text-brand-navy fill-current" />
+                  <span>Adquirir Boletos</span>
+                </button>
+              ) : (
+                selectedShow.programUrl && (
+                  <a
+                    href={selectedShow.programUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-6 py-2.5 rounded-xl bg-brand-navyCard border border-brand-blue/60 text-brand-blue hover:text-white text-xs font-bold flex items-center space-x-2 uppercase tracking-wider"
+                  >
+                    <FileText className="w-4 h-4" />
+                    <span>Ver programa de mano</span>
+                  </a>
+                )
+              )}
             </div>
           </div>
         </div>
