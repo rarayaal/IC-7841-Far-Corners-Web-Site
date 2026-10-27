@@ -107,7 +107,7 @@ export async function logoutController(_req: Request, res: Response): Promise<vo
 }
 
 /**
- * GET /api/v1/users/me - Consulta del perfil del usuario autenticado
+ * GET /api/v1/me - Consulta del perfil del usuario autenticado
  */
 export async function getMyProfileController(req: Request, res: Response): Promise<void> {
   try {

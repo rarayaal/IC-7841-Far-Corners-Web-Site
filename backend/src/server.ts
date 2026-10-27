@@ -11,7 +11,7 @@ import { retirementRouter } from "./routes/retirement.routes.js";
 import ticketsRouter from "./routes/tickets.routes.js";
 import donationsRouter from "./routes/donations.routes.js";
 import { usersRouter } from "./routes/users.routes.js";
-import { authRouter, usersRouter as authUsersRouter } from "./routes/auth.routes.js";
+import { authRouter, profileRouter } from "./routes/auth.routes.js";
 import { adminUsersRouter } from "./routes/admin-users.routes.js";
 import { auditRouter } from "./routes/audit.routes.js";
 import { contactMessagesRouter } from "./routes/contactMessages.routes.js";
@@ -41,7 +41,7 @@ app.use("/api/v1/users", usersRouter);
 
 // Rutas de seguridad, administracion y auditoria
 app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/me", authUsersRouter);
+app.use("/api/v1/me", profileRouter);
 app.use("/api/v1/admin", adminUsersRouter);
 app.use("/api/v1/audit", auditRouter);
 

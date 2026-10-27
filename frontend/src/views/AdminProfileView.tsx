@@ -31,7 +31,7 @@ export const AdminProfileView = ({ language }: { language: Language }) => {
 
     async function cargar() {
       try {
-        const datos = await api<{ data: Profile }>('/api/v1/users/me');
+        const datos = await api<{ data: Profile }>('/api/v1/me');
         if (!activo) return;
         setPerfil(datos.data);
         setNombre(datos.data.full_name);
@@ -64,7 +64,7 @@ export const AdminProfileView = ({ language }: { language: Language }) => {
     setAviso('');
 
     try {
-      const datos = await api<{ data: Profile }>('/api/v1/users/me', {
+      const datos = await api<{ data: Profile }>('/api/v1/me', {
         method: 'PUT',
         body: JSON.stringify({ full_name: nuevoNombre }),
       });

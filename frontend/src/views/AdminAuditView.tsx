@@ -5,14 +5,15 @@ import { apiAdminJson } from '../services/apiAdmin';
 interface AuditLog {
   id: string;
   user_id: string | null;
+  user_name?: string;
   user_email?: string;
   action: string;
-  entity_type: string;
-  entity_id: string | null;
-  previous_state: Record<string, any> | null;
-  new_state: Record<string, any> | null;
+  table_name: string;
+  record_id: string | null;
+  old_values: Record<string, any> | null;
+  new_values: Record<string, any> | null;
   ip_address: string | null;
-  user_agent: string | null;
+  user_agent?: string | null;
   created_at: string;
 }
 
@@ -32,7 +33,7 @@ export const AdminAuditView: React.FC = () => {
     try {
       const params = new URLSearchParams();
       if (actionFilter) params.append('action', actionFilter);
-      if (entityFilter) params.append('entity_type', entityFilter);
+      if (entityFilter) params.append('tableName', entityFilter);
       params.append('limit', '50');
 
       const res = await apiAdminJson<{ data: AuditLog[] }>(`/api/v1/audit/logs?${params.toString()}`);
@@ -86,11 +87,9 @@ export const AdminAuditView: React.FC = () => {
             className="appearance-none bg-[#000d1a] border border-white/10 hover:border-white/20 focus:border-[#77C65E] rounded-xl text-white text-xs pl-3.5 pr-9 py-2 outline-none cursor-pointer transition-all shadow-inner"
           >
             <option value="">Todas las acciones</option>
-            <option value="CREATE_ADMIN_USER">CREATE_ADMIN_USER</option>
-            <option value="UPDATE_ADMIN_STATUS">UPDATE_ADMIN_STATUS</option>
-            <option value="UPDATE_ADMIN_ROLES">UPDATE_ADMIN_ROLES</option>
-            <option value="LOGIN_SUCCESS">LOGIN_SUCCESS</option>
-            <option value="LOGIN_FAILED">LOGIN_FAILED</option>
+            <option value="create">Crear (create)</option>
+            <option value="update">Modificar (update)</option>
+            <option value="delete">Eliminar (delete)</option>
           </select>
           <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
@@ -103,10 +102,12 @@ export const AdminAuditView: React.FC = () => {
             className="appearance-none bg-[#000d1a] border border-white/10 hover:border-white/20 focus:border-[#77C65E] rounded-xl text-white text-xs pl-3.5 pr-9 py-2 outline-none cursor-pointer transition-all shadow-inner"
           >
             <option value="">Todas las entidades</option>
-            <option value="users">users</option>
-            <option value="shows">shows</option>
-            <option value="events">events</option>
-            <option value="donations">donations</option>
+            <option value="users">Usuarios (users)</option>
+            <option value="user_permissions">Permisos (user_permissions)</option>
+            <option value="shows">Obras / Shows (shows)</option>
+            <option value="events">Eventos (events)</option>
+            <option value="tickets">Boletos (tickets)</option>
+            <option value="donations">Donaciones (donations)</option>
           </select>
           <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
@@ -147,19 +148,19 @@ export const AdminAuditView: React.FC = () => {
                     </td>
                     <td className="py-3.5 px-4">
                       <span className={`px-2 py-0.5 rounded font-bold text-[10px] ${
-                        log.action.includes('CREATE') ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
-                        log.action.includes('UPDATE') ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
-                        log.action.includes('FAILED') ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' :
+                        log.action.toLowerCase() === 'create' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
+                        log.action.toLowerCase() === 'update' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
+                        log.action.toLowerCase() === 'delete' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' :
                         'bg-amber-500/20 text-amber-400 border border-amber-500/30'
                       }`}>
                         {log.action}
                       </span>
                     </td>
                     <td className="py-3.5 px-4 font-sans text-white font-semibold">
-                      {log.entity_type} {log.entity_id ? `(${log.entity_id.substring(0, 8)}...)` : ''}
+                      {log.table_name} {log.record_id ? `(${log.record_id.substring(0, 8)}...)` : ''}
                     </td>
                     <td className="py-3.5 px-4 font-sans text-slate-300">
-                      {log.user_email || log.user_id || 'Sistema / Anónimo'}
+                      {log.user_email || log.user_name || log.user_id || 'Sistema / Anónimo'}
                     </td>
                     <td className="py-3.5 px-4 text-slate-400 text-[10px]">
                       {log.ip_address || '127.0.0.1'}
@@ -200,15 +201,15 @@ export const AdminAuditView: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <h4 className="text-xs font-bold text-slate-300 mb-2 uppercase tracking-wider">Estado Anterior (previous_state)</h4>
+                <h4 className="text-xs font-bold text-slate-300 mb-2 uppercase tracking-wider">Estado Anterior (old_values)</h4>
                 <pre className="p-3 bg-[#000d1a] border border-white/10 rounded-xl text-[11px] font-mono text-amber-300/90 overflow-x-auto max-h-60">
-                  {JSON.stringify(selectedLog.previous_state, null, 2) || 'null'}
+                  {JSON.stringify(selectedLog.old_values, null, 2) || 'null'}
                 </pre>
               </div>
               <div>
-                <h4 className="text-xs font-bold text-slate-300 mb-2 uppercase tracking-wider">Estado Nuevo (new_state)</h4>
+                <h4 className="text-xs font-bold text-slate-300 mb-2 uppercase tracking-wider">Estado Nuevo (new_values)</h4>
                 <pre className="p-3 bg-[#000d1a] border border-white/10 rounded-xl text-[11px] font-mono text-emerald-300/90 overflow-x-auto max-h-60">
-                  {JSON.stringify(selectedLog.new_state, null, 2) || 'null'}
+                  {JSON.stringify(selectedLog.new_values, null, 2) || 'null'}
                 </pre>
               </div>
             </div>

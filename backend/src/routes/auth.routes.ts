@@ -15,8 +15,8 @@ authRouter.post("/login", loginLocalController);
 authRouter.post("/google", loginGoogleController);
 authRouter.post("/logout", authenticateToken, logoutController);
 
-export const usersRouter = Router();
+export const profileRouter = Router();
 
-// Rutas de usuarios
-usersRouter.get("/me", authenticateToken, getMyProfileController);
-usersRouter.put("/me", authenticateToken, updateMyProfileController);
+// Rutas del perfil del usuario autenticado
+profileRouter.get("/", authenticateToken, getMyProfileController);
+profileRouter.put("/", authenticateToken, updateMyProfileController);
