@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { PageView, Language } from '../types';
-import { Globe, Search, Shield, Menu, X, Heart, Ticket, Calendar, Info, Users, UserPlus } from 'lucide-react';
+import { Globe, Search, Shield, Menu, X, Heart, Ticket, Calendar, Info, Users, UserPlus, Mail } from 'lucide-react';
 
 interface NavbarProps {
   currentPage: PageView;
@@ -43,6 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'about' as PageView, labelEs: 'Historia e Impacto', labelEn: 'About & Impact', icon: Info },
     { id: 'shows' as PageView, labelEs: 'Cartelera', labelEn: 'Shows', icon: Ticket },
     { id: 'participate' as PageView, labelEs: 'Programas y Comunidad', labelEn: 'Programs & Community', icon: Users },
+    { id: 'contact' as PageView, labelEs: 'Contacto', labelEn: 'Contact', icon: Mail },
     { id: 'register' as PageView, labelEs: 'Únete', labelEn: 'Join us', icon: UserPlus },
   ];
 
