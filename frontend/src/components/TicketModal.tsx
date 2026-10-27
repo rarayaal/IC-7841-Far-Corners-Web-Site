@@ -617,38 +617,23 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                     <span className="text-slate-300 block text-[10px]">Entradas:</span>
                     <span className="font-semibold text-white">{quantity} x (Entrada General)</span>
                   </div>
-                  <button
-                    onClick={() => { setPurchaseError(''); setStep(2); }}
-                    className="w-full py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl"
-                  >
-                    Volver e Intentar de Nuevo
-                  </button>
-                </div>
-              ) : purchaseResult ? (
-                <>
-                  <div className="inline-flex p-3 rounded-full bg-[#77C65E]/20 text-[#77C65E] border border-[#77C65E]/40">
-                    <CheckCircle2 className="w-10 h-10" />
+                  <div>
+                    <span className="text-slate-300 block text-[10px]">Fecha:</span>
+                    <span className="font-semibold text-white">{selectedDate}</span>
                   </div>
-
                   <div>
                     <span className="text-slate-300 block text-[10px]">Total:</span>
                     <span className="font-mono font-bold text-brand-lime">₡{totalPrice.toLocaleString()}</span>
                   </div>
+                </div>
 
-                {/* QR Simulation */}
-                <div className="flex items-center justify-between bg-black/40 p-3 rounded-xl border border-white/10">
-                  <div className="flex items-center space-x-3">
-                    <QrCode className="w-12 h-12 text-brand-green" />
-                    <div className="text-[10px] text-slate-300">
-                      <span className="block text-white font-mono font-bold">Código de Acceso QR</span>
-                      <span>Muestra este código al ingresar al teatro</span>
-                    </div>
-
-                    {/* Real QR codes from DB */}
+                {purchaseResult?.tickets && purchaseResult.tickets.length > 0 ? (
+                  <div className="space-y-2">
+                    <span className="block text-[11px] font-mono text-slate-300 font-bold mb-1">Tus Boletos Digitales:</span>
                     {purchaseResult.tickets.map((t, i) => (
-                      <div key={t.id} className="flex items-center justify-between bg-black/40 p-3 rounded-xl border border-white/10 mb-2">
+                      <div key={t.id} className="flex items-center justify-between bg-black/40 p-3 rounded-xl border border-white/10">
                         <div className="flex items-center space-x-3">
-                          <QrCode className="w-10 h-10 text-[#77C65E]" />
+                          <QrCode className="w-8 h-8 text-[#77C65E]" />
                           <div className="text-[10px] text-slate-300">
                             <span className="block text-white font-mono font-bold">Boleto #{i + 1}</span>
                             <span className="font-mono text-[#DCEB4F]">{t.qr_code}</span>
@@ -657,6 +642,18 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                       </div>
                     ))}
                   </div>
+                ) : (
+                  <div className="flex items-center justify-between bg-black/40 p-3 rounded-xl border border-white/10">
+                    <div className="flex items-center space-x-3">
+                      <QrCode className="w-12 h-12 text-brand-green" />
+                      <div className="text-[10px] text-slate-300">
+                        <span className="block text-white font-mono font-bold">Código de Acceso QR</span>
+                        <span>Muestra este código al ingresar al teatro</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
 
               <button
                 onClick={resetAndClose}

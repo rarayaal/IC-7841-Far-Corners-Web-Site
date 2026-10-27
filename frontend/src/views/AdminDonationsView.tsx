@@ -93,8 +93,22 @@ export const AdminDonationsView = ({ language }: { language: Language }) => {
   return (
     <div className="space-y-6">
       <ToastRegion>
-        {error && <Toast variante="error" mensaje={error} alCerrar={() => setError('')} />}
-        {aviso && <Toast variante="exito" mensaje={aviso} alCerrar={() => setAviso('')} />}
+        {error && (
+          <Toast
+            variant="error"
+            message={error}
+            onClose={() => setError('')}
+            closeLabel={isEs ? 'Cerrar' : 'Close'}
+          />
+        )}
+        {aviso && (
+          <Toast
+            variant="success"
+            message={aviso}
+            onClose={() => setAviso('')}
+            closeLabel={isEs ? 'Cerrar' : 'Close'}
+          />
+        )}
       </ToastRegion>
 
       {/* Header & KPI Summary */}

@@ -187,8 +187,22 @@ export const AdminProjectsView = ({ language }: { language: Language }) => {
   return (
     <div className="space-y-6">
       <ToastRegion>
-        {error && <Toast variante="error" mensaje={error} alCerrar={() => setError('')} />}
-        {aviso && <Toast variante="exito" mensaje={aviso} alCerrar={() => setAviso('')} />}
+        {error && (
+          <Toast
+            variant="error"
+            message={error}
+            onClose={() => setError('')}
+            closeLabel={isEs ? 'Cerrar' : 'Close'}
+          />
+        )}
+        {aviso && (
+          <Toast
+            variant="success"
+            message={aviso}
+            onClose={() => setAviso('')}
+            closeLabel={isEs ? 'Cerrar' : 'Close'}
+          />
+        )}
       </ToastRegion>
 
       {/* Header */}
@@ -453,18 +467,19 @@ export const AdminProjectsView = ({ language }: { language: Language }) => {
       </div>
 
       <ConfirmDialog
-        abierto={Boolean(porEliminar)}
-        titulo={isEs ? 'Confirmar retiro de proyecto' : 'Confirm removal'}
-        mensaje={
+        open={Boolean(porEliminar)}
+        title={isEs ? 'Confirmar retiro de proyecto' : 'Confirm removal'}
+        message={
           isEs
             ? `¿Deseas eliminar el proyecto "${porEliminar?.title}"? Esta acción retirará el registro del catálogo.`
             : `Are you sure you want to delete "${porEliminar?.title}"?`
         }
-        textoConfirmar={borrando ? (isEs ? 'Eliminando...' : 'Deleting...') : (isEs ? 'Eliminar' : 'Delete')}
-        textoCancelar={isEs ? 'Cancelar' : 'Cancel'}
-        alConfirmar={confirmarBorrado}
-        alCancelar={() => setPorEliminar(null)}
-        peligroso
+        confirmLabel={isEs ? 'Eliminar' : 'Delete'}
+        busyLabel={isEs ? 'Eliminando...' : 'Deleting...'}
+        cancelLabel={isEs ? 'Cancelar' : 'Cancel'}
+        busy={borrando}
+        onConfirm={confirmarBorrado}
+        onCancel={() => setPorEliminar(null)}
       />
     </div>
   );
