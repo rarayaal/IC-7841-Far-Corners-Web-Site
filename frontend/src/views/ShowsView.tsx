@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Language, Show } from '../types';
 import { showsData } from '../data/mockData';
-import { Ticket, Calendar, Users, Info, X } from 'lucide-react';
+import { Ticket, Calendar, Users, Info, X, FileText } from 'lucide-react';
+import { hasTickets, openProgram } from '../lib/shows';
 
 interface ShowsViewProps {
   language: Language;
@@ -24,10 +25,10 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
     : allShows;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10 animate-fadeIn">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-12 sm:space-y-16 animate-fadeIn">
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto space-y-3">
-        <span className="inline-block px-4 py-1.5 rounded-full bg-[#77C65E]/20 text-[#DCEB4F] text-xs font-bold uppercase tracking-wider border border-[#77C65E]/40">
+        <span className="inline-block px-4 py-1.5 rounded-full bg-brand-green/20 text-brand-lime text-xs font-bold uppercase tracking-wider border border-brand-green/40">
           {language === 'es' ? 'Cartelera Teatral 2026 & Archivo' : 'Theatrical Repertory 2026'}
         </span>
         <h1 className="font-serif text-4xl sm:text-5xl font-bold text-white tracking-tight">
@@ -42,12 +43,12 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
 
       {/* Filter Tabs */}
       <div className="flex justify-center">
-        <div className="inline-flex p-1.5 rounded-xl bg-[#002244] border border-[#1e4066] text-xs font-bold space-x-1">
+        <div className="inline-flex p-1.5 rounded-xl bg-brand-navy border border-brand-border text-xs font-bold space-x-1">
           <button
             onClick={() => setFilter('current')}
             className={`px-5 py-2 rounded-lg transition-all ${
               filter === 'current'
-                ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
+                ? 'bg-brand-green text-brand-navy shadow-glow-green font-extrabold'
                 : 'text-slate-300 hover:text-white'
             }`}
           >
@@ -57,7 +58,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
             onClick={() => setFilter('all')}
             className={`px-5 py-2 rounded-lg transition-all ${
               filter === 'all'
-                ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
+                ? 'bg-brand-green text-brand-navy shadow-glow-green font-extrabold'
                 : 'text-slate-300 hover:text-white'
             }`}
           >
@@ -67,7 +68,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
             onClick={() => setFilter('past')}
             className={`px-5 py-2 rounded-lg transition-all ${
               filter === 'past'
-                ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
+                ? 'bg-brand-green text-brand-navy shadow-glow-green font-extrabold'
                 : 'text-slate-300 hover:text-white'
             }`}
           >
@@ -77,33 +78,33 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
       </div>
 
       {/* Shows Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
         {filteredShows.map((show) => (
           <div
             key={show.id}
-            className="bg-[#002244] border border-[#1e4066] rounded-2xl overflow-hidden hover:border-[#77C65E]/60 transition-all duration-300 hover:-translate-y-1 shadow-card-dark flex flex-col justify-between group"
+            className="bg-brand-navy border border-brand-border rounded-2xl overflow-hidden hover:border-brand-green/60 transition-all duration-300 hover:-translate-y-1 shadow-card-dark flex flex-col justify-between group"
           >
             <div>
               {/* Poster image container */}
-              <div className="aspect-[3/4] relative overflow-hidden bg-slate-900 cursor-pointer" onClick={() => setSelectedShow(show)}>
+              <div className="aspect-[4/3] relative overflow-hidden bg-slate-900 cursor-pointer" onClick={() => setSelectedShow(show)}>
                 <img
                   src={show.poster}
                   alt={show.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#002244] via-transparent to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-brand-navy via-transparent to-transparent"></div>
 
                 {show.status === 'current' ? (
-                  <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-[#77C65E] text-[#002244] text-xs font-extrabold uppercase tracking-wider shadow-lg">
+                  <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-brand-green text-brand-navy text-xs font-extrabold uppercase tracking-wider shadow-lg">
                     CARTELERA 2026
                   </span>
                 ) : (
-                  <span className="absolute top-3 left-3 px-3 py-1 rounded bg-[#00162e]/80 text-slate-300 text-xs font-mono border border-white/10">
+                  <span className="absolute top-3 left-3 px-3 py-1 rounded bg-brand-navyDark/80 text-slate-300 text-xs font-mono border border-white/10">
                     {show.year}
                   </span>
                 )}
 
-                <span className="absolute bottom-3 right-3 px-2.5 py-1 rounded bg-[#00162e]/90 text-[#DCEB4F] text-xs font-mono font-bold border border-[#1e4066]">
+                <span className="absolute bottom-3 right-3 px-2.5 py-1 rounded bg-brand-navyDark/90 text-brand-lime text-xs font-mono font-bold border border-brand-border">
                   ₡10,000 CRC
                 </span>
               </div>
@@ -112,12 +113,12 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
               <div className="p-6 space-y-3">
                 <h3
                   onClick={() => setSelectedShow(show)}
-                  className="font-serif text-2xl font-bold text-white group-hover:text-[#77C65E] transition-colors cursor-pointer"
+                  className="font-serif text-2xl font-bold text-white group-hover:text-brand-green transition-colors cursor-pointer"
                 >
                   {show.title} ({show.year})
                 </h3>
 
-                <div className="flex items-center space-x-2 text-xs text-[#4A90D6]">
+                <div className="flex items-center space-x-2 text-xs text-brand-blue">
                   <Calendar className="w-3.5 h-3.5" />
                   <span>{show.dates}</span>
                 </div>
@@ -135,17 +136,27 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
                   onClick={() => setSelectedShow(show)}
                   className="text-xs text-slate-300 hover:text-white font-medium flex items-center space-x-1"
                 >
-                  <Info className="w-3.5 h-3.5 text-[#4A90D6]" />
+                  <Info className="w-3.5 h-3.5 text-brand-blue" />
                   <span>Ver Ficha</span>
                 </button>
 
-                <button
-                  onClick={() => onOpenTickets(show)}
-                  className="px-4 py-2 bg-[#77C65E] hover:bg-[#008047] text-[#002244] hover:text-white text-xs font-extrabold rounded-lg shadow-glow-green transition-all flex items-center space-x-1.5 uppercase tracking-wider"
-                >
-                  <Ticket className="w-3.5 h-3.5 text-[#002244] fill-current" />
-                  <span>{show.status === 'current' ? 'Comprar Boletos' : 'Ver Detalles'}</span>
-                </button>
+                {hasTickets(show) ? (
+                  <button
+                    onClick={() => onOpenTickets(show)}
+                    className="px-4 py-2.5 btn-green text-brand-navy hover:text-white text-xs font-extrabold rounded-lg shadow-glow-green flex items-center space-x-1.5 uppercase tracking-wider"
+                  >
+                    <Ticket className="w-3.5 h-3.5 text-brand-navy fill-current" />
+                    <span>{language === 'es' ? 'Comprar Boletos' : 'Buy Tickets'}</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => openProgram(show, () => setSelectedShow(show))}
+                    className="px-4 py-2.5 bg-brand-navyDark hover:bg-brand-navyCard border border-brand-blue/60 text-brand-blue hover:text-white text-xs font-bold rounded-lg flex items-center space-x-1.5 uppercase tracking-wider transition-colors"
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>{language === 'es' ? 'Ver programa de mano' : 'View program'}</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -155,9 +166,9 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
       {/* Show Detail Modal */}
       {selectedShow && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-          <div className="bg-[#002244] border border-[#1e4066] w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden text-[#F8F8F2] max-h-[90vh] flex flex-col">
+          <div className="bg-brand-navy border border-brand-border w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden text-brand-cream max-h-[90vh] flex flex-col">
             {/* Header */}
-            <div className="p-5 border-b border-white/10 bg-[#00162e] flex items-center justify-between shrink-0">
+            <div className="p-5 border-b border-white/10 bg-brand-navyDark flex items-center justify-between shrink-0">
               <h3 className="font-serif text-xl font-bold text-white">
                 {selectedShow.title} ({selectedShow.year})
               </h3>
@@ -173,7 +184,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
                   <img src={selectedShow.poster} alt={selectedShow.title} className="w-full h-full object-cover" />
                 </div>
                 <div className="space-y-3 flex-1">
-                  <span className="text-xs font-mono text-[#DCEB4F] block font-bold">{selectedShow.dates}</span>
+                  <span className="text-xs font-mono text-brand-lime block font-bold">{selectedShow.dates}</span>
                   <h4 className="font-serif text-2xl font-bold text-white">{selectedShow.title}</h4>
                   <p className="text-xs text-slate-300 leading-relaxed">
                     {language === 'es' ? selectedShow.synopsis : selectedShow.synopsisEn}
@@ -189,12 +200,12 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
               {selectedShow.cast && selectedShow.cast.length > 0 && (
                 <div className="space-y-3 pt-4 border-t border-white/10">
                   <h5 className="font-serif text-base font-bold text-white flex items-center gap-2">
-                    <Users className="w-4 h-4 text-[#4A90D6]" />
+                    <Users className="w-4 h-4 text-brand-blue" />
                     <span>Elenco y Solistas Principales</span>
                   </h5>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {selectedShow.cast.map((c, i) => (
-                      <div key={i} className="p-2.5 rounded-lg bg-[#00162e] border border-[#1e4066] text-xs">
+                      <div key={i} className="p-2.5 rounded-lg bg-brand-navyDark border border-brand-border text-xs">
                         <span className="font-bold text-white block">{c.name}</span>
                         <span className="text-slate-300 text-[11px]">{c.role}</span>
                       </div>
@@ -204,34 +215,48 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
               )}
 
               {/* Single Price Card */}
-              <div className="p-4 rounded-xl bg-[#00162e] border border-white/10 flex items-center justify-between text-xs">
+              <div className="p-4 rounded-xl bg-brand-navyDark border border-white/10 flex items-center justify-between text-xs">
                 <div>
                   <span className="font-bold text-white block">Entrada General</span>
                   <span className="text-slate-300 text-[11px]">Acceso completo a la función</span>
                 </div>
-                <span className="font-mono text-base font-bold text-[#DCEB4F]">₡10,000 CRC</span>
+                <span className="font-mono text-base font-bold text-brand-lime">₡10,000 CRC</span>
               </div>
             </div>
 
             {/* Modal Footer CTA */}
-            <div className="p-4 bg-[#00162e] border-t border-white/10 flex justify-end gap-3 shrink-0">
+            <div className="p-4 bg-brand-navyDark border-t border-white/10 flex justify-end gap-3 shrink-0">
               <button
                 onClick={() => setSelectedShow(null)}
                 className="px-5 py-2.5 rounded-xl bg-white/10 text-white text-xs font-semibold"
               >
                 Cerrar
               </button>
-              <button
-                onClick={() => {
-                  const s = selectedShow;
-                  setSelectedShow(null);
-                  onOpenTickets(s);
-                }}
-                className="px-6 py-2.5 rounded-xl bg-[#77C65E] hover:bg-[#008047] text-[#002244] hover:text-white text-xs font-extrabold shadow-glow-green flex items-center space-x-2 uppercase tracking-wider"
-              >
-                <Ticket className="w-4 h-4 text-[#002244] fill-current" />
-                <span>Adquirir Boletos</span>
-              </button>
+              {hasTickets(selectedShow) ? (
+                <button
+                  onClick={() => {
+                    const s = selectedShow;
+                    setSelectedShow(null);
+                    onOpenTickets(s);
+                  }}
+                  className="px-6 py-2.5 rounded-xl btn-green text-brand-navy hover:text-white text-xs font-extrabold shadow-glow-green flex items-center space-x-2 uppercase tracking-wider"
+                >
+                  <Ticket className="w-4 h-4 text-brand-navy fill-current" />
+                  <span>Adquirir Boletos</span>
+                </button>
+              ) : (
+                selectedShow.programUrl && (
+                  <a
+                    href={selectedShow.programUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-6 py-2.5 rounded-xl bg-brand-navyCard border border-brand-blue/60 text-brand-blue hover:text-white text-xs font-bold flex items-center space-x-2 uppercase tracking-wider"
+                  >
+                    <FileText className="w-4 h-4" />
+                    <span>Ver programa de mano</span>
+                  </a>
+                )
+              )}
             </div>
           </div>
         </div>

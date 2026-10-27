@@ -1,6 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { Language, Show } from '../types';
-import { X, Ticket, Calendar, CheckCircle2, ShieldCheck, QrCode, CreditCard, Clock, Upload, AlertTriangle } from 'lucide-react';
+import { X, Ticket, Calendar, CheckCircle2, ShieldCheck, QrCode, CreditCard, Clock, Upload, AlertTriangle, Loader2 } from 'lucide-react';
+
+// Tipos devueltos por la API
+interface TicketInventoryItem {
+  id: string;
+  event_id: string;
+  ticket_type: string;
+  price: number;
+  quantity_available: number;
+  quantity_sold: number;
+  currency: string;
+}
+
+interface PurchaseResult {
+  purchase: {
+    id: string;
+    event_id: string;
+    total_amount: number;
+    status: string;
+    payment_intent_id: string;
+    currency: string;
+    buyer_name: string | null;
+    buyer_email: string | null;
+    created_at: string;
+  };
+  tickets: {
+    id: string;
+    qr_code: string;
+    status: string;
+  }[];
+}
 
 interface TicketModalProps {
   isOpen: boolean;
@@ -19,21 +49,55 @@ export const TicketModal: React.FC<TicketModalProps> = ({
   const [quantity, setQuantity] = useState(2);
   const [selectedDate, setSelectedDate] = useState('2026-07-18');
   const [paymentMethod, setPaymentMethod] = useState<'sinpe' | 'zeffy' | 'card'>('sinpe');
-  
+
   // User info
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  
-  // SINPE Confirmation info (Step 3)
+
+  // Inventory from API
+  const [inventory, setInventory] = useState<TicketInventoryItem[]>([]);
+  const [selectedInventoryId, setSelectedInventoryId] = useState<string>('');
+  const [loadingInventory, setLoadingInventory] = useState(false);
+
+  // Purchase result from API
+  const [purchaseResult, setPurchaseResult] = useState<PurchaseResult | null>(null);
+  const [purchasing, setPurchasing] = useState(false);
+  const [purchaseError, setPurchaseError] = useState('');
+
+  // SINPE Confirmation
   const [sinpeRef, setSinpeRef] = useState('');
   const [sinpeFileName, setSinpeFileName] = useState('');
   const [sinpeCompleted, setSinpeCompleted] = useState(false);
 
   // 5 Minute Timer for SINPE Payment
-  const [timeLeft, setTimeLeft] = useState<number>(300); // 300 seconds = 5 minutes
+  const [timeLeft, setTimeLeft] = useState<number>(300);
   const [isTimerExpired, setIsTimerExpired] = useState(false);
 
+  // Load ticket inventory when modal opens
+  useEffect(() => {
+    if (!isOpen || !show) return;
+
+    async function fetchInventory() {
+      setLoadingInventory(true);
+      try {
+        const res = await fetch(`/api/v1/tickets/events/${show!.id}`);
+        if (res.ok) {
+          const data: TicketInventoryItem[] = await res.json();
+          setInventory(data);
+          if (data.length > 0) setSelectedInventoryId(data[0].id);
+        }
+      } catch {
+        // Si falla, seguimos con precios del show
+      } finally {
+        setLoadingInventory(false);
+      }
+    }
+
+    void fetchInventory();
+  }, [isOpen, show]);
+
+  // SINPE countdown timer
   useEffect(() => {
     let interval: any = null;
     if (step === 3 && paymentMethod === 'sinpe' && !sinpeCompleted && timeLeft > 0) {
@@ -53,8 +117,11 @@ export const TicketModal: React.FC<TicketModalProps> = ({
 
   if (!isOpen || !show) return null;
 
-  const pricePerTicket = show.priceGeneral || 10000;
+  // Use real inventory price or fall back to show price
+  const selectedInventory = inventory.find(i => i.id === selectedInventoryId);
+  const pricePerTicket = selectedInventory ? selectedInventory.price : (show.priceGeneral || 10000);
   const totalPrice = pricePerTicket * quantity;
+  const availableQty = selectedInventory ? selectedInventory.quantity_available : show.availableTickets;
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -68,13 +135,63 @@ export const TicketModal: React.FC<TicketModalProps> = ({
       setStep(2);
     } else if (step === 2) {
       setStep(3);
-      setTimeLeft(300); // Reset 5-minute countdown on reaching Step 3
+      setTimeLeft(300);
       setIsTimerExpired(false);
+      // Si no es SINPE, procesar la compra al llegar al paso 3
+      if (paymentMethod !== 'sinpe') {
+        void procesarCompra();
+      }
     }
   };
 
-  const handleFinishSinpe = (e: React.FormEvent) => {
+  async function procesarCompra(sinpeReference?: string) {
+    if (!show || !selectedInventoryId) return;
+
+    setPurchasing(true);
+    setPurchaseError('');
+
+    try {
+      const res = await fetch('/api/v1/tickets/purchases', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event_id: show.id,
+          ticket_inventory_id: selectedInventoryId,
+          quantity,
+          buyer_name: name.trim() || null,
+          buyer_email: email.trim() || null,
+          payment_intent_id: sinpeReference
+            ? `SINPE-${sinpeReference}`
+            : `TXN-${paymentMethod.toUpperCase()}-${Date.now()}`,
+          currency: selectedInventory?.currency || 'CRC',
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (res.status === 409) {
+          throw new Error('No hay suficientes boletos disponibles para esta función.');
+        }
+        if (res.status === 404) {
+          throw new Error('El evento o tipo de boleto seleccionado ya no está disponible.');
+        }
+        throw new Error(data?.error || 'Error al procesar la compra.');
+      }
+
+      setPurchaseResult(data as PurchaseResult);
+    } catch (err: any) {
+      setPurchaseError(err.message || 'No se pudo completar la compra. Intenta de nuevo.');
+      // Si falla la compra, volvemos al paso 2
+      if (step === 3) setStep(2);
+    } finally {
+      setPurchasing(false);
+    }
+  }
+
+  const handleFinishSinpe = async (e: React.FormEvent) => {
     e.preventDefault();
+    await procesarCompra(sinpeRef);
     setSinpeCompleted(true);
   };
 
@@ -85,23 +202,27 @@ export const TicketModal: React.FC<TicketModalProps> = ({
     setSinpeCompleted(false);
     setTimeLeft(300);
     setIsTimerExpired(false);
+    setPurchaseResult(null);
+    setPurchaseError('');
+    setPurchasing(false);
     onClose();
   };
 
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-      <div className="bg-[#002244] border border-[#1e4066] w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden text-[#F8F8F2]">
+      <div className="bg-brand-navy border border-brand-border w-full max-w-xl max-h-[92vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden text-brand-cream">
         {/* Modal Header */}
-        <div className="p-5 border-b border-white/10 bg-[#00162e] flex items-center justify-between">
+        <div className="p-5 border-b border-white/10 bg-brand-navyDark flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="p-2 rounded-xl bg-[#77C65E]/20 border border-[#77C65E]/40 text-[#77C65E]">
+            <div className="p-2 rounded-xl bg-brand-green/20 border border-brand-green/40 text-brand-green">
               <Ticket className="w-5 h-5" />
             </div>
             <div>
               <h3 className="font-serif text-lg font-bold text-white leading-tight">
                 {show.title} ({show.year})
               </h3>
-              <p className="text-xs text-[#DCEB4F]">
+              <p className="text-xs text-brand-lime">
                 {language === 'es' ? 'Boletería Far Corners Teatro Comunitario' : 'Official Far Corners Ticket Office'}
               </p>
             </div>
@@ -112,20 +233,20 @@ export const TicketModal: React.FC<TicketModalProps> = ({
         </div>
 
         {/* Step Progress Bar */}
-        <div className="bg-[#001021] px-6 py-2 border-b border-white/5 flex items-center justify-between text-xs text-slate-400">
-          <span className={step >= 1 ? 'text-[#77C65E] font-bold' : ''}>
+        <div className="bg-brand-navyDeep px-6 py-2 border-b border-white/5 flex items-center justify-between text-xs text-slate-400">
+          <span className={step >= 1 ? 'text-brand-green font-bold' : ''}>
             1. {language === 'es' ? 'Entradas & Fecha' : 'Tickets & Date'}
           </span>
-          <span className={step >= 2 ? 'text-[#77C65E] font-bold' : ''}>
+          <span className={step >= 2 ? 'text-brand-green font-bold' : ''}>
             2. {language === 'es' ? 'Datos del Comprador' : 'Patron Details'}
           </span>
-          <span className={step === 3 ? 'text-[#DCEB4F] font-bold' : ''}>
+          <span className={step === 3 ? 'text-brand-lime font-bold' : ''}>
             3. {paymentMethod === 'sinpe' ? 'Comprobante SINPE' : 'Confirmación'}
           </span>
         </div>
 
         {/* Modal Body */}
-        <div className="p-6">
+        <div className="p-5 sm:p-6 overflow-y-auto">
           {step === 1 && (
             <form onSubmit={handleNextStep} className="space-y-5">
               {/* Date Selection */}
@@ -146,11 +267,11 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                       onClick={() => setSelectedDate(d.id)}
                       className={`p-3 rounded-xl text-left border text-xs font-semibold transition-all ${
                         selectedDate === d.id
-                          ? 'bg-[#77C65E] border-[#DCEB4F] text-[#002244] shadow-glow-green font-bold'
+                          ? 'bg-brand-green border-brand-lime text-brand-navy shadow-glow-green font-bold'
                           : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
                       }`}
                     >
-                      <Calendar className="w-3.5 h-3.5 inline mr-2 text-[#4A90D6]" />
+                      <Calendar className="w-3.5 h-3.5 inline mr-2 text-brand-blue" />
                       {d.label}
                     </button>
                   ))}
@@ -158,12 +279,12 @@ export const TicketModal: React.FC<TicketModalProps> = ({
               </div>
 
               {/* Single Ticket Option */}
-              <div className="p-4 rounded-xl bg-[#00162e] border border-[#1e4066] flex items-center justify-between">
+              <div className="p-4 rounded-xl bg-brand-navyDark border border-brand-border flex items-center justify-between">
                 <div>
                   <span className="font-bold text-sm text-white block">Entrada General</span>
                   <span className="text-xs text-slate-300">Asiento para función de teatro</span>
                 </div>
-                <span className="font-mono text-base font-bold text-[#DCEB4F]">
+                <span className="font-mono text-base font-bold text-brand-lime">
                   ₡{pricePerTicket.toLocaleString()} CRC
                 </span>
               </div>
@@ -181,7 +302,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                   >
                     -
                   </button>
-                  <span className="font-mono font-bold text-base px-2 text-[#77C65E]">{quantity}</span>
+                  <span className="font-mono font-bold text-base px-2 text-brand-green">{quantity}</span>
                   <button
                     type="button"
                     onClick={() => setQuantity(Math.min(10, quantity + 1))}
@@ -193,18 +314,18 @@ export const TicketModal: React.FC<TicketModalProps> = ({
               </div>
 
               {/* Total Calculation */}
-              <div className="bg-[#00162e] p-4 rounded-xl border border-white/10 flex items-center justify-between">
+              <div className="bg-brand-navyDark p-4 rounded-xl border border-white/10 flex items-center justify-between">
                 <span className="text-sm font-semibold text-slate-300">
                   {language === 'es' ? 'Total a Pagar:' : 'Total Amount:'}
                 </span>
-                <span className="font-mono text-xl font-bold text-[#DCEB4F]">
+                <span className="font-mono text-xl font-bold text-brand-lime">
                   ₡{totalPrice.toLocaleString()} CRC
                 </span>
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3.5 bg-[#77C65E] hover:bg-[#008047] text-[#002244] hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all text-sm uppercase tracking-wider"
+                className="w-full py-3.5 btn-green text-brand-navy hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all text-sm uppercase tracking-wider"
               >
                 {language === 'es' ? 'Continuar a Datos del Comprador' : 'Proceed to Patron Info'}
               </button>
@@ -222,7 +343,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Ej. María Rodríguez"
-                    className="w-full px-3.5 py-2.5 bg-[#00162e] border border-[#1e4066] rounded-lg text-sm text-white focus:border-[#77C65E] focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-brand-navyDark border border-brand-border rounded-lg text-sm text-white focus:border-brand-green focus:outline-none"
                   />
                 </div>
 
@@ -235,7 +356,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="maria@ejemplo.com"
-                      className="w-full px-3.5 py-2.5 bg-[#00162e] border border-[#1e4066] rounded-lg text-sm text-white focus:border-[#77C65E] focus:outline-none"
+                      className="w-full px-3.5 py-2.5 bg-brand-navyDark border border-brand-border rounded-lg text-sm text-white focus:border-brand-green focus:outline-none"
                     />
                   </div>
                   <div>
@@ -246,7 +367,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="8888-0000"
-                      className="w-full px-3.5 py-2.5 bg-[#00162e] border border-[#1e4066] rounded-lg text-sm text-white focus:border-[#77C65E] focus:outline-none"
+                      className="w-full px-3.5 py-2.5 bg-brand-navyDark border border-brand-border rounded-lg text-sm text-white focus:border-brand-green focus:outline-none"
                     />
                   </div>
                 </div>
@@ -263,7 +384,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                     onClick={() => setPaymentMethod('sinpe')}
                     className={`p-2.5 rounded-lg border text-xs font-semibold text-center transition-all ${
                       paymentMethod === 'sinpe'
-                        ? 'bg-[#77C65E] border-[#DCEB4F] text-[#002244] font-bold shadow-glow-green'
+                        ? 'bg-brand-green border-brand-lime text-brand-navy font-bold shadow-glow-green'
                         : 'bg-white/5 border-white/10 text-slate-300'
                     }`}
                   >
@@ -274,7 +395,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                     onClick={() => setPaymentMethod('zeffy')}
                     className={`p-2.5 rounded-lg border text-xs font-semibold text-center transition-all ${
                       paymentMethod === 'zeffy'
-                        ? 'bg-[#77C65E] border-[#DCEB4F] text-[#002244] font-bold shadow-glow-green'
+                        ? 'bg-brand-green border-brand-lime text-brand-navy font-bold shadow-glow-green'
                         : 'bg-white/5 border-white/10 text-slate-300'
                     }`}
                   >
@@ -285,7 +406,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                     onClick={() => setPaymentMethod('card')}
                     className={`p-2.5 rounded-lg border text-xs font-semibold text-center transition-all ${
                       paymentMethod === 'card'
-                        ? 'bg-[#77C65E] border-[#DCEB4F] text-[#002244] font-bold shadow-glow-green'
+                        ? 'bg-brand-green border-brand-lime text-brand-navy font-bold shadow-glow-green'
                         : 'bg-white/5 border-white/10 text-slate-300'
                     }`}
                   >
@@ -295,7 +416,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
               </div>
 
               {paymentMethod === 'sinpe' && (
-                <div className="bg-[#00162e] p-3.5 rounded-xl border border-white/10 text-xs text-slate-300">
+                <div className="bg-brand-navyDark p-3.5 rounded-xl border border-white/10 text-xs text-slate-300">
                   <p className="font-semibold text-white">Reserva Temporal SINPE Móvil</p>
                   <p className="mt-1 text-slate-300">
                     Al hacer clic en <strong>Confirmar Reserva</strong>, se reservarán tus boletos por <strong>5 minutos</strong> para que realices la transferencia e ingreses el comprobante.
@@ -304,16 +425,16 @@ export const TicketModal: React.FC<TicketModalProps> = ({
               )}
 
               {paymentMethod === 'zeffy' && (
-                <div className="bg-[#00162e] p-3.5 rounded-xl border border-white/10 text-xs space-y-1">
+                <div className="bg-brand-navyDark p-3.5 rounded-xl border border-white/10 text-xs space-y-1">
                   <p className="text-slate-200 font-semibold">Zeffy Payments (0% Comisión)</p>
                   <p className="text-slate-300">Plataforma 100% gratuita para ONG. Tu dinero llega íntegro a las producciones de Far Corners.</p>
                 </div>
               )}
 
               {paymentMethod === 'card' && (
-                <div className="bg-[#00162e] p-3.5 rounded-xl border border-white/10 text-xs space-y-1">
+                <div className="bg-brand-navyDark p-3.5 rounded-xl border border-white/10 text-xs space-y-1">
                   <div className="flex items-center space-x-2 text-slate-200">
-                    <CreditCard className="w-4 h-4 text-[#4A90D6]" />
+                    <CreditCard className="w-4 h-4 text-brand-blue" />
                     <span>Pasarela Segura SSL Stripe & PayPal</span>
                   </div>
                   <p className="text-slate-300">Procesamiento inmediato con encriptación bancaria.</p>
@@ -330,7 +451,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="w-2/3 py-3 bg-[#77C65E] hover:bg-[#008047] text-[#002244] hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all"
+                  className="w-2/3 py-3 btn-green text-brand-navy hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all"
                 >
                   Confirmar Reserva de Boletos
                 </button>
@@ -353,7 +474,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                       setIsTimerExpired(false);
                       setTimeLeft(300);
                     }}
-                    className="px-6 py-2.5 bg-[#77C65E] text-[#002244] font-extrabold text-xs rounded-xl"
+                    className="px-6 py-2.5 bg-brand-green text-brand-navy font-extrabold text-xs rounded-xl"
                   >
                     Volver a Intentar Reserva
                   </button>
@@ -361,24 +482,24 @@ export const TicketModal: React.FC<TicketModalProps> = ({
               ) : !sinpeCompleted ? (
                 <form onSubmit={handleFinishSinpe} className="space-y-4">
                   {/* Countdown Banner */}
-                  <div className="bg-gradient-to-r from-[#00162e] to-[#002d57] border border-[#DCEB4F]/50 p-4 rounded-xl flex items-center justify-between shadow-lg">
+                  <div className="bg-gradient-to-r from-brand-navyDark to-brand-navyCard border border-brand-lime/50 p-4 rounded-xl flex items-center justify-between shadow-lg">
                     <div className="flex items-center space-x-3">
-                      <Clock className="w-6 h-6 text-[#DCEB4F] animate-pulse" />
+                      <Clock className="w-6 h-6 text-brand-lime animate-pulse" />
                       <div>
                         <span className="font-bold text-white text-xs block">Tiempo para Realizar Pago:</span>
                         <span className="text-[11px] text-slate-300">Tus boletos se liberarán al finalizar el tiempo</span>
                       </div>
                     </div>
-                    <span className="font-mono text-2xl font-extrabold text-[#DCEB4F] bg-[#00162e] px-3 py-1 rounded-lg border border-[#1e4066]">
+                    <span className="font-mono text-2xl font-extrabold text-brand-lime bg-brand-navyDark px-3 py-1 rounded-lg border border-brand-border">
                       {formatTime(timeLeft)}
                     </span>
                   </div>
 
                   {/* SINPE Instructions */}
-                  <div className="bg-[#00162e] p-4 rounded-xl border border-white/10 space-y-2 text-xs">
+                  <div className="bg-brand-navyDark p-4 rounded-xl border border-white/10 space-y-2 text-xs">
                     <div className="flex justify-between items-center pb-2 border-b border-white/10">
                       <span className="text-slate-300 font-semibold">Número SINPE Móvil Oficial:</span>
-                      <span className="font-mono font-bold text-[#DCEB4F] text-sm bg-[#002244] px-2 py-0.5 rounded border border-[#1e4066]">8888-9999</span>
+                      <span className="font-mono font-bold text-brand-lime text-sm bg-brand-navy px-2 py-0.5 rounded border border-brand-border">8888-9999</span>
                     </div>
                     <p className="text-slate-300">
                       Transfiere <strong>₡{totalPrice.toLocaleString()} CRC</strong> a nombre de <strong>Far Corners Teatro Comunitario</strong>.
@@ -394,14 +515,14 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                       value={sinpeRef}
                       onChange={(e) => setSinpeRef(e.target.value)}
                       placeholder="Ej. #8920192"
-                      className="w-full px-3.5 py-2.5 bg-[#00162e] border border-[#1e4066] rounded-lg text-sm text-white font-mono focus:border-[#77C65E] focus:outline-none"
+                      className="w-full px-3.5 py-2.5 bg-brand-navyDark border border-brand-border rounded-lg text-sm text-white font-mono focus:border-brand-green focus:outline-none"
                     />
                   </div>
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-300 mb-1">Adjuntar Comprobante de Pago (Imagen o PDF) *</label>
-                    <div className="border border-dashed border-[#1e4066] bg-[#00162e] p-4 rounded-xl text-center cursor-pointer hover:border-[#77C65E] transition-colors">
-                      <Upload className="w-6 h-6 text-[#77C65E] mx-auto mb-1" />
+                    <div className="border border-dashed border-brand-border bg-brand-navyDark p-4 rounded-xl text-center cursor-pointer hover:border-brand-green transition-colors">
+                      <Upload className="w-6 h-6 text-brand-green mx-auto mb-1" />
                       <span className="text-xs text-slate-300 block">
                         {sinpeFileName ? sinpeFileName : 'Haz clic para seleccionar el archivo de comprobante'}
                       </span>
@@ -416,31 +537,43 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                         }}
                         id="sinpe-upload"
                       />
-                      <label htmlFor="sinpe-upload" className="cursor-pointer text-xs text-[#4A90D6] font-bold underline mt-1 inline-block">
+                      <label htmlFor="sinpe-upload" className="cursor-pointer text-xs text-brand-blue font-bold underline mt-1 inline-block">
                         Examinar Comprobante
                       </label>
                     </div>
                   </div>
 
+                  {purchaseError && (
+                    <div className="p-3 bg-red-500/20 border border-red-500/40 rounded-xl flex items-center space-x-2 text-red-300 text-xs">
+                      <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                      <span>{purchaseError}</span>
+                    </div>
+                  )}
+
                   <button
                     type="submit"
-                    className="w-full py-3.5 bg-[#77C65E] hover:bg-[#008047] text-[#002244] hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all uppercase tracking-wider text-xs"
+                    className="w-full py-3.5 btn-green text-brand-navy hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all uppercase tracking-wider text-xs"
                   >
-                    Completar Registro de Pago SINPE
+                    {purchasing ? (
+                      <span className="flex items-center justify-center space-x-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Procesando Compra...</span>
+                      </span>
+                    ) : 'Completar Registro de Pago SINPE'}
                   </button>
                 </form>
               ) : (
                 <div className="text-center space-y-4 py-2">
-                  <div className="inline-flex p-3 rounded-full bg-[#77C65E]/20 text-[#77C65E] border border-[#77C65E]/40">
+                  <div className="inline-flex p-3 rounded-full bg-brand-green/20 text-brand-green border border-brand-green/40">
                     <CheckCircle2 className="w-10 h-10" />
                   </div>
                   <h4 className="font-serif text-xl font-bold text-white">¡Comprobante SINPE Recibido!</h4>
                   <p className="text-xs text-slate-300">
-                    Hemos registrado tu pago de <strong className="text-white">₡{totalPrice.toLocaleString()}</strong> (Ref: <span className="font-mono text-[#DCEB4F]">{sinpeRef}</span>). Se enviaron los boletos a <span className="text-white">{email}</span>.
+                    Hemos registrado tu pago de <strong className="text-white">₡{totalPrice.toLocaleString()}</strong> (Ref: <span className="font-mono text-brand-lime">{sinpeRef}</span>). Se enviaron los boletos a <span className="text-white">{email}</span>.
                   </p>
                   <button
                     onClick={resetAndClose}
-                    className="w-full py-3 bg-[#77C65E] text-[#002244] font-extrabold rounded-xl"
+                    className="w-full py-3 bg-brand-green text-brand-navy font-extrabold rounded-xl"
                   >
                     Cerrar y Volver
                   </button>
@@ -451,20 +584,20 @@ export const TicketModal: React.FC<TicketModalProps> = ({
 
           {step === 3 && paymentMethod !== 'sinpe' && (
             <div className="text-center space-y-5 py-2">
-              <div className="inline-flex p-3 rounded-full bg-[#77C65E]/20 text-[#77C65E] border border-[#77C65E]/40">
+              <div className="inline-flex p-3 rounded-full bg-brand-green/20 text-brand-green border border-brand-green/40">
                 <CheckCircle2 className="w-10 h-10" />
               </div>
 
               <div>
                 <h4 className="font-serif text-xl font-bold text-white">¡Reserva y Boleto Confirmado!</h4>
                 <p className="text-xs text-slate-300 mt-1">
-                  Se ha enviado la confirmación y los boletos digitales a <span className="text-[#DCEB4F]">{email || 'tu correo'}</span>.
+                  Se ha enviado la confirmación y los boletos digitales a <span className="text-brand-lime">{email || 'tu correo'}</span>.
                 </p>
               </div>
 
               {/* Digital Ticket Voucher Card */}
-              <div className="bg-gradient-to-b from-[#002d57] to-[#00162e] p-5 rounded-2xl border border-[#77C65E]/50 text-left relative overflow-hidden shadow-2xl">
-                <div className="absolute right-3 top-3 text-[#DCEB4F] flex items-center space-x-1 text-[10px] bg-[#77C65E]/20 px-2 py-0.5 rounded border border-[#77C65E]/40 font-bold">
+              <div className="bg-gradient-to-b from-brand-navyCard to-brand-navyDark p-5 rounded-2xl border border-brand-green/50 text-left relative overflow-hidden shadow-2xl">
+                <div className="absolute right-3 top-3 text-brand-lime flex items-center space-x-1 text-[10px] bg-brand-green/20 px-2 py-0.5 rounded border border-brand-green/40 font-bold">
                   <ShieldCheck className="w-3.5 h-3.5" />
                   <span>BOLETO OFICIAL</span>
                 </div>
@@ -472,7 +605,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                 <div className="border-b border-white/10 pb-3 mb-3">
                   <span className="text-[10px] text-slate-300 font-mono">ID: TKT-2026-FC-{Math.floor(1000 + Math.random() * 9000)}</span>
                   <h5 className="font-serif text-lg font-bold text-white">{show.title}</h5>
-                  <p className="text-xs text-[#4A90D6] font-medium">{show.location}</p>
+                  <p className="text-xs text-brand-blue font-medium">{show.location}</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 text-xs mb-4">
@@ -490,25 +623,41 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                   </div>
                   <div>
                     <span className="text-slate-300 block text-[10px]">Total:</span>
-                    <span className="font-mono font-bold text-[#DCEB4F]">₡{totalPrice.toLocaleString()}</span>
+                    <span className="font-mono font-bold text-brand-lime">₡{totalPrice.toLocaleString()}</span>
                   </div>
                 </div>
 
-                {/* QR Simulation */}
-                <div className="flex items-center justify-between bg-black/40 p-3 rounded-xl border border-white/10">
-                  <div className="flex items-center space-x-3">
-                    <QrCode className="w-12 h-12 text-[#77C65E]" />
-                    <div className="text-[10px] text-slate-300">
-                      <span className="block text-white font-mono font-bold">Código de Acceso QR</span>
-                      <span>Muestra este código al ingresar al teatro</span>
+                {purchaseResult?.tickets && purchaseResult.tickets.length > 0 ? (
+                  <div className="space-y-2">
+                    <span className="block text-[11px] font-mono text-slate-300 font-bold mb-1">Tus Boletos Digitales:</span>
+                    {purchaseResult.tickets.map((t, i) => (
+                      <div key={t.id} className="flex items-center justify-between bg-black/40 p-3 rounded-xl border border-white/10">
+                        <div className="flex items-center space-x-3">
+                          <QrCode className="w-8 h-8 text-[#77C65E]" />
+                          <div className="text-[10px] text-slate-300">
+                            <span className="block text-white font-mono font-bold">Boleto #{i + 1}</span>
+                            <span className="font-mono text-[#DCEB4F]">{t.qr_code}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between bg-black/40 p-3 rounded-xl border border-white/10">
+                    <div className="flex items-center space-x-3">
+                      <QrCode className="w-12 h-12 text-brand-green" />
+                      <div className="text-[10px] text-slate-300">
+                        <span className="block text-white font-mono font-bold">Código de Acceso QR</span>
+                        <span>Muestra este código al ingresar al teatro</span>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
 
               <button
                 onClick={resetAndClose}
-                className="w-full py-3 bg-[#77C65E] hover:bg-[#008047] text-[#002244] hover:text-white font-extrabold rounded-xl"
+                className="w-full py-3 btn-green text-brand-navy hover:text-white font-extrabold rounded-xl"
               >
                 Cerrar y Volver
               </button>

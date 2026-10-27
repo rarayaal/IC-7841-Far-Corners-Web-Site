@@ -108,7 +108,7 @@ export const AdminMessagesView = () => {
       {!cargando && !error && mensajes.map((mensaje) => (
         <details
           key={mensaje.id}
-          className="rounded-2xl border border-[#1e4066] bg-[#002244]"
+          className="rounded-2xl border border-brand-border bg-brand-navy"
         >
           <summary className="cursor-pointer p-5 text-white">
             <span className="font-bold break-words">
@@ -119,14 +119,14 @@ export const AdminMessagesView = () => {
               {mensaje.name} · {mensaje.email}
             </span>
 
-            <span className="mt-2 block text-xs text-[#77C65E]">
+            <span className="mt-2 block text-xs text-brand-green">
               {etiquetasEstado[mensaje.status]}
               {' · '}
               {new Date(mensaje.created_at).toLocaleString('es-CR')}
             </span>
           </summary>
 
-          <div className="border-t border-[#1e4066] p-5">
+          <div className="border-t border-brand-border p-5">
             <p className="whitespace-pre-wrap break-words text-sm text-slate-200">
               {mensaje.message}
             </p>

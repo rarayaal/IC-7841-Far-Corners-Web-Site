@@ -224,6 +224,12 @@ CREATE TABLE media (
     content_id UUID REFERENCES institutional_content(id),
     uploaded_by UUID NOT NULL REFERENCES users(id),
     uploaded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    -- Objeto en Cloudflare R2 (CU-22). NULL en recursos estaticos heredados.
+    storage_key TEXT UNIQUE,
+    mime_type VARCHAR(100),
+    size_bytes BIGINT CHECK (size_bytes > 0),
+    -- Retiro logico (CU-24): FALSE oculta el recurso sin borrar el archivo.
+    is_published BOOLEAN NOT NULL DEFAULT TRUE,
     CONSTRAINT media_exactly_one_association CHECK (
         (CASE WHEN project_id IS NOT NULL THEN 1 ELSE 0 END)
         + (CASE WHEN event_id IS NOT NULL THEN 1 ELSE 0 END)
@@ -500,6 +506,9 @@ CREATE INDEX purchases_event_status_idx ON purchases (event_id, status);
 CREATE INDEX tickets_inventory_idx ON tickets (ticket_inventory_id);
 CREATE INDEX tickets_purchase_idx ON tickets (purchase_id);
 CREATE INDEX audit_date_idx ON audit_logs (created_at);
+CREATE INDEX media_content_idx ON media (content_id);
+CREATE INDEX media_project_idx ON media (project_id);
+CREATE INDEX media_event_idx ON media (event_id);
 
 -- TRIGGERS DE UPDATED_AT
 CREATE TRIGGER update_users_modtime BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
