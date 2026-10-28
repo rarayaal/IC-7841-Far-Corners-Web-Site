@@ -18,6 +18,7 @@ import { AdminDonationsView } from './AdminDonationsView';
 import { AdminTicketingView } from './AdminTicketingView';
 import { adminTexts } from '../lib/adminI18n';
 import { tienePermiso } from '../services/permisos';
+import { AdminNewsletterView } from './AdminNewsletterView';
 
 interface AdminViewProps {
   language: Language;
@@ -25,7 +26,7 @@ interface AdminViewProps {
 
 export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
   const txt = adminTexts[language];
-  const [activeTab, setActiveTab] = useState<'kpi' | 'donations' | 'projects' | 'ticketing' | 'content' | 'media' | 'retirement' | 'applicants' | 'audit' | 'messages' | 'contacts' | 'communities' | 'students' | 'volunteers' | 'profile' | 'users'>('kpi');
+  const [activeTab, setActiveTab] = useState<'kpi' | 'donations' | 'projects' | 'ticketing' | 'content' | 'media' | 'retirement' | 'applicants' | 'audit' | 'messages' | 'contacts' | 'communities' | 'students' | 'volunteers' | 'profile' | 'users' | 'newsletter'>('kpi');
   
   // Dynamic state for CRUD demo
   const [shows, setShows] = useState<Show[]>(showsData);
@@ -97,6 +98,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
   const puedeGestionarMedia = tienePermiso('media:manage');
   const puedeRetirarContenido = canRetireSomething();
   const puedeVerMensajes = tienePermiso('contact_messages:read');
+  const puedeVerBoletin = tienePermiso('newsletter:read');
   const puedeGestionarContactos = tienePermiso(
     'contact_channels:manage'
   );
@@ -248,6 +250,19 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
             Mensajes
           </button>
         )}
+        {puedeVerBoletin && (
+          <button
+            onClick={() => setActiveTab('newsletter')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold
+                        transition-all whitespace-nowrap ${
+              activeTab === 'newsletter'
+                ? 'bg-brand-green text-brand-navy shadow-glow-green font-extrabold'
+                : 'bg-brand-navy text-slate-300 hover:text-white'
+            }`}
+          >
+            Boletín
+          </button>
+        )}
 
         {puedeGestionarContactos && (
           <button
@@ -333,6 +348,9 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
       {/* Renderizado de vistas */}
       {activeTab === 'donations' && <AdminDonationsView language={language} />}
       {activeTab === 'projects' && <AdminProjectsView language={language} />}
+      {activeTab === 'newsletter' && puedeVerBoletin && (
+        <AdminNewsletterView />
+      )}
       {activeTab === 'contacts' && puedeGestionarContactos && (
         <AdminContactChannelsView />
       )}

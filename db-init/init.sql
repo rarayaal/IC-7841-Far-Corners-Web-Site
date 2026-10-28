@@ -604,6 +604,72 @@ INSERT INTO users (
     'active'
 ) ON CONFLICT (email) DO NOTHING;
 
+
+INSERT INTO contact_channels (
+    channel_type,
+    label,
+    value,
+    link_url,
+    display_order,
+    is_published
+) VALUES
+(
+    'address',
+    'Sede Central y Teatro',
+    'Monteverde, Puntarenas, Costa Rica',
+    NULL,
+    1,
+    TRUE
+),
+(
+    'email',
+    'Correo Institucional',
+    'info@farcornersmusicals.org',
+    'mailto:info@farcornersmusicals.org',
+    2,
+    TRUE
+),
+(
+    'phone',
+    'Teléfono',
+    '+506 2645-5000',
+    'tel:+50626455000',
+    3,
+    TRUE
+),
+(
+    'whatsapp',
+    'WhatsApp',
+    '+506 8888-9999',
+    'https://wa.me/50688889999',
+    4,
+    TRUE
+),
+(
+    'office_hours',
+    'Horario de Taquilla y Oficina',
+    'Lunes a Viernes: 9:00 AM – 5:00 PM',
+    NULL,
+    5,
+    TRUE
+),
+(
+    'performance_hours',
+    'Horario durante funciones',
+    'Días de función: Abierto hasta el inicio de la obra',
+    NULL,
+    6,
+    TRUE
+),
+(
+    'international_location',
+    'Ubicación Internacional',
+    'Programas activos en Costa Rica (Monteverde), China y Mozambique.',
+    NULL,
+    7,
+    TRUE
+);
+
 -- Asignar todos los permisos al Administrador Maestro Inicial
 INSERT INTO user_permissions (user_id, permission_id)
 SELECT 

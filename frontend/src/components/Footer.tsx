@@ -26,15 +26,76 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
     (contacto) => contacto.channel_type === 'international_location'
   );
   const [email, setEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
+  const [nombre, setNombre] = useState('');
+  const [apellido, setApellido] = useState('');
+  const [aceptaBoletin, setAceptaBoletin] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const [mensajeSuscripcion, setMensajeSuscripcion] = useState('');
+  const [errorSuscripcion, setErrorSuscripcion] = useState('');
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  async function handleSubscribe(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (email) {
-      setSubscribed(true);
+
+    if (enviando) return;
+
+    setMensajeSuscripcion('');
+    setErrorSuscripcion('');
+    setEnviando(true);
+
+    try {
+      const respuesta = await fetch('/api/v1/newsletter/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+          first_name: nombre.trim(),
+          last_name: apellido.trim(),
+          consent: aceptaBoletin,
+        }),
+      });
+
+      const datos = await respuesta.json().catch(() => null);
+
+      if (!respuesta.ok) {
+        throw new Error(
+          datos?.message ??
+            (language === 'es'
+              ? 'No se pudo procesar la suscripción.'
+              : 'Your subscription could not be processed.')
+        );
+      }
+
+      setMensajeSuscripcion(
+        language === 'es'
+          ? datos?.message ?? 'Solicitud procesada correctamente.'
+          : respuesta.status === 202
+            ? 'Check your email to confirm your subscription.'
+            : 'This email is already registered. If confirmation is pending, check your inbox.'
+      );
+
       setEmail('');
+      setNombre('');
+      setApellido('');
+      setAceptaBoletin(false);
+    } catch (error) {
+      setErrorSuscripcion(
+        error instanceof Error
+          ? error.message
+          : language === 'es'
+            ? 'No se pudo conectar con el servidor.'
+            : 'Could not connect to the server.'
+      );
+    } finally {
+      setEnviando(false);
     }
-  };
+  }
+
+  const inputBoletinClass =
+    'w-full rounded-xl border border-brand-border bg-brand-navyDark ' +
+    'px-4 py-3 text-white placeholder-slate-400 ' +
+    'focus:outline-none focus:border-brand-green';
 
   return (
     <footer className="bg-brand-navyDark border-t border-brand-border text-slate-300 text-sm font-sans relative overflow-hidden">
@@ -55,40 +116,115 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
             </p>
           </div>
 
-          <div className="w-full lg:w-auto">
-            {subscribed ? (
-              <div className="flex items-center space-x-3 bg-brand-green/20 border border-brand-green/50 text-brand-cream px-6 py-4 rounded-xl">
-                <CheckCircle2 className="w-6 h-6 text-brand-green shrink-0" />
-                <div>
-                  <span className="font-bold block">
-                    {language === 'es' ? '¡Suscripción confirmada!' : 'Subscription confirmed!'}
-                  </span>
-                  <span className="text-xs text-brand-green">
-                    {language === 'es' ? 'Te hemos añadido a la lista oficial del Teatro Far Corners.' : 'Added to official Far Corners Theatre mailing list.'}
-                  </span>
+          <div className="w-full lg:max-w-xl">
+            <form onSubmit={handleSubscribe} className="space-y-4">
+              <fieldset disabled={enviando} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label
+                      htmlFor="boletin-nombre"
+                      className="mb-1 block text-sm text-white"
+                    >
+                      {language === 'es' ? 'Nombre *' : 'First name *'}
+                    </label>
+
+                    <input
+                      id="boletin-nombre"
+                      type="text"
+                      autoComplete="given-name"
+                      required
+                      maxLength={100}
+                      value={nombre}
+                      onChange={(e) => setNombre(e.target.value)}
+                      className={inputBoletinClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="boletin-apellido"
+                      className="mb-1 block text-sm text-white"
+                    >
+                      {language === 'es' ? 'Apellido *' : 'Last name *'}
+                    </label>
+
+                    <input
+                      id="boletin-apellido"
+                      type="text"
+                      autoComplete="family-name"
+                      required
+                      maxLength={100}
+                      value={apellido}
+                      onChange={(e) => setApellido(e.target.value)}
+                      className={inputBoletinClass}
+                    />
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 w-full max-w-md">
-                <div className="relative flex-1">
-                  <Mail className="w-5 h-5 absolute left-3.5 top-3.5 text-slate-400" />
+
+                <div>
+                  <label
+                    htmlFor="boletin-correo"
+                    className="mb-1 block text-sm text-white"
+                  >
+                    {language === 'es' ? 'Correo electrónico *' : 'Email address *'}
+                  </label>
+
                   <input
+                    id="boletin-correo"
                     type="email"
+                    autoComplete="email"
                     required
+                    maxLength={254}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder={language === 'es' ? 'Tu correo electrónico...' : 'Your email address...'}
-                    className="w-full pl-11 pr-4 py-3 bg-brand-navyDark border border-brand-border rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green transition-colors"
+                    className={inputBoletinClass}
                   />
                 </div>
+
+                <label className="flex items-start gap-3 text-xs text-slate-200">
+                  <input
+                    type="checkbox"
+                    required
+                    checked={aceptaBoletin}
+                    onChange={(e) => setAceptaBoletin(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 shrink-0"
+                  />
+
+                  <span>
+                    {language === 'es'
+                      ? 'Acepto recibir el boletín y comunicaciones promocionales de FarCorners. *'
+                      : 'I agree to receive the FarCorners newsletter and promotional communications. *'}
+                  </span>
+                </label>
+
                 <button
                   type="submit"
-                  className="px-6 py-3 btn-green text-brand-navy hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all whitespace-nowrap uppercase tracking-wider text-xs"
+                  className="btn-green rounded-xl px-6 py-3 text-sm font-bold
+                            text-brand-navy disabled:opacity-50
+                            disabled:cursor-not-allowed"
                 >
-                  {language === 'es' ? 'Suscribirse' : 'Subscribe'}
+                  {enviando
+                    ? language === 'es' ? 'Procesando…' : 'Processing…'
+                    : language === 'es' ? 'Suscribirse' : 'Subscribe'}
                 </button>
-              </form>
-            )}
+              </fieldset>
+
+              {mensajeSuscripcion && (
+                <div
+                  role="status"
+                  className="flex items-start gap-2 text-sm text-brand-green"
+                >
+                  <CheckCircle2 className="h-5 w-5 shrink-0" />
+                  <p>{mensajeSuscripcion}</p>
+                </div>
+              )}
+
+              {errorSuscripcion && (
+                <p role="alert" className="text-sm text-red-300">
+                  {errorSuscripcion}
+                </p>
+              )}
+            </form>
           </div>
         </div>
       </div>
@@ -111,10 +247,22 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
               ? 'Organización teatral internacional sin fines de lucro enfocada en brindar oportunidades artísticas y educativas a jóvenes de comunidades en Costa Rica, China y Mozambique.'
               : 'Non-profit international theatre organization providing artistic & educational opportunities for youth in Costa Rica, China, and Mozambique.'}
           </p>
-          <div className="pt-2">
+          <div className="pt-2 flex flex-col items-start gap-3">
             <span className="inline-block text-[11px] px-2.5 py-1 rounded bg-brand-navy text-brand-lime font-semibold border border-brand-border">
               Arte que Conecta Comunidades
             </span>
+
+            <button
+              type="button"
+              onClick={() => setCurrentPage('contact')}
+              className="inline-flex items-center gap-2 rounded-xl
+                        border border-brand-green/50 bg-brand-green/10
+                        px-4 py-2.5 text-sm font-semibold text-white
+                        hover:bg-brand-green/20 transition-colors"
+            >
+              <Mail className="h-4 w-4 text-brand-green" />
+              {language === 'es' ? 'Contáctanos' : 'Contact us'}
+            </button>
           </div>
         </div>
 
@@ -147,11 +295,6 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
             <li>
               <button onClick={() => setCurrentPage('donate')} className="inline-block py-1.5 hover:text-brand-green transition-colors">
                 {language === 'es' ? 'Donaciones y Registro' : 'Donations'}
-              </button>
-            </li>
-            <li>
-              <button onClick={() => setCurrentPage('contact')} className="inline-block py-1.5 hover:text-brand-green transition-colors">
-                {language === 'es' ? 'Medios de Contacto' : 'Contact Us'}
               </button>
             </li>
           </ul>

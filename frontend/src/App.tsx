@@ -125,7 +125,13 @@ export function App() {
       </main>
 
       {/* Global Footer */}
-      <Footer language={language} setCurrentPage={setCurrentPage} />
+      <Footer
+        language={language}
+        setCurrentPage={(page) => {
+          setIsAdminMode(false);
+          setCurrentPage(page);
+        }}
+      />
 
       {/* Global Interactive Modals */}
       <SearchModal

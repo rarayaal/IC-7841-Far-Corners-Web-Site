@@ -16,6 +16,7 @@ import { adminUsersRouter } from "./routes/admin-users.routes.js";
 import { auditRouter } from "./routes/audit.routes.js";
 import { contactMessagesRouter } from "./routes/contactMessages.routes.js";
 import { contactChannelsRouter } from "./routes/contactChannels.routes.js";
+import { newsletterRouter } from './routes/newsletter.routes.js';
 
 const app = express();
 const port = Number(process.env.PORT ?? 3000);
@@ -44,6 +45,9 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/me", profileRouter);
 app.use("/api/v1/admin", adminUsersRouter);
 app.use("/api/v1/audit", auditRouter);
+
+// Ruta Mailchimp
+app.use('/api/v1/newsletter', newsletterRouter);
 
 app.get("/", (_req, res) => {
 	res.status(200).json({
