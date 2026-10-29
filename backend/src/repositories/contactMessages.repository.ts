@@ -92,3 +92,95 @@ export async function obtenerRespuestasDeMensaje(mensajeId: string) {
 
   return resultado.rows;
 }
+
+export async function obtenerMensajePorId(mensajeId: string) {
+  const resultado = await pool.query<{
+    id: string;
+    name: string;
+    email: string;
+    subject: string;
+  }>(
+    `
+      SELECT id, name, email, subject
+      FROM contact_messages
+      WHERE id = $1
+    `,
+    [mensajeId]
+  );
+
+  return resultado.rows[0];
+}
+
+export async function marcarRespuestaEnviada(respuestaId: string) {
+  const cliente = await pool.connect();
+
+  try {
+    await cliente.query('BEGIN');
+
+    const resultado = await cliente.query(
+      `
+        UPDATE contact_message_replies
+        SET
+          status = 'sent',
+          sent_at = CURRENT_TIMESTAMP
+        WHERE id = $1
+        RETURNING
+          id,
+          contact_message_id,
+          response_text,
+          status,
+          created_at,
+          sent_at
+      `,
+      [respuestaId]
+    );
+
+    const respuesta = resultado.rows[0];
+
+    if (!respuesta) {
+      throw new Error('No se encontró la respuesta para actualizarla.');
+    }
+
+    await cliente.query(
+      `
+        UPDATE contact_messages
+        SET status = 'replied'
+        WHERE id = $1
+      `,
+      [respuesta.contact_message_id]
+    );
+
+    await cliente.query('COMMIT');
+
+    return respuesta;
+  } catch (error) {
+    await cliente.query('ROLLBACK');
+    throw error;
+  } finally {
+    cliente.release();
+  }
+}
+
+
+export async function marcarRespuestaFallida(respuestaId: string) {
+  const resultado = await pool.query(
+    `
+      UPDATE contact_message_replies
+      SET
+        status = 'failed',
+        sent_at = NULL
+      WHERE id = $1
+        AND status <> 'sent'
+      RETURNING id, status
+    `,
+    [respuestaId]
+  );
+
+  if (!resultado.rows[0]) {
+    throw new Error(
+      'La respuesta no existe o ya está registrada como enviada.'
+    );
+  }
+
+  return resultado.rows[0];
+}

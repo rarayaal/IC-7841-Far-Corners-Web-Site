@@ -3,7 +3,14 @@ import {
   crearMensaje,
   obtenerMensajes,
   crearRespuestaContacto,
+  obtenerMensajePorId,
+  marcarRespuestaEnviada,
+  marcarRespuestaFallida,
 } from '../repositories/contactMessages.repository.js';
+
+import {
+  enviarRespuestaPorCorreo,
+} from '../services/mail.service.js';
 
 export async function enviarMensaje(req: Request, res: Response) {
   try {
@@ -97,7 +104,7 @@ export async function guardarRespuesta(
   res: Response
 ) {
   const { mensajeId } = req.params;
-  const { response_text } = req.body ?? {};
+  const { response_text, language } = req.body ?? {};
 
   const formatoUUID =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -118,9 +125,16 @@ export async function guardarRespuesta(
 
   const texto = response_text.trim();
 
-  if (texto.length === 0 || texto.length > 10000) {
+  if (!texto || texto.length > 10000) {
     res.status(400).json({
       message: 'La respuesta debe contener entre 1 y 10000 caracteres.',
+    });
+    return;
+  }
+
+  if (language !== 'es' && language !== 'en') {
+    res.status(400).json({
+      message: 'Selecciona español o inglés para la respuesta.',
     });
     return;
   }
@@ -135,28 +149,87 @@ export async function guardarRespuesta(
   }
 
   try {
-    const borrador = await crearRespuestaContacto(
-      mensajeId,
-      administrador.userId,
-      texto
-    );
+    const mensaje = await obtenerMensajePorId(mensajeId);
 
-    if (!borrador) {
+    if (!mensaje) {
       res.status(404).json({
         message: 'El mensaje no existe.',
       });
       return;
     }
 
-    res.status(201).json({
-      message: 'Respuesta guardado. Todavía no se ha enviado por correo.',
-      respuesta: borrador,
-    });
+    const respuestaGuardada = await crearRespuestaContacto(
+      mensajeId,
+      administrador.userId,
+      texto
+    );
+
+    if (!respuestaGuardada) {
+      res.status(404).json({
+        message: 'El mensaje ya no está disponible.',
+      });
+      return;
+    }
+
+    try {
+      await enviarRespuestaPorCorreo({
+        destinatario: mensaje.email,
+        nombre: mensaje.name,
+        asuntoOriginal: mensaje.subject,
+        respuesta: texto,
+        idioma: language,
+      });
+    } catch (error) {
+      console.error(
+        'Error durante el envío de la respuesta:',
+        error instanceof Error ? error.name : 'Error desconocido'
+      );
+
+      try {
+        await marcarRespuestaFallida(respuestaGuardada.id);
+      } catch {
+        console.error('No se pudo registrar el fallo de envío.');
+      }
+
+      res.status(502).json({
+        message:
+          'La respuesta quedó guardada, pero no se pudo confirmar el envío. Revisa el estado del correo antes de intentar enviarla nuevamente.',
+      });
+      return;
+    }
+
+    try {
+      const respuestaEnviada = await marcarRespuestaEnviada(
+        respuestaGuardada.id
+      );
+
+      res.status(201).json({
+        enviado: true,
+        message: 'Respuesta enviada y registrada correctamente.',
+        respuesta: respuestaEnviada,
+      });
+    } catch {
+      // SMTP ya aceptó el correo: no debemos tratar este caso
+      // como un fallo de envío ni enviar nuevamente.
+      console.error(
+        'SMTP aceptó el correo, pero no se pudo actualizar su estado en la BD.'
+      );
+
+      res.status(202).json({
+        enviado: true,
+        advertencia: true,
+        message:
+          'El servidor aceptó el correo, pero no se pudo actualizar su estado en el sistema. No vuelvas a enviarlo.',
+      });
+    }
   } catch (error) {
-    console.error('Error al guardar el mensaje:', error);
+    console.error(
+      'Error al preparar la respuesta:',
+      error instanceof Error ? error.name : 'Error desconocido'
+    );
 
     res.status(500).json({
-      message: 'No se pudo guardar el mensaje.',
+      message: 'No se pudo preparar la respuesta para enviarla.',
     });
   }
 }
