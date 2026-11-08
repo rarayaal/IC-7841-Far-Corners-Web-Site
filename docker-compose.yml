@@ -31,6 +31,7 @@ services:
       DATABASE_URL: postgresql://admin:adminpassword@db:5432/farcorners
       JWT_SECRET: dev_super_secret_jwt_key_far_corners_community_theatre_2026_tec_costa_rica
       JWT_EXPIRATION_HOURS: 8
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       # Cloudflare R2 (galeria multimedia, CU-22). Se leen del archivo .env de la raiz.
       R2_ACCOUNT_ID: ${R2_ACCOUNT_ID:-}
       R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID:-}

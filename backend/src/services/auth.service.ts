@@ -6,6 +6,7 @@ import {
   findUserByGoogleId,
   getUserPermissions,
   linkGoogleIdToUser,
+  createGoogleUser,
   getUserWithPermissionsById,
   UserWithPermissions,
 } from "../repositories/auth.repository.js";
@@ -125,8 +126,10 @@ export async function authenticateGoogle(idToken: string): Promise<AuthSuccessRe
     }
   }
 
+  // 3. Si no existe la cuenta, crearla automaticamente como visitante (visitor)
   if (!user) {
-    throw new Error("No existe una cuenta registrada con este correo. Solicite acceso al Administrador");
+    const fullName = googlePayload.name || (email.split("@")[0] ?? "Usuario Far Corners");
+    user = await createGoogleUser(fullName, email, googleId);
   }
 
   if (user.status !== "active") {
