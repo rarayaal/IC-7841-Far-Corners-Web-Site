@@ -10,7 +10,7 @@ export async function crearUsuario(nombreCompleto: string, correo: string, passw
         role,
         status
       )
-      VALUES ($1, $2, $3, 'visitor', 'active')
+      VALUES ($1, $2, $3, 'user', 'active')
       ON CONFLICT (email) DO NOTHING
       RETURNING
         id,
