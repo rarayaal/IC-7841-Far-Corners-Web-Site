@@ -80,6 +80,40 @@ export async function linkGoogleIdToUser(userId: string, googleId: string): Prom
   );
 }
 /**
+ * Crea un nuevo usuario registrado a traves de Google OAuth federado.
+ */
+export async function createGoogleUser(
+  fullName: string,
+  email: string,
+  googleId: string
+): Promise<UserEntity> {
+  const result = await pool.query<UserEntity>(
+    `
+    INSERT INTO users (
+      full_name,
+      email,
+      google_id,
+      role,
+      status
+    )
+    VALUES ($1, LOWER($2), $3, 'user', 'active')
+    RETURNING
+      id,
+      full_name,
+      email,
+      password_hash,
+      role,
+      participant_type,
+      status,
+      google_id,
+      created_at,
+      updated_at;
+    `,
+    [fullName || "Usuario Far Corners", email, googleId]
+  );
+  return result.rows[0];
+}
+/**
  * Obtiene los codigos de permisos asignados a un usuario a traves de la tabla puente.
  */
 export async function getUserPermissions(userId: string): Promise<string[]> {

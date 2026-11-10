@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
+import { GoogleLoginButton } from '../components/GoogleLoginButton';
 
 export const RegisterView = () => {
   const [nombre, setNombre] = useState('');
@@ -205,6 +206,32 @@ export const RegisterView = () => {
             {enviando ? 'Creando cuenta…' : 'Crear cuenta'}
             </button>
         </form>
+
+        {/* Separador de autenticación federada */}
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-white/10" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-brand-navy px-3 text-slate-400 font-medium">
+              O continuar con
+            </span>
+          </div>
+        </div>
+
+        {/* Botón de Google OAuth */}
+        <GoogleLoginButton
+          buttonText="continue_with"
+          onSuccess={(user) => {
+            setError('');
+            setMensaje(
+              `¡Bienvenido ${user?.full_name || ''}! Has iniciado sesión con Google.`
+            );
+          }}
+          onError={(errMsg) => {
+            setError(errMsg);
+          }}
+        />
       </div>
     </div>
   );
