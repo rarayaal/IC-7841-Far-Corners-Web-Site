@@ -17,6 +17,7 @@ import { auditRouter } from "./routes/audit.routes.js";
 import { contactMessagesRouter } from "./routes/contactMessages.routes.js";
 import { contactChannelsRouter } from "./routes/contactChannels.routes.js";
 import { newsletterRouter } from './routes/newsletter.routes.js';
+import { generalUsersRouter,} from './routes/general-users.routes.js';
 
 const app = express();
 const port = Number(process.env.PORT ?? 3000);
@@ -36,6 +37,7 @@ app.use("/api/v1/tickets", ticketsRouter);
 app.use("/api/v1/donations", donationsRouter);
 app.use("/api/v1/contact-messages", contactMessagesRouter);
 app.use("/api/v1/contact-channels", contactChannelsRouter);
+app.use('/api/v1/admin/general-users', generalUsersRouter);
 
 // Rutas de registro publico de usuarios
 app.use("/api/v1/users", usersRouter);
