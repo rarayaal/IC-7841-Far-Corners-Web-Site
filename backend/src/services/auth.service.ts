@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import * as argon2 from "argon2";
 import jwt from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
 import {
@@ -64,8 +65,10 @@ export async function authenticateLocal(email: string, password: string): Promis
     throw new Error("La cuenta no tiene contraseña local configurada. Inicie sesión con Google");
   }
 
-  // Compara la contrasena recibida contra el hash bcrypt
-  const isMatch = await bcrypt.compare(password, user.password_hash);
+  // El registro público utiliza Argon2; la gestión administrativa utiliza bcrypt.
+  const isMatch = user.password_hash.startsWith("$argon2")
+    ? await argon2.verify(user.password_hash, password)
+    : await bcrypt.compare(password, user.password_hash);
   if (!isMatch) {
     throw new Error("Credenciales inválidas");
   }
@@ -107,7 +110,7 @@ export async function authenticateGoogle(idToken: string): Promise<AuthSuccessRe
   });
 
   const googlePayload = ticket.getPayload();
-  if (!googlePayload || !googlePayload.email) {
+  if (!googlePayload || !googlePayload.email || googlePayload.email_verified !== true) {
     throw new Error("Token de Google inválido");
   }
 
@@ -126,7 +129,7 @@ export async function authenticateGoogle(idToken: string): Promise<AuthSuccessRe
     }
   }
 
-  // 3. Si no existe la cuenta, crearla automaticamente como visitante (visitor)
+  // 3. Si no existe la cuenta, crearla automaticamente como usuario general (user)
   if (!user) {
     const fullName = googlePayload.name || (email.split("@")[0] ?? "Usuario Far Corners");
     user = await createGoogleUser(fullName, email, googleId);
@@ -164,6 +167,9 @@ export async function getCurrentUserProfile(userId: string): Promise<UserWithPer
   const user = await getUserWithPermissionsById(userId);
   if (!user) {
     throw new Error("Usuario no encontrado");
+  }
+  if (user.status !== "active") {
+    throw new Error("Esta cuenta se encuentra inactiva.");
   }
   return user;
 }

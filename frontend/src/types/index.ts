@@ -1,6 +1,6 @@
 export type Language = 'es' | 'en';
 
-export type PageView = 'home' | 'about' | 'shows' | 'participate' | 'donate' | 'contact' | 'admin' | 'register' | 'loginAdmin';
+export type PageView = 'home' | 'about' | 'shows' | 'participate' | 'donate' | 'contact' | 'admin' | 'register' | 'login';
 
 export interface Show {
   id: string;

@@ -2,7 +2,11 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { GoogleLoginButton } from '../components/GoogleLoginButton';
 
-export const RegisterView = () => {
+interface RegisterViewProps {
+  onSesionIniciada?: () => void;
+}
+
+export const RegisterView = ({ onSesionIniciada }: RegisterViewProps) => {
   const [nombre, setNombre] = useState('');
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
@@ -227,6 +231,7 @@ export const RegisterView = () => {
             setMensaje(
               `¡Bienvenido ${user?.full_name || ''}! Has iniciado sesión con Google.`
             );
+            onSesionIniciada?.();
           }}
           onError={(errMsg) => {
             setError(errMsg);
