@@ -1,26 +1,33 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import type { ContactChannel } from '../hooks/useContactChannels';
 import { apiAdmin } from '../services/apiAdmin';
+import { adminTexts } from '../lib/adminI18n';
+import type { Language } from '../types';
 
 interface ContactoAdmin extends ContactChannel {
   is_published: boolean;
 }
 
-const camposTexto = [
-  ['label', 'Título en español', 200, true],
-  ['label_en', 'Título en inglés', 200, false],
-  ['value', 'Contenido en español', 10000, true],
-  ['value_en', 'Contenido en inglés', 10000, false],
-  ['link_url', 'Enlace opcional', 2048, false],
-] as const;
+interface AdminContactChannelsViewProps {
+  language?: Language;
+}
 
-export const AdminContactChannelsView = () => {
+export const AdminContactChannelsView = ({ language = 'es' }: AdminContactChannelsViewProps) => {
+  const txt = adminTexts[language].contacts;
   const [contactos, setContactos] = useState<ContactoAdmin[]>([]);
   const [editando, setEditando] = useState<ContactoAdmin | null>(null);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState('');
   const [confirmacion, setConfirmacion] = useState('');
+
+  const camposTexto = [
+    ['label', txt.fields.label, 200, true],
+    ['label_en', txt.fields.label_en, 200, false],
+    ['value', txt.fields.value, 10000, true],
+    ['value_en', txt.fields.value_en, 10000, false],
+    ['link_url', txt.fields.link_url, 2048, false],
+  ] as const;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -123,12 +130,12 @@ export const AdminContactChannelsView = () => {
       );
 
       setEditando(null);
-      setConfirmacion('Contacto actualizado correctamente.');
+      setConfirmacion(txt.updateSuccess);
     } catch (error) {
       setError(
         error instanceof Error
           ? error.message
-          : 'No se pudo conectar con el servidor.'
+          : txt.updateError
       );
     } finally {
       setGuardando(false);
@@ -139,16 +146,16 @@ export const AdminContactChannelsView = () => {
     <section className="space-y-5">
       <div>
         <h2 className="font-serif text-xl font-bold text-white">
-          Medios de contacto
+          {txt.title}
         </h2>
         <p className="text-sm text-slate-300">
-          Edita la información de contacto publicada en el sitio.
+          {txt.subtitle}
         </p>
       </div>
 
       {cargando && (
         <p role="status" className="text-slate-300">
-          Cargando contactos...
+          {txt.loading}
         </p>
       )}
 
@@ -166,7 +173,7 @@ export const AdminContactChannelsView = () => {
 
       {!cargando && contactos.length === 0 && !error && (
         <p className="text-slate-300">
-          No hay medios de contacto registrados.
+          {txt.empty}
         </p>
       )}
 
@@ -177,16 +184,16 @@ export const AdminContactChannelsView = () => {
         >
           <div className="min-w-0 space-y-1">
             <h3 className="font-bold text-white break-words">
-              {contacto.label}
+              {language === 'en' && contacto.label_en ? contacto.label_en : contacto.label}
             </h3>
 
             <p className="text-sm text-slate-300 whitespace-pre-wrap break-words">
-              {contacto.value}
+              {language === 'en' && contacto.value_en ? contacto.value_en : contacto.value}
             </p>
 
             <p className="text-xs text-brand-green">
-              {contacto.is_published ? 'Publicado' : 'Oculto'}
-              {' · Orden: '}
+              {contacto.is_published ? txt.published : txt.hidden}
+              {' · '}{txt.order}
               {contacto.display_order}
             </p>
           </div>
@@ -196,7 +203,7 @@ export const AdminContactChannelsView = () => {
             onClick={() => seleccionarContacto(contacto)}
             className="shrink-0 rounded-xl bg-white/10 px-4 py-2 text-sm font-bold text-white hover:bg-white/20"
           >
-            Editar
+            {txt.editBtn}
           </button>
         </article>
       ))}
@@ -207,7 +214,7 @@ export const AdminContactChannelsView = () => {
           className="space-y-4 rounded-2xl border border-brand-border bg-brand-navy p-5"
         >
           <h3 className="font-bold text-white">
-            Editar medio de contacto
+            {txt.editTitle}
           </h3>
 
           <fieldset disabled={guardando} className="space-y-4">
@@ -243,7 +250,7 @@ export const AdminContactChannelsView = () => {
                 htmlFor="contacto-orden"
                 className="mb-1 block text-sm text-slate-300"
               >
-                Orden de aparición *
+                {txt.fields.order}
               </label>
 
               <input
@@ -281,7 +288,7 @@ export const AdminContactChannelsView = () => {
                   );
                 }}
               />
-              Publicado en el sitio
+              {txt.fields.isPublished}
             </label>
 
             <div className="flex flex-wrap gap-3">
@@ -289,7 +296,7 @@ export const AdminContactChannelsView = () => {
                 type="submit"
                 className="rounded-xl bg-brand-green px-4 py-2 text-sm font-bold text-brand-navy disabled:opacity-50"
               >
-                {guardando ? 'Guardando...' : 'Guardar cambios'}
+                {guardando ? txt.saving : txt.saveChanges}
               </button>
 
               <button
@@ -300,7 +307,7 @@ export const AdminContactChannelsView = () => {
                 }}
                 className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold text-white"
               >
-                Cancelar
+                {txt.cancel}
               </button>
             </div>
           </fieldset>

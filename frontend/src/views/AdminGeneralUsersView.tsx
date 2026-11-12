@@ -1,5 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { apiAdmin } from '../services/apiAdmin';
+import { adminTexts } from '../lib/adminI18n';
+import type { Language } from '../types';
 
 interface UsuarioGeneral {
   id: string;
@@ -12,7 +14,12 @@ interface UsuarioGeneral {
   updated_at: string;
 }
 
-export const AdminGeneralUsersView = () => {
+interface AdminGeneralUsersViewProps {
+  language?: Language;
+}
+
+export const AdminGeneralUsersView = ({ language = 'es' }: AdminGeneralUsersViewProps) => {
+  const txt = adminTexts[language].generalUsers;
   const [usuarios, setUsuarios] = useState<UsuarioGeneral[]>([]);
   const [cargando, setCargando] = useState(true);
   const [procesando, setProcesando] = useState(false);
@@ -252,10 +259,10 @@ export const AdminGeneralUsersView = () => {
     <section className="space-y-5">
       <div>
         <h2 className="font-serif text-xl font-bold text-white">
-          Usuarios generales
+          {txt.title}
         </h2>
         <p className="text-sm text-slate-300">
-          Gestión de cuentas sin acceso al panel administrativo.
+          {txt.subtitle}
         </p>
       </div>
 
@@ -266,7 +273,7 @@ export const AdminGeneralUsersView = () => {
           disabled={cargando || procesando || formularioAbierto}
           className={botonClass}
         >
-          Crear usuario
+          {txt.createBtn}
         </button>
 
         <button
@@ -278,7 +285,7 @@ export const AdminGeneralUsersView = () => {
           disabled={cargando || procesando || formularioAbierto}
           className={botonClass}
         >
-          Actualizar
+          {txt.refreshBtn}
         </button>
       </div>
 

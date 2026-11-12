@@ -43,7 +43,7 @@ export const ShowsCarousel: React.FC<ShowsCarouselProps> = ({ shows, language, r
     >
       <div
         ref={pista}
-        className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth rounded-3xl border border-brand-border bg-brand-navy [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth rounded-3xl border border-slate-200 dark:border-brand-border bg-white dark:bg-brand-navy shadow-lg dark:shadow-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {shows.map((show, i) => (
           <article
@@ -52,23 +52,23 @@ export const ShowsCarousel: React.FC<ShowsCarouselProps> = ({ shows, language, r
             aria-label={`${i + 1} / ${shows.length}`}
             className="w-full shrink-0 snap-center grid grid-cols-1 md:grid-cols-2"
           >
-            <div className="relative aspect-[16/10] md:aspect-auto md:min-h-[360px] bg-brand-navyDark">
+            <div className="relative aspect-[16/10] md:aspect-auto md:min-h-[360px] bg-slate-100 dark:bg-brand-navyDark">
               <img
                 src={show.banner || show.poster}
                 alt={show.title}
                 loading="lazy"
                 className="absolute inset-0 h-full w-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/80 via-transparent to-transparent md:bg-gradient-to-r md:from-transparent md:to-brand-navy/60" />
-              <span className="absolute top-4 left-4 px-2.5 py-1 rounded bg-brand-navyDark/90 text-brand-lime text-xs font-mono font-bold border border-brand-border">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent md:bg-gradient-to-r md:from-transparent md:to-black/50" />
+              <span className="absolute top-4 left-4 px-2.5 py-1 rounded bg-white/90 text-brand-navy dark:bg-brand-navyDark/90 dark:text-brand-lime text-xs font-mono font-bold border border-slate-200 dark:border-brand-border shadow-sm">
                 {show.year}
               </span>
             </div>
 
             <div className="flex flex-col justify-center gap-4 p-6 sm:p-8 lg:p-10">
-              <span className="text-xs font-bold text-brand-lime uppercase tracking-widest">{show.dates}</span>
-              <h3 className="font-serif text-2xl sm:text-3xl font-bold text-white">{show.title}</h3>
-              <p className="text-sm text-slate-300 leading-relaxed line-clamp-5">
+              <span className="text-xs font-bold text-brand-forest dark:text-brand-lime uppercase tracking-widest">{show.dates}</span>
+              <h3 className="font-serif text-2xl sm:text-3xl font-bold text-brand-navy dark:text-white">{show.title}</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-5">
                 {es ? show.synopsis : show.synopsisEn}
               </p>
               <div className="pt-2">{renderAction(show)}</div>
@@ -83,7 +83,7 @@ export const ShowsCarousel: React.FC<ShowsCarouselProps> = ({ shows, language, r
             type="button"
             onClick={() => irA(indice - 1)}
             aria-label={es ? 'Obra anterior' : 'Previous production'}
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-black/10 dark:bg-white/10 text-brand-navy dark:text-white hover:bg-black/20 dark:hover:bg-white/20 transition-colors"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
@@ -99,7 +99,7 @@ export const ShowsCarousel: React.FC<ShowsCarouselProps> = ({ shows, language, r
                 className="flex h-8 w-6 items-center justify-center"
               >
                 <span
-                  className={`h-2 rounded-full transition-all ${i === indice ? 'w-6 bg-brand-green' : 'w-2 bg-white/30'}`}
+                  className={`h-2 rounded-full transition-all ${i === indice ? 'w-6 bg-brand-green' : 'w-2 bg-black/20 dark:bg-white/30'}`}
                 />
               </button>
             ))}
@@ -109,7 +109,7 @@ export const ShowsCarousel: React.FC<ShowsCarouselProps> = ({ shows, language, r
             type="button"
             onClick={() => irA(indice + 1)}
             aria-label={es ? 'Obra siguiente' : 'Next production'}
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-black/10 dark:bg-white/10 text-brand-navy dark:text-white hover:bg-black/20 dark:hover:bg-white/20 transition-colors"
           >
             <ChevronRight className="h-5 w-5" />
           </button>

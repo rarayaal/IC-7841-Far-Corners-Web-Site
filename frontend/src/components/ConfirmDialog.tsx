@@ -50,7 +50,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         aria-labelledby="confirm-dialog-title"
         aria-describedby="confirm-dialog-message"
         onClick={(evento) => evento.stopPropagation()}
-        className="w-full max-w-md rounded-2xl border border-brand-border bg-brand-navy p-6 shadow-2xl text-brand-cream"
+        className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-brand-border bg-white dark:bg-brand-navy p-6 shadow-2xl text-brand-navy dark:text-brand-cream"
       >
         <div className="flex items-start gap-3">
           <div className="shrink-0 rounded-full bg-red-500/20 p-2 text-red-300">
@@ -59,11 +59,11 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           <div className="space-y-2">
             <h3
               id="confirm-dialog-title"
-              className="font-serif text-lg font-bold text-white"
+              className="font-serif text-lg font-bold text-brand-navy dark:text-white"
             >
               {title}
             </h3>
-            <p id="confirm-dialog-message" className="text-sm text-slate-300">
+            <p id="confirm-dialog-message" className="text-sm text-slate-600 dark:text-slate-300">
               {message}
             </p>
           </div>
@@ -74,7 +74,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             type="button"
             onClick={onCancel}
             disabled={busy}
-            className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold text-white hover:bg-white/20 disabled:opacity-50"
+            className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold text-brand-navy dark:text-white hover:bg-white/20 disabled:opacity-50"
           >
             {cancelLabel}
           </button>
@@ -82,7 +82,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             type="button"
             onClick={onConfirm}
             disabled={busy}
-            className="rounded-xl bg-red-500 px-4 py-2 text-sm font-bold text-white hover:bg-red-600 disabled:opacity-50"
+            className="rounded-xl bg-red-500 px-4 py-2 text-sm font-bold text-brand-navy dark:text-white hover:bg-red-600 disabled:opacity-50"
           >
             {busy ? busyLabel : confirmLabel}
           </button>

@@ -2,9 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { PageView, Language } from '../types';
 import type { UsuarioSesion } from '../services/sesion';
 import { puedeAccederAlPanel } from '../services/sesion';
-import { Globe, Search, Shield, Menu, X, Heart, Ticket, Calendar, Info, Users, UserPlus, Mail } from 'lucide-react';
+import { Globe, Search, Shield, Menu, X, Heart, Ticket, Calendar, Info, Users, UserPlus, Mail, Sun, Moon } from 'lucide-react';
+import { getTranslations } from '../lib/i18n';
+import { useTheme } from '../hooks/useTheme';
 
 interface NavbarProps {
+  theme: 'light' | 'dark';
+  toggleTheme: () => void;
   currentPage: PageView;
   setCurrentPage: (page: PageView) => void;
   language: Language;
@@ -21,6 +25,8 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
+  theme,
+  toggleTheme,
   currentPage,
   setCurrentPage,
   language,
@@ -35,12 +41,16 @@ export const Navbar: React.FC<NavbarProps> = ({
   onAccederAdmin,
   onCerrarSesion,
 }) => {
+  const t = getTranslations(language).nav;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   // Al bajar, el menú pasa a vidrio esmerilado: fondo translúcido y desenfoque.
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    const onScroll = () => {
+      const isScrolled = window.scrollY > 20;
+      setScrolled((prev) => (prev !== isScrolled ? isScrolled : prev));
+    };
 
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -51,11 +61,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   const accesoAdmin = puedeAccederAlPanel(usuario);
 
   const navItems = [
-    { id: 'home' as PageView, labelEs: 'Inicio', labelEn: 'Home', icon: Calendar },
-    { id: 'about' as PageView, labelEs: 'Historia e Impacto', labelEn: 'About & Impact', icon: Info },
-    { id: 'shows' as PageView, labelEs: 'Cartelera', labelEn: 'Shows', icon: Ticket },
-    { id: 'participate' as PageView, labelEs: 'Programas y Comunidad', labelEn: 'Programs & Community', icon: Users },
-    { id: 'register' as PageView, labelEs: 'Únete', labelEn: 'Join us', icon: UserPlus },
+    { id: 'home' as PageView, label: t.menu.home, icon: Calendar },
+    { id: 'about' as PageView, label: t.menu.about, icon: Info },
+    { id: 'shows' as PageView, label: t.menu.shows, icon: Ticket },
+    { id: 'participate' as PageView, label: t.menu.participate, icon: Users },
+    { id: 'register' as PageView, label: t.menu.joinUs, icon: UserPlus },
   ].filter((item) => !(usuario && item.id === 'register'));
 
   // "Donar" lleva a la sección de donaciones; desde ahí se continúa a Zeffy.
@@ -72,22 +82,22 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header
-      className={`sticky top-0 z-40 border-b backdrop-blur-xl transition-all duration-300 ${
+      className={`sticky top-0 z-40 border-b ${
         scrolled
-          ? 'bg-brand-navyDark/60 border-white/10 shadow-glow-navy'
-          : 'bg-brand-navyDark/95 border-brand-border'
+          ? 'bg-[#F8F8F2]/95 text-brand-navy border-slate-300/60 shadow-md dark:bg-brand-navyDark/95 dark:text-brand-cream dark:border-white/10 dark:shadow-glow-navy'
+          : 'bg-[#F8F8F2] text-brand-navy border-slate-200 dark:bg-brand-navyDark dark:text-brand-cream dark:border-brand-border'
       }`}
     >
       {/* Top Brand Tagline Bar */}
-      <div className="bg-brand-navy border-b border-white/10 py-1.5 px-4 text-xs font-sans text-slate-200">
+      <div className="bg-slate-100 border-b border-slate-200 text-brand-navy dark:bg-brand-navy dark:border-brand-navyDark dark:text-brand-cream py-1.5 px-4 text-xs font-sans transition-colors">
         <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
           <div className="flex items-center space-x-3">
-            <span className="hidden sm:inline-block text-brand-lime font-bold tracking-wider text-[11px] uppercase">
-              Arte que Conecta Comunidades
+            <span className="hidden sm:inline-block text-brand-forest dark:text-brand-lime font-bold tracking-wider text-[11px] uppercase">
+              {t.tagline}
             </span>
-            <span className="hidden md:inline text-slate-400">•</span>
-            <span className="text-slate-300 text-xs">
-              {language === 'es' ? 'Costa Rica • China • Mozambique' : 'Costa Rica • China • Mozambique'}
+            <span className="hidden md:inline text-slate-400 dark:text-brand-blue/60">•</span>
+            <span className="text-slate-600 dark:text-brand-cream/80 text-xs">
+              {t.locations}
             </span>
           </div>
 
@@ -95,21 +105,36 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Language Selector */}
             <button
               onClick={toggleLanguage}
-              className="flex min-h-10 items-center space-x-1.5 px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-brand-cream transition-colors"
-              title={language === 'es' ? 'Seleccionar idioma' : 'Select language'}
-              aria-label={language === 'es' ? 'Cambiar idioma a inglés' : 'Switch language to Spanish'}
+              className="flex min-h-10 items-center space-x-1.5 px-3 py-1 rounded bg-white hover:bg-slate-200/70 text-brand-navy border border-slate-200 shadow-sm dark:border-transparent dark:shadow-none dark:bg-white/10 dark:hover:bg-white/20 dark:text-brand-cream transition-colors"
+              title={t.selectLanguage}
+              aria-label={t.switchLanguage}
             >
-              <Globe className="w-3.5 h-3.5 text-brand-green" />
+              <Globe className="w-3.5 h-3.5 text-brand-forest dark:text-brand-green" />
               <span className="font-semibold text-xs">{language.toUpperCase()}</span>
             </button>
-
+            {/* Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className="flex min-h-10 items-center space-x-1.5 px-3 py-1 rounded bg-white hover:bg-slate-200/70 text-brand-navy border border-slate-200 shadow-sm dark:border-transparent dark:shadow-none dark:bg-white/10 dark:hover:bg-white/20 dark:text-brand-cream transition-colors"
+              title={theme === 'dark' ? (language === 'es' ? 'Cambiar a modo claro' : 'Switch to light mode') : (language === 'es' ? 'Cambiar a modo oscuro' : 'Switch to dark mode')}
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {theme === 'dark' ? (
+                <Sun className="w-3.5 h-3.5 text-brand-lime" />
+              ) : (
+                <Moon className="w-3.5 h-3.5 text-brand-blue" />
+              )}
+              <span className="font-semibold text-xs uppercase hidden sm:inline">
+                {theme === 'dark' ? (language === 'es' ? 'Claro' : 'Light') : (language === 'es' ? 'Oscuro' : 'Dark')}
+              </span>
+            </button>
             {verificandoSesion ? (
-              <span role="status" className="text-xs text-slate-300">
-                {language === 'es' ? 'Verificando sesión…' : 'Checking session…'}
+              <span role="status" className="text-xs text-slate-600 dark:text-slate-300">
+                {t.checkingSession}
               </span>
             ) : usuario ? (
               <>
-                <span className="hidden md:inline text-xs text-slate-300 max-w-40 truncate" title={usuario.full_name}>
+                <span className="hidden md:inline text-xs text-slate-600 dark:text-slate-300 max-w-40 truncate" title={usuario.full_name}>
                   {usuario.full_name}
                 </span>
                 {accesoAdmin && (
@@ -117,17 +142,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                     setMobileMenuOpen(false);
                     onAccederAdmin();
                   }} className={`flex min-h-10 items-center gap-1.5 px-3 py-1 rounded text-xs transition-colors ${
-                    isAdminMode ? 'bg-brand-green text-brand-navy font-extrabold' : 'bg-white/10 hover:bg-white/20 text-brand-cream'
+                    isAdminMode ? 'bg-brand-green text-brand-navy font-extrabold' : 'bg-white hover:bg-slate-200/70 text-brand-navy border border-slate-200 shadow-sm dark:border-transparent dark:shadow-none dark:bg-white/10 dark:hover:bg-white/20 dark:text-brand-cream'
                   }`}>
                     <Shield className="w-3.5 h-3.5" />
-                    <span>{language === 'es' ? 'Acceso admin' : 'Admin access'}</span>
+                    <span>{t.adminAccess}</span>
                   </button>
                 )}
                 <button type="button" onClick={() => {
                   setMobileMenuOpen(false);
                   onCerrarSesion();
-                }} className="min-h-10 px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-xs text-brand-cream">
-                  {language === 'es' ? 'Cerrar sesión' : 'Sign out'}
+                }} className="min-h-10 px-3 py-1 rounded bg-white hover:bg-slate-200/70 text-brand-navy border border-slate-200 shadow-sm dark:border-transparent dark:shadow-none dark:bg-white/10 dark:hover:bg-white/20 text-xs dark:text-brand-cream transition-colors">
+                  {t.signOut}
                 </button>
               </>
             ) : (
@@ -135,8 +160,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 setMobileMenuOpen(false);
                 setIsAdminMode(false);
                 setCurrentPage('login');
-              }} className="min-h-10 px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-xs text-brand-cream">
-                {language === 'es' ? 'Iniciar sesión' : 'Sign in'}
+              }} className="min-h-10 px-3 py-1 rounded bg-white hover:bg-slate-200/70 text-brand-navy border border-slate-200 shadow-sm dark:border-transparent dark:shadow-none dark:bg-white/10 dark:hover:bg-white/20 text-xs font-bold dark:text-brand-cream transition-colors">
+                {t.signIn}
               </button>
             )}
           </div>
@@ -149,16 +174,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Logo Brand Header */}
           <button
             type="button"
-            aria-label={language === 'es' ? 'Far Corners, ir al inicio' : 'Far Corners, go to home'}
+            aria-label={t.goToHome}
             onClick={() => {
               setIsAdminMode(false);
               setCurrentPage('home');
             }}
             className="flex shrink-0 items-center space-x-3 cursor-pointer group text-left"
           >
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-navy to-brand-navyDark p-1 border border-brand-green/50 shadow-glow-green group-hover:scale-105 transition-transform flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 shadow-sm dark:bg-gradient-to-br dark:from-brand-navy dark:to-brand-navyDark dark:border-brand-green/50 dark:shadow-glow-green p-1 group-hover:scale-105 transition-transform flex items-center justify-center">
               <img
-                src="/recursos/IMG_2903.PNG"
+                src={theme === 'dark' ? '/recursos/IMG_2903.PNG' : '/recursos/IMG_2903_COLOR.PNG'}
                 alt="Far Corners Logo"
                 className="w-full h-full object-contain"
                 onError={(e) => {
@@ -167,11 +192,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               />
             </div>
             <div className="whitespace-nowrap">
-              <span className="block font-serif text-xl sm:text-2xl font-bold tracking-tight text-white group-hover:text-brand-green transition-colors">
+              <span className="block font-serif text-xl sm:text-2xl font-bold tracking-tight text-brand-navy dark:text-white group-hover:text-brand-green transition-colors">
                 Far Corners
               </span>
               <span className="block text-[10px] uppercase tracking-widest text-brand-blue font-bold">
-                Teatro Comunitario
+                {t.brandSubtitle}
               </span>
             </div>
           </button>
@@ -190,10 +215,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                   className={`px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
                     isActive
                       ? 'bg-brand-green text-brand-navy shadow-glow-green font-bold'
-                      : 'text-slate-200 hover:text-white hover:bg-white/10'
+                      : 'text-brand-navy/80 hover:text-brand-navy hover:bg-black/5 dark:text-slate-200 dark:hover:text-white dark:hover:bg-white/10'
                   }`}
                 >
-                  {language === 'es' ? item.labelEs : item.labelEn}
+                  {item.label}
                 </button>
               );
             })}
@@ -203,18 +228,18 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="hidden sm:flex items-center space-x-2.5">
             <button
               onClick={onOpenSearch}
-              className="p-2.5 text-slate-200 hover:text-white rounded-xl bg-white/10 hover:bg-white/20 transition-colors"
-              title={language === 'es' ? 'Buscar contenido' : 'Search content'}
+              className="p-2.5 text-brand-navy hover:text-brand-navy rounded-xl bg-black/5 hover:bg-black/10 dark:text-slate-200 dark:hover:text-white dark:bg-white/10 dark:hover:bg-white/20 transition-colors"
+              title={t.searchContent}
             >
               <Search className="w-4 h-4 text-brand-blue" />
             </button>
 
             <button
               onClick={onOpenTickets}
-              className="flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-brand-navy hover:bg-brand-navyCard border border-brand-blue/60 text-brand-blue hover:text-white text-sm font-semibold transition-all shadow-glow-navy"
+              className="flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-brand-navy border border-slate-300 shadow-sm dark:bg-brand-navy dark:hover:bg-brand-navyCard dark:border-brand-blue/60 dark:text-brand-blue dark:hover:text-white text-sm font-semibold transition-all dark:shadow-glow-navy"
             >
-              <Ticket className="w-4 h-4 text-brand-lime" />
-              <span>{language === 'es' ? 'Boletos' : 'Tickets'}</span>
+              <Ticket className="w-4 h-4 text-brand-forest dark:text-brand-lime" />
+              <span>{t.tickets}</span>
             </button>
 
             <button
@@ -223,7 +248,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="btn-green flex items-center space-x-2 px-4 py-2 rounded-xl text-brand-navy hover:text-white font-extrabold text-sm shadow-glow-green transform hover:-translate-y-0.5"
             >
               <Heart className="w-4 h-4 fill-brand-navy" />
-              <span>{language === 'es' ? 'Donar' : 'Donate'}</span>
+              <span>{t.donate}</span>
             </button>
           </div>
 
@@ -231,21 +256,19 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex xl:hidden items-center space-x-2">
             <button
               onClick={onOpenSearch}
-              aria-label={language === 'es' ? 'Buscar' : 'Search'}
-              className="flex h-11 w-11 items-center justify-center text-slate-200 hover:text-white rounded-lg bg-white/10"
-            >
+              aria-label={t.search}
+              className="flex h-11 w-11 items-center justify-center text-brand-navy bg-black/5 dark:text-slate-200 dark:bg-white/10 rounded-lg"            >
               <Search className="w-5 h-5 text-brand-blue" />
             </button>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label={
                 mobileMenuOpen
-                  ? (language === 'es' ? 'Cerrar menú' : 'Close menu')
-                  : (language === 'es' ? 'Abrir menú' : 'Open menu')
+                  ? t.closeMenu
+                  : t.openMenu
               }
               aria-expanded={mobileMenuOpen}
-              className="flex h-11 w-11 items-center justify-center text-slate-200 hover:text-white rounded-lg bg-white/10"
-            >
+              className="flex h-11 w-11 items-center justify-center text-brand-navy bg-black/5 dark:text-slate-200 dark:bg-white/10 rounded-lg"            >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
@@ -254,7 +277,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
-       <div className="xl:hidden bg-brand-navy border-b border-white/10 px-4 pt-3 pb-6 space-y-2 animate-fadeIn">
+       <div className="xl:hidden bg-[#F8F8F2] dark:bg-brand-navy border-b border-slate-200 dark:border-white/10 px-4 pt-3 pb-6 space-y-2 animate-fadeIn">
           {navItems.map((item) => {
             const isActive = currentPage === item.id && !isAdminMode;
             const IconComp = item.icon;
@@ -269,11 +292,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left text-base font-medium transition-colors ${
                   isActive
                     ? 'bg-brand-green text-brand-navy font-bold'
-                    : 'text-slate-200 hover:bg-white/10'
+                    : 'text-brand-navy hover:bg-black/5 dark:text-slate-200 dark:hover:bg-white/10'
                 }`}
               >
                 <IconComp className="w-5 h-5 text-brand-blue" />
-                <span>{language === 'es' ? item.labelEs : item.labelEn}</span>
+                <span>{item.label}</span>
               </button>
             );
           })}
@@ -287,7 +310,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="flex items-center justify-center space-x-2 px-3 py-2.5 rounded-xl bg-brand-navyDark border border-brand-blue/50 text-brand-blue text-sm font-semibold"
             >
               <Ticket className="w-4 h-4 text-brand-lime" />
-              <span>{language === 'es' ? 'Boletos' : 'Tickets'}</span>
+              <span>{t.tickets}</span>
             </button>
 
             <button
@@ -295,7 +318,20 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="btn-green flex items-center justify-center space-x-2 px-3 py-2.5 rounded-xl text-brand-navy text-sm font-extrabold"
             >
               <Heart className="w-4 h-4 fill-brand-navy" />
-              <span>{language === 'es' ? 'Donar' : 'Donate'}</span>
+              <span>{t.donate}</span>
+            </button>
+
+            <button
+              onClick={toggleTheme}
+              className="col-span-full flex w-full items-center justify-between px-3 py-2.5 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-brand-navy dark:text-slate-200 text-sm transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                {theme === 'dark' ? <Sun className="w-4 h-4 text-brand-lime" /> : <Moon className="w-4 h-4 text-brand-blue" />}
+                {language === 'es' ? 'Tema' : 'Theme'}
+              </span>
+              <span className="text-xs uppercase font-semibold text-brand-green">
+                {theme === 'dark' ? (language === 'es' ? 'Modo Claro' : 'Light Mode') : (language === 'es' ? 'Modo Oscuro' : 'Dark Mode')}
+              </span>
             </button>
           </div>
         </div>

@@ -1,12 +1,21 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { GoogleLoginButton } from '../components/GoogleLoginButton';
+import type { Language } from '../types';
+import { getTranslations } from '../lib/i18n';
 
 interface RegisterViewProps {
+  language: Language;
+  onNavigateToLogin?: () => void;
   onSesionIniciada?: () => void;
 }
 
-export const RegisterView = ({ onSesionIniciada }: RegisterViewProps) => {
+export const RegisterView = ({
+  language,
+  onNavigateToLogin,
+  onSesionIniciada,
+}: RegisterViewProps) => {
+  const t = getTranslations(language).auth;
   const [nombre, setNombre] = useState('');
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
@@ -17,8 +26,8 @@ export const RegisterView = ({ onSesionIniciada }: RegisterViewProps) => {
   const [enviando, setEnviando] = useState(false);
 
   const inputClass =
-    'w-full px-4 py-3 bg-brand-navyDark border border-brand-border ' +
-    'rounded-xl text-white focus:border-brand-green focus:outline-none';
+    'w-full px-4 py-3 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border ' +
+    'rounded-xl text-brand-navy dark:text-white focus:border-brand-green focus:outline-none';
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -29,76 +38,74 @@ export const RegisterView = ({ onSesionIniciada }: RegisterViewProps) => {
     setMensaje('');
 
     if (!nombre.trim()) {
-        setError('Ingresa tu nombre completo.');
-        return;
+      setError(t.errors.fullNameRequired);
+      return;
     }
 
     if (password !== confirmacion) {
-        setError('Las contraseñas no coinciden.');
-        return;
+      setError(t.errors.passwordsDoNotMatch);
+      return;
     }
 
     setEnviando(true);
 
     try {
-        const respuesta = await fetch('/api/v1/users/register', {
+      const respuesta = await fetch('/api/v1/users/register', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            full_name: nombre.trim(),
-            email: correo.trim(),
-            contrasenia: password,
+          full_name: nombre.trim(),
+          email: correo.trim(),
+          contrasenia: password,
         }),
-        });
+      });
 
-        const datos = await respuesta.json().catch(() => null);
+      const datos = await respuesta.json().catch(() => null);
 
-        if (!respuesta.ok) {
+      if (!respuesta.ok) {
         setError(
-            typeof datos?.message === 'string'
+          typeof datos?.message === 'string'
             ? datos.message
-            : 'No se pudo registrar la cuenta.'
+            : t.errors.registerFailed
         );
         return;
-        }
+      }
 
-        setMensaje('Cuenta creada correctamente. Ya puedes iniciar sesión.');
+      setMensaje(t.success.accountCreated);
 
-        setNombre('');
-        setCorreo('');
-        setPassword('');
-        setConfirmacion('');
+      setNombre('');
+      setCorreo('');
+      setPassword('');
+      setConfirmacion('');
     } catch {
-        setError(
-        'No se pudo conectar con la API. Inténtalo nuevamente.'
-        );
+      setError(t.errors.serverError);
     } finally {
-        setEnviando(false);
+      setEnviando(false);
     }
-    }
+  }
 
   return (
     <div className="max-w-xl mx-auto px-4 py-12">
       <div className="text-center mb-8 space-y-3">
-        <h1 className="font-serif text-4xl font-bold text-white">
-          Crear una cuenta
+        <h1 className="font-serif text-4xl font-bold text-brand-navy dark:text-white">
+          {t.registerTitle}
         </h1>
 
-        <p className="text-slate-300">
-          Forma parte de la comunidad de Far Corners.
+        <p className="text-slate-600 dark:text-slate-300">
+          {t.registerSubtitle}
         </p>
       </div>
 
-      <div className="bg-brand-navy border border-brand-border rounded-3xl p-6 sm:p-8">
+      <div className="bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border rounded-3xl p-6 sm:p-8">
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label
               htmlFor="register-name"
-              className="block text-sm text-slate-300 mb-2"
+              className="block text-sm text-slate-600 dark:text-slate-300 mb-2"
             >
-              Nombre completo
+              {t.fullName}
             </label>
 
             <input
@@ -108,6 +115,7 @@ export const RegisterView = ({ onSesionIniciada }: RegisterViewProps) => {
               autoComplete="name"
               required
               maxLength={200}
+              placeholder={t.fullNamePlaceholder}
               value={nombre}
               onChange={(event) => setNombre(event.target.value)}
               className={inputClass}
@@ -117,9 +125,9 @@ export const RegisterView = ({ onSesionIniciada }: RegisterViewProps) => {
           <div>
             <label
               htmlFor="register-email"
-              className="block text-sm text-slate-300 mb-2"
+              className="block text-sm text-slate-600 dark:text-slate-300 mb-2"
             >
-              Correo electrónico
+              {t.email}
             </label>
 
             <input
@@ -129,6 +137,7 @@ export const RegisterView = ({ onSesionIniciada }: RegisterViewProps) => {
               autoComplete="email"
               required
               maxLength={254}
+              placeholder={t.emailPlaceholder}
               value={correo}
               onChange={(event) => setCorreo(event.target.value)}
               className={inputClass}
@@ -138,9 +147,9 @@ export const RegisterView = ({ onSesionIniciada }: RegisterViewProps) => {
           <div>
             <label
               htmlFor="register-password"
-              className="block text-sm text-slate-300 mb-2"
+              className="block text-sm text-slate-600 dark:text-slate-300 mb-2"
             >
-              Contraseña
+              {t.password}
             </label>
 
             <input
@@ -159,18 +168,18 @@ export const RegisterView = ({ onSesionIniciada }: RegisterViewProps) => {
 
             <p
               id="register-password-help"
-              className="text-xs text-slate-400 mt-2"
+              className="text-xs text-slate-500 dark:text-slate-400 mt-2"
             >
-              Usa entre 10 y 128 caracteres. Puedes usar una frase.
+              {t.passwordHelp}
             </p>
           </div>
 
           <div>
             <label
               htmlFor="register-confirmation"
-              className="block text-sm text-slate-300 mb-2"
+              className="block text-sm text-slate-600 dark:text-slate-300 mb-2"
             >
-              Confirmar contraseña
+              {t.confirmPassword}
             </label>
 
             <input
@@ -194,7 +203,7 @@ export const RegisterView = ({ onSesionIniciada }: RegisterViewProps) => {
           )}
 
           {mensaje && (
-            <p role="status" className="text-sm text-slate-200">
+            <p role="status" className="text-sm text-slate-700 dark:text-slate-200">
               {mensaje}
             </p>
           )}
@@ -203,40 +212,52 @@ export const RegisterView = ({ onSesionIniciada }: RegisterViewProps) => {
             type="submit"
             disabled={enviando}
             className="w-full py-3 btn-green
-                        text-brand-navy hover:text-white font-bold
+                        text-brand-navy hover:text-brand-navy dark:text-white font-bold
                         rounded-xl transition-colors
                         disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-            {enviando ? 'Creando cuenta…' : 'Crear cuenta'}
-            </button>
+          >
+            {enviando ? t.creatingAccountBtn : t.createAccountBtn}
+          </button>
         </form>
 
         {/* Separador de autenticación federada */}
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-white/10" />
+            <div className="w-full border-t border-slate-200 dark:border-white/10" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-brand-navy px-3 text-slate-400 font-medium">
-              O continuar con
+            <span className="bg-white dark:bg-brand-navy px-3 text-slate-500 dark:text-slate-400 font-medium">
+              {t.orContinueWith}
             </span>
           </div>
         </div>
 
         {/* Botón de Google OAuth */}
         <GoogleLoginButton
+          language={language}
           buttonText="continue_with"
           onSuccess={(user) => {
             setError('');
-            setMensaje(
-              `¡Bienvenido ${user?.full_name || ''}! Has iniciado sesión con Google.`
-            );
+            setMensaje(t.googleSuccess(user?.full_name || ''));
             onSesionIniciada?.();
           }}
           onError={(errMsg) => {
             setError(errMsg);
           }}
         />
+
+        {onNavigateToLogin && (
+          <p className="text-center text-sm text-slate-600 dark:text-slate-300 mt-6">
+            {t.alreadyHaveAccount}{' '}
+            <button
+              type="button"
+              onClick={onNavigateToLogin}
+              className="text-brand-green hover:underline font-semibold"
+            >
+              {t.signInHere}
+            </button>
+          </p>
+        )}
       </div>
     </div>
   );
