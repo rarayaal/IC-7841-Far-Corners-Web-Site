@@ -5,6 +5,7 @@ import { Ticket, Users, Sparkles, ChevronRight, Star, FileText } from 'lucide-re
 import { CountUp } from '../components/CountUp';
 import { ShowsCarousel } from '../components/ShowsCarousel';
 import { hasTickets, openProgram } from '../lib/shows';
+import { getTranslations } from '../lib/i18n';
 
 interface HomeViewProps {
   language: Language;
@@ -21,6 +22,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onOpenDonate,
   onOpenVolunteer,
 }) => {
+  const t = getTranslations(language).views.home;
   const currentShow = showsData.find(s => s.status === 'current') || showsData[0];
   const upcomingShows = showsData.slice(0, 3);
 
@@ -43,25 +45,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-12 pb-20">
           <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-brand-green/20 border border-brand-green/50 text-brand-lime text-xs font-extrabold uppercase tracking-wider mb-6 shadow-glow-green">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Arte que Conecta Comunidades • Costa Rica</span>
+            <span>{t.tagline}</span>
           </div>
 
           <h1 className="font-serif text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-none">
-            {language === 'es' ? (
-              <>
-                Far Corners <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-green via-brand-lime to-brand-blue">Teatro Comunitario</span>
-              </>
-            ) : (
-              <>
-                Far Corners <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-green via-brand-lime to-brand-blue">Community Theatre</span>
-              </>
-            )}
+            Far Corners <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-green via-brand-lime to-brand-blue">{t.titleCommunity}</span>
           </h1>
 
           <p className="mt-6 text-base sm:text-xl text-brand-cream/90 max-w-3xl mx-auto leading-relaxed font-sans">
-            {language === 'es'
-              ? 'Creemos en el poder del arte para transformar, inspirar y unir personas. Creamos experiencias escénicas que fortalecen la comunidad y abren espacios de expresión para todos.'
-              : 'People, Stories, Community Through Art. Creating stage experiences that empower youth and celebrate diversity.'}
+            {t.heroDescription}
           </p>
 
           {/* Hero CTAs */}
@@ -71,7 +63,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               className="w-full sm:w-auto px-8 py-4 btn-green text-brand-navy hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all transform hover:-translate-y-1 flex items-center justify-center space-x-3 text-base uppercase tracking-wider"
             >
               <Ticket className="w-5 h-5 text-brand-navy fill-current" />
-              <span>{language === 'es' ? 'Comprar Boletos 2026' : 'Buy Tickets 2026'}</span>
+              <span>{t.buyTicketsBtn}</span>
             </button>
 
             <button
@@ -79,7 +71,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               className="w-full sm:w-auto px-7 py-4 bg-brand-navy/90 hover:bg-brand-navyCard border border-brand-blue/60 text-white font-bold rounded-xl transition-all flex items-center justify-center space-x-2 text-base backdrop-blur-md"
             >
               <Users className="w-5 h-5 text-brand-blue" />
-              <span>{language === 'es' ? 'Programa de Pasantías' : 'Internship Opportunities'}</span>
+              <span>{t.internshipBtn}</span>
             </button>
           </div>
 
@@ -88,25 +80,25 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <div className="text-center p-2 border-r border-white/10 last:border-r-0">
               <CountUp value="3" className="block font-mono text-4xl sm:text-5xl font-extrabold text-brand-green" />
               <span className="text-xs text-slate-300 uppercase font-semibold">
-                {language === 'es' ? 'Países de Impacto' : 'Countries'}
+                {t.stats.countries}
               </span>
             </div>
             <div className="text-center p-2 border-r border-white/10 last:border-r-0">
               <CountUp value="+15" className="block font-mono text-4xl sm:text-5xl font-extrabold text-brand-blue" />
               <span className="text-xs text-slate-300 uppercase font-semibold">
-                {language === 'es' ? 'Obras Producidas' : 'Shows Produced'}
+                {t.stats.showsProduced}
               </span>
             </div>
             <div className="text-center p-2 border-r border-white/10 last:border-r-0">
               <CountUp value="+5,000" className="block font-mono text-4xl sm:text-5xl font-extrabold text-brand-lime" />
               <span className="text-xs text-slate-300 uppercase font-semibold">
-                {language === 'es' ? 'Jóvenes Beneficiados' : 'Youth Impacted'}
+                {t.stats.youthImpacted}
               </span>
             </div>
             <div className="text-center p-2">
               <CountUp value="100%" className="block font-mono text-4xl sm:text-5xl font-extrabold text-brand-green" />
               <span className="text-xs text-slate-300 uppercase font-semibold">
-                {language === 'es' ? 'Becas Sociales' : 'Social Scholarships'}
+                {t.stats.scholarships}
               </span>
             </div>
           </div>
@@ -125,7 +117,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               />
             </div>
             <div className="absolute top-4 left-4 bg-brand-green text-brand-navy px-3.5 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider shadow-lg">
-              {language === 'es' ? 'EN CARTELERA 2026' : 'NOW PLAYING 2026'}
+              {t.nowPlaying}
             </div>
           </div>
 
@@ -145,15 +137,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
             <div className="p-4 rounded-xl bg-brand-navyDark/90 border border-brand-border space-y-2 text-xs">
               <div className="flex justify-between">
-                <span className="text-slate-300">Dirección General:</span>
+                <span className="text-slate-300">{t.generalDirection}</span>
                 <span className="text-white font-semibold">{currentShow.director}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-300">Boletos Disponibles:</span>
-                <span className="text-brand-green font-mono font-bold">{currentShow.availableTickets} entradas</span>
+                <span className="text-brand-green font-mono font-bold">{t.availableTickets(currentShow.availableTickets)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-300">Precio de Entrada:</span>
+                <span className="text-slate-300">{t.ticketPrice}</span>
                 <span className="text-brand-lime font-mono font-bold">₡10,000 CRC</span>
               </div>
             </div>
@@ -164,7 +156,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 className="px-8 py-3.5 btn-green text-brand-navy hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all flex items-center space-x-2 text-xs uppercase tracking-wider"
               >
                 <Ticket className="w-5 h-5 text-brand-navy fill-current" />
-                <span>{language === 'es' ? 'Reservar Boletos Ahora' : 'Reserve Tickets Now'}</span>
+                <span>{t.reserveTicketsNow}</span>
               </button>
             </div>
           </div>
@@ -176,17 +168,17 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 border-b border-brand-border pb-4">
           <div>
             <span className="text-xs font-bold text-brand-green uppercase tracking-wider block mb-1">
-              {language === 'es' ? 'Repertorio Teatral' : 'Production Archives'}
+              {t.repertoryBadge}
             </span>
             <h2 className="font-serif text-3xl font-bold text-white">
-              {language === 'es' ? 'Nuestras Obras Teatrales' : 'Our Theatrical History'}
+              {t.theatricalHistory}
             </h2>
           </div>
           <button
             onClick={() => setCurrentPage('shows')}
             className="text-xs font-bold text-brand-blue hover:text-brand-green flex items-center space-x-1 py-2.5 transition-colors"
           >
-            <span>{language === 'es' ? 'Ver cartelera completa' : 'View full catalog'}</span>
+            <span>{t.viewFullCatalog}</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
@@ -201,7 +193,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 className="btn-green inline-flex items-center gap-2 px-6 py-3 text-brand-navy hover:text-white text-xs font-extrabold rounded-xl uppercase tracking-wider"
               >
                 <Ticket className="w-4 h-4 fill-current" />
-                {language === 'es' ? 'Adquirir Boletos' : 'Buy Tickets'}
+                {t.buyTickets}
               </button>
             ) : (
               <button
@@ -209,7 +201,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 className="inline-flex items-center gap-2 px-6 py-3 bg-brand-navyDark hover:bg-brand-navyCard border border-brand-blue/60 text-brand-blue hover:text-white text-xs font-bold rounded-xl uppercase tracking-wider transition-colors"
               >
                 <FileText className="w-4 h-4" />
-                {language === 'es' ? 'Ver programa de mano' : 'View program'}
+                {t.viewProgram}
               </button>
             )
           }
@@ -221,13 +213,13 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <div className="max-w-7xl mx-auto space-y-12">
           <div className="text-center max-w-3xl mx-auto">
             <span className="text-xs font-bold text-brand-lime uppercase tracking-wider block mb-2">
-              {language === 'es' ? 'Presencia e Impacto' : 'Global Outreach'}
+              {t.presenceBadge}
             </span>
             <h2 className="font-serif text-3xl sm:text-4xl font-bold text-white">
-              {language === 'es' ? 'Proyectos en Costa Rica, China y Mozambique' : 'Projects in Costa Rica, China & Mozambique'}
+              {t.projectsTitle}
             </h2>
             <p className="text-slate-300 text-sm mt-3">
-              Far Corners conecta comunidades y abre espacios de expresión para todos a través del teatro musical.
+              {t.projectsDesc}
             </p>
           </div>
 
@@ -266,25 +258,23 @@ export const HomeView: React.FC<HomeViewProps> = ({
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-gradient-to-r from-brand-navy via-brand-navyCard to-brand-navyDark rounded-3xl p-8 sm:p-12 text-center text-white space-y-6 border border-brand-green/40 shadow-glow-green relative overflow-hidden">
           <h2 className="font-serif text-3xl sm:text-4xl font-bold">
-            {language === 'es' ? '¿Quieres Ser Parte de Nuestra Historia?' : 'Ready to Join Our Journey?'}
+            {t.ctaTitle}
           </h2>
           <p className="max-w-2xl mx-auto text-sm sm:text-base text-slate-200">
-            {language === 'es'
-              ? 'Únete como voluntario, postulante a pasantías internacionales o apoyando nuestras becas para jóvenes comunitarios.'
-              : 'Join as an international intern, cyber volunteer, or sponsor a young student scholarship.'}
+            {t.ctaDesc}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
             <button
               onClick={() => setCurrentPage('participate')}
               className="px-8 py-3.5 btn-green text-brand-navy hover:text-white font-extrabold rounded-xl shadow-lg transition-all uppercase tracking-wider text-xs"
             >
-              {language === 'es' ? 'Postularse a Pasantía' : 'Apply for Internship'}
+              {t.applyInternship}
             </button>
             <button
               onClick={onOpenDonate}
               className="px-8 py-3.5 bg-brand-navyDark text-brand-blue hover:bg-brand-navy border border-brand-blue/50 font-bold rounded-xl shadow-lg transition-all text-xs"
             >
-              {language === 'es' ? 'Hacer una Donación' : 'Make a Donation'}
+              {t.makeDonation}
             </button>
           </div>
         </div>

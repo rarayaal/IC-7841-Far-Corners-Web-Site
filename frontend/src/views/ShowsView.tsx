@@ -3,6 +3,7 @@ import { Language, Show } from '../types';
 import { showsData } from '../data/mockData';
 import { Ticket, Calendar, Users, Info, X, FileText } from 'lucide-react';
 import { hasTickets, openProgram } from '../lib/shows';
+import { getTranslations } from '../lib/i18n';
 
 interface ShowsViewProps {
   language: Language;
@@ -10,6 +11,7 @@ interface ShowsViewProps {
 }
 
 export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets }) => {
+  const t = getTranslations(language).views.shows;
   const [filter, setFilter] = useState<'all' | 'current' | 'past'>('current');
   const [selectedShow, setSelectedShow] = useState<Show | null>(null);
 
@@ -29,15 +31,13 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto space-y-3">
         <span className="inline-block px-4 py-1.5 rounded-full bg-brand-green/20 text-brand-lime text-xs font-bold uppercase tracking-wider border border-brand-green/40">
-          {language === 'es' ? 'Cartelera Teatral 2026 & Archivo' : 'Theatrical Repertory 2026'}
+          {t.badge}
         </span>
         <h1 className="font-serif text-4xl sm:text-5xl font-bold text-white tracking-tight">
-          {language === 'es' ? 'Cartelera de Obras Teatrales' : 'Shows & Musical Productions'}
+          {t.title}
         </h1>
         <p className="text-slate-300 text-sm leading-relaxed">
-          {language === 'es'
-            ? 'Explora las producciones de la Temporada 2026 y el repertorio histórico del Teatro Comunitario Far Corners.'
-            : 'Explore the 2026 season productions and historical archive of Far Corners Community Theatre.'}
+          {t.desc}
         </p>
       </div>
 
@@ -52,7 +52,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
                 : 'text-slate-300 hover:text-white'
             }`}
           >
-            {language === 'es' ? 'Cartelera 2026' : '2026 Season'}
+            {t.tab2026}
           </button>
           <button
             onClick={() => setFilter('all')}
@@ -62,7 +62,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
                 : 'text-slate-300 hover:text-white'
             }`}
           >
-            {language === 'es' ? 'Todas las Obras' : 'All Shows'}
+            {t.tabAll}
           </button>
           <button
             onClick={() => setFilter('past')}
@@ -72,7 +72,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
                 : 'text-slate-300 hover:text-white'
             }`}
           >
-            {language === 'es' ? 'Archivo Histórico' : 'Historical Archive'}
+            {t.tabHistory}
           </button>
         </div>
       </div>
@@ -146,7 +146,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
                     className="px-4 py-2.5 btn-green text-brand-navy hover:text-white text-xs font-extrabold rounded-lg shadow-glow-green flex items-center space-x-1.5 uppercase tracking-wider"
                   >
                     <Ticket className="w-3.5 h-3.5 text-brand-navy fill-current" />
-                    <span>{language === 'es' ? 'Comprar Boletos' : 'Buy Tickets'}</span>
+                    <span>{t.buyTickets}</span>
                   </button>
                 ) : (
                   <button
@@ -154,7 +154,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
                     className="px-4 py-2.5 bg-brand-navyDark hover:bg-brand-navyCard border border-brand-blue/60 text-brand-blue hover:text-white text-xs font-bold rounded-lg flex items-center space-x-1.5 uppercase tracking-wider transition-colors"
                   >
                     <FileText className="w-3.5 h-3.5" />
-                    <span>{language === 'es' ? 'Ver programa de mano' : 'View program'}</span>
+                    <span>{t.viewProgram}</span>
                   </button>
                 )}
               </div>

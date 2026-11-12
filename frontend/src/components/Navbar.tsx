@@ -3,6 +3,7 @@ import { PageView, Language } from '../types';
 import type { UsuarioSesion } from '../services/sesion';
 import { puedeAccederAlPanel } from '../services/sesion';
 import { Globe, Search, Shield, Menu, X, Heart, Ticket, Calendar, Info, Users, UserPlus, Mail } from 'lucide-react';
+import { getTranslations } from '../lib/i18n';
 
 interface NavbarProps {
   currentPage: PageView;
@@ -35,6 +36,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onAccederAdmin,
   onCerrarSesion,
 }) => {
+  const t = getTranslations(language).nav;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -51,11 +53,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   const accesoAdmin = puedeAccederAlPanel(usuario);
 
   const navItems = [
-    { id: 'home' as PageView, labelEs: 'Inicio', labelEn: 'Home', icon: Calendar },
-    { id: 'about' as PageView, labelEs: 'Historia e Impacto', labelEn: 'About & Impact', icon: Info },
-    { id: 'shows' as PageView, labelEs: 'Cartelera', labelEn: 'Shows', icon: Ticket },
-    { id: 'participate' as PageView, labelEs: 'Programas y Comunidad', labelEn: 'Programs & Community', icon: Users },
-    { id: 'register' as PageView, labelEs: 'Únete', labelEn: 'Join us', icon: UserPlus },
+    { id: 'home' as PageView, label: t.menu.home, icon: Calendar },
+    { id: 'about' as PageView, label: t.menu.about, icon: Info },
+    { id: 'shows' as PageView, label: t.menu.shows, icon: Ticket },
+    { id: 'participate' as PageView, label: t.menu.participate, icon: Users },
+    { id: 'register' as PageView, label: t.menu.joinUs, icon: UserPlus },
   ].filter((item) => !(usuario && item.id === 'register'));
 
   // "Donar" lleva a la sección de donaciones; desde ahí se continúa a Zeffy.
@@ -83,11 +85,11 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
           <div className="flex items-center space-x-3">
             <span className="hidden sm:inline-block text-brand-lime font-bold tracking-wider text-[11px] uppercase">
-              Arte que Conecta Comunidades
+              {t.tagline}
             </span>
             <span className="hidden md:inline text-slate-400">•</span>
             <span className="text-slate-300 text-xs">
-              {language === 'es' ? 'Costa Rica • China • Mozambique' : 'Costa Rica • China • Mozambique'}
+              {t.locations}
             </span>
           </div>
 
@@ -96,8 +98,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={toggleLanguage}
               className="flex min-h-10 items-center space-x-1.5 px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-brand-cream transition-colors"
-              title={language === 'es' ? 'Seleccionar idioma' : 'Select language'}
-              aria-label={language === 'es' ? 'Cambiar idioma a inglés' : 'Switch language to Spanish'}
+              title={t.selectLanguage}
+              aria-label={t.switchLanguage}
             >
               <Globe className="w-3.5 h-3.5 text-brand-green" />
               <span className="font-semibold text-xs">{language.toUpperCase()}</span>
@@ -105,7 +107,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {verificandoSesion ? (
               <span role="status" className="text-xs text-slate-300">
-                {language === 'es' ? 'Verificando sesión…' : 'Checking session…'}
+                {t.checkingSession}
               </span>
             ) : usuario ? (
               <>
@@ -120,14 +122,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                     isAdminMode ? 'bg-brand-green text-brand-navy font-extrabold' : 'bg-white/10 hover:bg-white/20 text-brand-cream'
                   }`}>
                     <Shield className="w-3.5 h-3.5" />
-                    <span>{language === 'es' ? 'Acceso admin' : 'Admin access'}</span>
+                    <span>{t.adminAccess}</span>
                   </button>
                 )}
                 <button type="button" onClick={() => {
                   setMobileMenuOpen(false);
                   onCerrarSesion();
                 }} className="min-h-10 px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-xs text-brand-cream">
-                  {language === 'es' ? 'Cerrar sesión' : 'Sign out'}
+                  {t.signOut}
                 </button>
               </>
             ) : (
@@ -136,7 +138,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 setIsAdminMode(false);
                 setCurrentPage('login');
               }} className="min-h-10 px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-xs text-brand-cream">
-                {language === 'es' ? 'Iniciar sesión' : 'Sign in'}
+                {t.signIn}
               </button>
             )}
           </div>
@@ -149,7 +151,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Logo Brand Header */}
           <button
             type="button"
-            aria-label={language === 'es' ? 'Far Corners, ir al inicio' : 'Far Corners, go to home'}
+            aria-label={t.goToHome}
             onClick={() => {
               setIsAdminMode(false);
               setCurrentPage('home');
@@ -171,7 +173,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 Far Corners
               </span>
               <span className="block text-[10px] uppercase tracking-widest text-brand-blue font-bold">
-                Teatro Comunitario
+                {t.brandSubtitle}
               </span>
             </div>
           </button>
@@ -193,7 +195,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       : 'text-slate-200 hover:text-white hover:bg-white/10'
                   }`}
                 >
-                  {language === 'es' ? item.labelEs : item.labelEn}
+                  {item.label}
                 </button>
               );
             })}
@@ -204,7 +206,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={onOpenSearch}
               className="p-2.5 text-slate-200 hover:text-white rounded-xl bg-white/10 hover:bg-white/20 transition-colors"
-              title={language === 'es' ? 'Buscar contenido' : 'Search content'}
+              title={t.searchContent}
             >
               <Search className="w-4 h-4 text-brand-blue" />
             </button>
@@ -214,7 +216,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-brand-navy hover:bg-brand-navyCard border border-brand-blue/60 text-brand-blue hover:text-white text-sm font-semibold transition-all shadow-glow-navy"
             >
               <Ticket className="w-4 h-4 text-brand-lime" />
-              <span>{language === 'es' ? 'Boletos' : 'Tickets'}</span>
+              <span>{t.tickets}</span>
             </button>
 
             <button
@@ -223,7 +225,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="btn-green flex items-center space-x-2 px-4 py-2 rounded-xl text-brand-navy hover:text-white font-extrabold text-sm shadow-glow-green transform hover:-translate-y-0.5"
             >
               <Heart className="w-4 h-4 fill-brand-navy" />
-              <span>{language === 'es' ? 'Donar' : 'Donate'}</span>
+              <span>{t.donate}</span>
             </button>
           </div>
 
@@ -231,7 +233,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex xl:hidden items-center space-x-2">
             <button
               onClick={onOpenSearch}
-              aria-label={language === 'es' ? 'Buscar' : 'Search'}
+              aria-label={t.search}
               className="flex h-11 w-11 items-center justify-center text-slate-200 hover:text-white rounded-lg bg-white/10"
             >
               <Search className="w-5 h-5 text-brand-blue" />
@@ -240,8 +242,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label={
                 mobileMenuOpen
-                  ? (language === 'es' ? 'Cerrar menú' : 'Close menu')
-                  : (language === 'es' ? 'Abrir menú' : 'Open menu')
+                  ? t.closeMenu
+                  : t.openMenu
               }
               aria-expanded={mobileMenuOpen}
               className="flex h-11 w-11 items-center justify-center text-slate-200 hover:text-white rounded-lg bg-white/10"
@@ -273,7 +275,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 <IconComp className="w-5 h-5 text-brand-blue" />
-                <span>{language === 'es' ? item.labelEs : item.labelEn}</span>
+                <span>{item.label}</span>
               </button>
             );
           })}
@@ -287,7 +289,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="flex items-center justify-center space-x-2 px-3 py-2.5 rounded-xl bg-brand-navyDark border border-brand-blue/50 text-brand-blue text-sm font-semibold"
             >
               <Ticket className="w-4 h-4 text-brand-lime" />
-              <span>{language === 'es' ? 'Boletos' : 'Tickets'}</span>
+              <span>{t.tickets}</span>
             </button>
 
             <button
@@ -295,7 +297,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="btn-green flex items-center justify-center space-x-2 px-3 py-2.5 rounded-xl text-brand-navy text-sm font-extrabold"
             >
               <Heart className="w-4 h-4 fill-brand-navy" />
-              <span>{language === 'es' ? 'Donar' : 'Donate'}</span>
+              <span>{t.donate}</span>
             </button>
           </div>
         </div>

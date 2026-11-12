@@ -29,30 +29,41 @@ declare global {
   }
 }
 
-let cargaGoogle: Promise<void> | null = null;
-function cargarGoogle(): Promise<void> {
-  if (window.google?.accounts?.id) return Promise.resolve();
-  if (cargaGoogle) return cargaGoogle;
-  cargaGoogle = new Promise<void>((resolve, reject) => {
-    const existente = document.getElementById('google-gsi-client') as HTMLScriptElement | null;
-    const script = existente || document.createElement('script');
+let scriptIdiomaActual: string | null = null;
+
+function cargarGoogle(language: Language): Promise<void> {
+  const scriptExistente = document.getElementById('google-gsi-client') as HTMLScriptElement | null;
+
+  // Si ya existe el script pero el idioma cambió, lo reemplazamos para que Google cargue la localización correcta
+  if (scriptExistente && scriptIdiomaActual !== language) {
+    scriptExistente.remove();
+    scriptIdiomaActual = null;
+  }
+
+  if (window.google?.accounts?.id && scriptIdiomaActual === language) {
+    return Promise.resolve();
+  }
+
+  return new Promise<void>((resolve, reject) => {
+    const script = document.createElement('script');
+    script.id = 'google-gsi-client';
+    script.src = `https://accounts.google.com/gsi/client?hl=${language}`;
+    script.async = true;
+    script.defer = true;
     script.addEventListener('load', () => {
+      scriptIdiomaActual = language;
       if (window.google?.accounts?.id) resolve();
-      else { script.remove(); reject(new Error('Google Identity Services no está disponible.')); }
+      else {
+        script.remove();
+        reject(new Error('Google Identity Services no está disponible.'));
+      }
     }, { once: true });
     script.addEventListener('error', () => {
       script.remove();
       reject(new Error('No se pudo cargar el inicio de sesión con Google.'));
     }, { once: true });
-    if (!existente) {
-      script.id = 'google-gsi-client';
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.async = true;
-      script.defer = true;
-      document.body.appendChild(script);
-    }
-  }).catch((error) => { cargaGoogle = null; throw error; });
-  return cargaGoogle;
+    document.body.appendChild(script);
+  });
 }
 
 interface GoogleLoginButtonProps {
@@ -117,19 +128,40 @@ export const GoogleLoginButton = (props: GoogleLoginButtonProps) => {
       }
     }
 
-    void cargarGoogle().then(() => {
-      if (!activo || !buttonRef.current || !window.google) return;
-      window.google.accounts.id.initialize({
-        client_id: clientId, callback: (response) => { void autenticar(response); }, auto_select: false,
-      });
-      buttonRef.current.innerHTML = '';
-      window.google.accounts.id.renderButton(buttonRef.current, {
-        type: 'standard', theme, size: 'large', text: buttonText,
-        shape: 'pill', width: 280, locale: language,
-      });
-      setPreparado(true);
+    void cargarGoogle(language).then(() => {
+      if (!activo || !buttonRef.current || !window.google?.accounts?.id) return;
+      try {
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: (response) => { void autenticar(response); },
+          auto_select: false,
+        });
+        buttonRef.current.innerHTML = '';
+        window.google.accounts.id.renderButton(buttonRef.current, {
+          type: 'standard',
+          theme,
+          size: 'large',
+          text: buttonText,
+          shape: 'pill',
+          width: 280,
+          locale: language,
+        });
+      } catch (err) {
+        // Ignoramos errores internos de iframe o extensiones de Safari al re-renderizar
+        console.warn('Error al renderizar el botón de Google:', err);
+      } finally {
+        if (activo) {
+          setPreparado(true);
+        }
+      }
     }).catch((error) => {
-      if (activo) callbacks.current.onError?.(error instanceof Error ? error.message : 'Google no está disponible.');
+      if (activo) {
+        setPreparado(true);
+        // Solo mostramos error al usuario si realmente no se pudo cargar la librería
+        if (!window.google?.accounts?.id) {
+          callbacks.current.onError?.(error instanceof Error ? error.message : 'Google no está disponible.');
+        }
+      }
     });
     return () => {
       activo = false;
@@ -150,9 +182,11 @@ export const GoogleLoginButton = (props: GoogleLoginButtonProps) => {
         ref={contenedorRef}>
         <div ref={buttonRef} className="flex justify-center" />
       </div>
-      {(!preparado || loading) && <p role="status" className="text-center text-xs text-slate-300">
-        {language === 'es' ? (loading ? 'Conectando con Google…' : 'Cargando Google…') : (loading ? 'Connecting to Google…' : 'Loading Google…')}
-      </p>}
+      {loading && (
+        <p role="status" className="text-center text-xs text-slate-300">
+          {language === 'es' ? 'Conectando con Google…' : 'Connecting to Google…'}
+        </p>
+      )}
     </div>
   );
 };

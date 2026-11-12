@@ -163,7 +163,11 @@ export function App() {
               <ContactView language={language} />
             )}
             {currentPage === 'register' && (
-              <RegisterView onSesionIniciada={sesionIniciada} />
+              <RegisterView
+                language={language}
+                onSesionIniciada={sesionIniciada}
+                onNavigateToLogin={() => setCurrentPage('login')}
+              />
             )}
             {currentPage === 'login' && !usuario && (
               <LoginView language={language} onLoginCorrecto={sesionIniciada} />

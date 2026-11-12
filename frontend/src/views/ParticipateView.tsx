@@ -2,6 +2,7 @@ import React from 'react';
 import { Language, Opportunity } from '../types';
 import { opportunitiesData } from '../data/mockData';
 import { GraduationCap, Users, ArrowRight, CheckCircle2, Star } from 'lucide-react';
+import { getTranslations } from '../lib/i18n';
 
 interface ParticipateViewProps {
   language: Language;
@@ -12,20 +13,19 @@ export const ParticipateView: React.FC<ParticipateViewProps> = ({
   language,
   onSelectOpportunity,
 }) => {
+  const t = getTranslations(language).views.participate;
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-12 sm:space-y-16 animate-fadeIn">
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto space-y-3">
         <span className="inline-block px-4 py-1.5 rounded-full bg-brand-green/20 text-brand-lime text-xs font-bold uppercase tracking-wider border border-brand-green/40">
-          {language === 'es' ? 'Participación e Intercambio' : 'Programs & Opportunities'}
+          {t.badge}
         </span>
         <h1 className="font-serif text-4xl sm:text-5xl font-bold text-white tracking-tight">
-          {language === 'es' ? 'Únete al Programa Far Corners' : 'Join the Far Corners Family'}
+          {t.title}
         </h1>
         <p className="text-slate-300 text-sm leading-relaxed">
-          {language === 'es'
-            ? 'Descubre oportunidades para estudiantes locales, pasantías universitarias internacionales y voluntariado cyber o presencial.'
-            : 'Explore opportunities for local students, international university internships, and cyber/onsite volunteering.'}
+          {t.desc}
         </p>
       </div>
 
@@ -34,35 +34,33 @@ export const ParticipateView: React.FC<ParticipateViewProps> = ({
         <div className="lg:col-span-7 space-y-4">
           <div className="inline-flex items-center space-x-2 text-xs font-bold text-brand-lime">
             <GraduationCap className="w-4 h-4 text-brand-green" />
-            <span>CAMPAMENTO DE VERANO BILINGÜE</span>
+            <span>{t.campBadge}</span>
           </div>
 
           <h2 className="font-serif text-3xl sm:text-4xl font-bold text-white">
-            Costa Rica Theatre Camp (CRTC)
+            {t.campTitle}
           </h2>
 
           <p className="text-slate-300 text-sm leading-relaxed">
-            {language === 'es'
-              ? 'Un programa de inmersión total en Monteverde, Puntarenas. Los participantes reciben formación en canto, danza y actuación mientras ensayan el musical de la temporada para presentarlo ante el público costarricense.'
-              : 'A full immersion musical theatre camp in Monteverde, Costa Rica. Campers receive vocal, dance, and acting training culminating in a full musical.'}
+            {t.campDesc}
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-300 pt-2">
             <div className="flex items-center space-x-2">
               <CheckCircle2 className="w-4 h-4 text-brand-green shrink-0" />
-              <span>Edades: 8 a 18 años</span>
+              <span>{t.campBullets.ages}</span>
             </div>
             <div className="flex items-center space-x-2">
               <CheckCircle2 className="w-4 h-4 text-brand-green shrink-0" />
-              <span>100% Becas locales disponibles</span>
+              <span>{t.campBullets.scholarships}</span>
             </div>
             <div className="flex items-center space-x-2">
               <CheckCircle2 className="w-4 h-4 text-brand-green shrink-0" />
-              <span>Instructorado bilingüe de nivel internacional</span>
+              <span>{t.campBullets.faculty}</span>
             </div>
             <div className="flex items-center space-x-2">
               <CheckCircle2 className="w-4 h-4 text-brand-green shrink-0" />
-              <span>Funciones estelares abiertas al público</span>
+              <span>{t.campBullets.shows}</span>
             </div>
           </div>
 
@@ -71,7 +69,7 @@ export const ParticipateView: React.FC<ParticipateViewProps> = ({
               onClick={() => onSelectOpportunity(opportunitiesData[0])}
               className="px-7 py-3 btn-green text-brand-navy hover:text-white text-xs font-extrabold rounded-xl shadow-glow-green transition-all flex items-center space-x-2 uppercase tracking-wider"
             >
-              <span>{language === 'es' ? 'Postular al Campamento 2026' : 'Apply for Theatre Camp 2026'}</span>
+              <span>{t.applyCampBtn}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -89,10 +87,10 @@ export const ParticipateView: React.FC<ParticipateViewProps> = ({
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 border-b border-white/10 pb-4">
           <div>
             <span className="text-xs font-bold text-brand-green uppercase tracking-wider block mb-1">
-              {language === 'es' ? 'Convocatorias Abiertas Verano 2026' : 'Open Calls Summer 2026'}
+              {t.openCallsBadge}
             </span>
             <h2 className="font-serif text-3xl font-bold text-white">
-              {language === 'es' ? 'Pasantías Internacionales y Voluntariado' : 'Internships & Volunteering'}
+              {t.openCallsTitle}
             </h2>
           </div>
         </div>
@@ -141,7 +139,7 @@ export const ParticipateView: React.FC<ParticipateViewProps> = ({
                   onClick={() => onSelectOpportunity(opp)}
                   className="w-full py-2.5 btn-green text-brand-navy hover:text-white text-xs font-extrabold rounded-xl shadow-glow-green transition-all uppercase tracking-wider"
                 >
-                  {language === 'es' ? 'Postular a este Puesto' : 'Apply for this Role'}
+                  {t.applyRoleBtn}
                 </button>
               </div>
             </div>

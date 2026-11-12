@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Language } from '../types';
 import { apiAdminJson } from '../services/apiAdmin';
 import { Search, X, Ticket, Globe, Users, Briefcase } from 'lucide-react';
+import { getTranslations } from '../lib/i18n';
 
 interface SearchEvent {
   id: string;
@@ -53,6 +54,7 @@ const vacio: SearchResult = {
 };
 
 export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, language }) => {
+  const t = getTranslations(language).searchModal;
   const [query, setQuery] = useState('');
   const [resultado, setResultado] = useState<SearchResult>(vacio);
   const [consultado, setConsultado] = useState(false);
@@ -89,9 +91,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, langu
         setError(
           e instanceof Error
             ? e.message
-            : language === 'es'
-              ? 'No se pudo realizar la búsqueda.'
-              : 'The search could not be completed.'
+            : t.errorQuery
         );
         setResultado(vacio);
       } finally {
@@ -103,7 +103,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, langu
       clearTimeout(temporizador);
       controlador.abort();
     };
-  }, [query, isOpen, language]);
+  }, [query, isOpen, language, t.errorQuery]);
 
   if (!isOpen) return null;
 
@@ -124,7 +124,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, langu
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={language === 'es' ? 'Buscar obras, proyectos, comunidades, pasantías...' : 'Search shows, projects, communities, internships...'}
+            placeholder={t.placeholder}
             className="w-full bg-transparent text-white placeholder-slate-400 focus:outline-none text-base font-sans"
           />
           <button
@@ -140,14 +140,14 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, langu
           {query.trim().length < 2 && (
             <div className="py-8 text-center text-slate-400">
               <p className="text-sm">
-                {language === 'es' ? 'Escribe al menos 2 caracteres para buscar.' : 'Type at least 2 characters to search.'}
+                {t.minChars}
               </p>
             </div>
           )}
 
           {cargando && (
             <p role="status" className="py-4 text-center text-sm text-slate-300">
-              {language === 'es' ? 'Buscando...' : 'Searching...'}
+              {t.searching}
             </p>
           )}
 
@@ -159,7 +159,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, langu
 
           {consultado && !cargando && !error && !hayResultados && (
             <div className="py-12 text-center text-slate-400">
-              <p className="text-sm">{language === 'es' ? 'No se encontraron resultados para tu búsqueda.' : 'No results found.'}</p>
+              <p className="text-sm">{t.noResults}</p>
             </div>
           )}
 
@@ -167,7 +167,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, langu
             <div className="pt-2">
               <div className="flex items-center space-x-2 text-xs font-bold text-brand-lime uppercase tracking-wider mb-3">
                 <Ticket className="w-4 h-4 text-brand-green" />
-                <span>{language === 'es' ? 'Eventos y Obras' : 'Events & Shows'}</span>
+                <span>{t.eventsAndShows}</span>
               </div>
               <div className="space-y-2">
                 {resultado.events.map((evento) => (
@@ -189,7 +189,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, langu
             <div className="pt-4">
               <div className="flex items-center space-x-2 text-xs font-bold text-brand-lime uppercase tracking-wider mb-3">
                 <Globe className="w-4 h-4 text-brand-blue" />
-                <span>{language === 'es' ? 'Proyectos e Impacto' : 'Projects & Impact'}</span>
+                <span>{t.projectsAndImpact}</span>
               </div>
               <div className="space-y-2">
                 {resultado.projects.map((proyecto) => (
@@ -215,7 +215,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, langu
             <div className="pt-4">
               <div className="flex items-center space-x-2 text-xs font-bold text-brand-lime uppercase tracking-wider mb-3">
                 <Users className="w-4 h-4 text-brand-green" />
-                <span>{language === 'es' ? 'Comunidades' : 'Communities'}</span>
+                <span>{t.communities}</span>
               </div>
               <div className="space-y-2">
                 {resultado.communities.map((comunidad) => (
@@ -234,7 +234,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, langu
             <div className="pt-4">
               <div className="flex items-center space-x-2 text-xs font-bold text-brand-lime uppercase tracking-wider mb-3">
                 <Briefcase className="w-4 h-4 text-brand-green" />
-                <span>{language === 'es' ? 'Pasantías y Voluntariado' : 'Opportunities'}</span>
+                <span>{t.opportunities}</span>
               </div>
               <div className="space-y-2">
                 {resultado.opportunities.map((oportunidad) => (
@@ -252,7 +252,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, langu
 
         {/* Footer info */}
         <div className="p-3 bg-brand-navyDark border-t border-white/10 text-[11px] text-center text-slate-400 font-mono">
-          {language === 'es' ? 'Presiona ESC o la X para cerrar la búsqueda' : 'Press ESC or X to close'}
+          {t.closeHint}
         </div>
       </div>
     </div>

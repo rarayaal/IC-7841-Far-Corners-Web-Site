@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Language, Opportunity } from '../types';
 import { X, UserCheck, CheckCircle2, Upload } from 'lucide-react';
 import type { UsuarioSesion } from '../services/sesion';
+import { getTranslations } from '../lib/i18n';
 
 interface VolunteerModalProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ export const VolunteerModal: React.FC<VolunteerModalProps> = ({
   language,
   usuario,
 }) => {
+  const t = getTranslations(language).modals.volunteer;
   const [submitted, setSubmitted] = useState(false);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -60,10 +62,10 @@ export const VolunteerModal: React.FC<VolunteerModalProps> = ({
             </div>
             <div>
               <h3 className="font-serif text-lg font-bold text-white leading-tight">
-                {language === 'es' ? 'Formulario de Postulación' : 'Application Form'}
+                {t.title}
               </h3>
               <p className="text-xs text-brand-lime font-semibold">
-                {opportunity.title}
+                {language === 'es' ? opportunity.title : (opportunity.titleEn || opportunity.title)}
               </p>
             </div>
           </div>
@@ -76,25 +78,31 @@ export const VolunteerModal: React.FC<VolunteerModalProps> = ({
           {!submitted ? (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="bg-brand-navyDark p-3.5 rounded-xl border border-white/10 text-xs text-slate-300">
-                <span className="font-bold text-white block">Ubicación y Duración:</span>
+                <span className="font-bold text-white block">
+                  {t.locationAndPeriod}
+                </span>
                 <span className="text-slate-300">{opportunity.location} • {opportunity.period}</span>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Nombre Completo *</label>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  {t.fullName}
+                </label>
                 <input
                   type="text"
                   required
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Ej. Sofia Watson"
+                  placeholder={t.fullNamePlaceholder}
                   className="w-full px-3.5 py-2.5 bg-brand-navyDark border border-brand-border rounded-lg text-sm text-white focus:border-brand-green focus:outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Correo Electrónico *</label>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    {t.email}
+                  </label>
                   <input
                     type="email"
                     required
@@ -105,37 +113,43 @@ export const VolunteerModal: React.FC<VolunteerModalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">País de Residencia *</label>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    {t.country}
+                  </label>
                   <input
                     type="text"
                     required
                     value={country}
                     onChange={(e) => setCountry(e.target.value)}
-                    placeholder="Costa Rica / EE.UU..."
+                    placeholder={t.countryPlaceholder}
                     className="w-full px-3.5 py-2.5 bg-brand-navyDark border border-brand-border rounded-lg text-sm text-white focus:border-brand-green focus:outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Experiencia / Motivación *</label>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  {t.experience}
+                </label>
                 <textarea
                   required
                   rows={3}
                   value={experience}
                   onChange={(e) => setExperience(e.target.value)}
-                  placeholder="Cuéntanos brevemente sobre tu formación en teatro, música o tu interés en participar..."
+                  placeholder={t.experiencePlaceholder}
                   className="w-full px-3.5 py-2.5 bg-brand-navyDark border border-brand-border rounded-lg text-sm text-white focus:border-brand-green focus:outline-none"
                 ></textarea>
               </div>
 
               {/* CV / Document Demo */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Adjuntar Hoja de Vida / Resumen (Opcional)</label>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  {t.attachCV}
+                </label>
                 <div className="border border-dashed border-brand-border bg-brand-navyDark p-4 rounded-xl text-center cursor-pointer hover:border-brand-green transition-colors">
                   <Upload className="w-6 h-6 text-brand-green mx-auto mb-1" />
                   <span className="text-xs text-slate-300 block">
-                    {fileName ? fileName : 'Haz clic para seleccionar archivo PDF o DOCX'}
+                    {fileName ? fileName : t.attachCVPlaceholder}
                   </span>
                   <input
                     type="file"
@@ -148,7 +162,7 @@ export const VolunteerModal: React.FC<VolunteerModalProps> = ({
                     id="cv-upload"
                   />
                   <label htmlFor="cv-upload" className="cursor-pointer text-xs text-brand-blue font-bold underline mt-1 inline-block">
-                    Examinar archivo
+                    {t.browseFile}
                   </label>
                 </div>
               </div>
@@ -157,7 +171,7 @@ export const VolunteerModal: React.FC<VolunteerModalProps> = ({
                 type="submit"
                 className="w-full py-3.5 btn-green text-brand-navy hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all uppercase tracking-wider text-xs"
               >
-                Enviar Postulación Oficial
+                {t.submitBtn}
               </button>
             </form>
           ) : (
@@ -165,18 +179,20 @@ export const VolunteerModal: React.FC<VolunteerModalProps> = ({
               <div className="inline-flex p-3 rounded-full bg-brand-green/20 text-brand-green border border-brand-green/40">
                 <CheckCircle2 className="w-12 h-12" />
               </div>
-              <h4 className="font-serif text-2xl font-bold text-white">¡Postulación Recibida!</h4>
+              <h4 className="font-serif text-2xl font-bold text-white">
+                {t.successTitle}
+              </h4>
               <p className="text-sm text-slate-300">
-                Gracias, <strong className="text-white">{fullName}</strong>. El equipo directivo de Far Corners evaluará tu perfil para el puesto de <span className="text-brand-lime font-bold">{opportunity.title}</span>.
+                {t.successMessage(fullName, (language === 'es' ? opportunity.title : opportunity.titleEn) || opportunity.title)}
               </p>
               <div className="p-4 bg-brand-navyDark rounded-xl border border-white/10 text-xs text-slate-300">
-                Recibirás una notificación por correo electrónico (<span className="text-white">{email}</span>) para agendar una entrevista virtual.
+                {t.successEmailNotice(email)}
               </div>
               <button
                 onClick={handleReset}
                 className="w-full py-3 bg-brand-green text-brand-navy font-extrabold rounded-xl"
               >
-                Entendido
+                {t.closeBtn}
               </button>
             </div>
           )}

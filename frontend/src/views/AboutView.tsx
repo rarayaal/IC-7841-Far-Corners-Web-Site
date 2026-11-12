@@ -4,6 +4,7 @@ import { projectsData } from '../data/mockData';
 import { Globe, Heart, Users, Lightbulb, Feather } from 'lucide-react';
 import { useInstitutionalContent } from '../hooks/useInstitutionalContent';
 import { ContentParagraphs } from '../components/ContentParagraphs';
+import { getTranslations } from '../lib/i18n';
 
 interface AboutViewProps {
   language: Language;
@@ -16,6 +17,7 @@ export const AboutView: React.FC<AboutViewProps> = ({
   setCurrentPage,
   onOpenDonate,
 }) => {
+  const t = getTranslations(language).views.about;
   const { items: historyItems } = useInstitutionalContent('history', language);
   const { items: impactItems } = useInstitutionalContent('impact', language);
   const { items: futureItems } = useInstitutionalContent('future', language);
@@ -56,13 +58,13 @@ export const AboutView: React.FC<AboutViewProps> = ({
       {/* Header Banner */}
       <div className="text-center max-w-4xl mx-auto space-y-4">
         <span className="inline-block px-4 py-1.5 rounded-full bg-brand-green/20 text-brand-lime text-xs font-bold uppercase tracking-wider border border-brand-green/40">
-          Nuestra Esencia & Historia
+          {t.badge}
         </span>
         <h1 className="font-serif text-4xl sm:text-6xl font-bold text-white tracking-tight">
-          {language === 'es' ? 'Historia, Valores e Impacto' : 'Our Story & Global Impact'}
+          {t.title}
         </h1>
         <p className="text-slate-300 text-base sm:text-lg leading-relaxed">
-          Far Corners es un teatro comunitario que cree en el poder del arte para transformar, inspirar y unir personas. Creamos experiencias escénicas que fortalecen la comunidad, celebran la diversidad y abren espacios de expresión para todos.
+          {t.desc}
         </p>
       </div>
 
@@ -71,7 +73,7 @@ export const AboutView: React.FC<AboutViewProps> = ({
         <div className="space-y-6">
           <div className="border-l-4 border-brand-green pl-4">
             <h2 className="font-serif text-2xl font-bold text-white">
-              {history?.title ?? (language === 'es' ? 'Origen e Historia del Teatro' : 'History & Origins')}
+              {history?.title ?? t.originsTitle}
             </h2>
             <p className="text-xs text-brand-lime font-mono mt-0.5">
               {history?.subtitle ?? 'Monteverde, Costa Rica • 2013 - 2026'}
@@ -146,7 +148,7 @@ export const AboutView: React.FC<AboutViewProps> = ({
       <div className="bg-brand-navy rounded-3xl p-8 border border-brand-border space-y-8">
         <div className="border-b border-white/10 pb-4">
           <span className="text-xs font-bold text-brand-lime uppercase tracking-wider block">
-            {language === 'es' ? 'Impacto Geográfico' : 'Geographic Reach'}
+            {t.geoReach}
           </span>
           <h2 className="font-serif text-2xl font-bold text-white">Costa Rica, China y Mozambique</h2>
         </div>
@@ -181,7 +183,7 @@ export const AboutView: React.FC<AboutViewProps> = ({
       {futureVision && (
         <div className="bg-[#002244] rounded-3xl p-6 sm:p-8 border border-[#77C65E]/40 space-y-4 text-center max-w-4xl mx-auto">
           <span className="text-xs font-bold text-[#DCEB4F] uppercase tracking-wider block">
-            {language === 'es' ? 'Visión de futuro' : 'Vision for the future'}
+            {t.futureVision}
           </span>
           <h2 className="font-serif text-2xl sm:text-3xl font-bold text-white">{futureVision.title}</h2>
           {futureVision.subtitle && <p className="text-sm text-[#77C65E] font-bold">{futureVision.subtitle}</p>}
