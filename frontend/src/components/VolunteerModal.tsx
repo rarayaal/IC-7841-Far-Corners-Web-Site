@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Language, Opportunity } from '../types';
 import { X, UserCheck, CheckCircle2, Upload } from 'lucide-react';
+import type { UsuarioSesion } from '../services/sesion';
 
 interface VolunteerModalProps {
   isOpen: boolean;
   onClose: () => void;
   opportunity: Opportunity | null;
   language: Language;
+  usuario: UsuarioSesion | null;
 }
 
 export const VolunteerModal: React.FC<VolunteerModalProps> = ({
@@ -14,6 +16,7 @@ export const VolunteerModal: React.FC<VolunteerModalProps> = ({
   onClose,
   opportunity,
   language,
+  usuario,
 }) => {
   const [submitted, setSubmitted] = useState(false);
   const [fullName, setFullName] = useState('');
@@ -22,7 +25,18 @@ export const VolunteerModal: React.FC<VolunteerModalProps> = ({
   const [experience, setExperience] = useState('');
   const [fileName, setFileName] = useState('');
 
-  if (!isOpen || !opportunity) return null;
+  const usuarioId = usuario?.id;
+  const nombreUsuario = usuario?.full_name ?? '';
+  const correoUsuario = usuario?.email ?? '';
+  const oportunidadId = opportunity?.id;
+
+  useEffect(() => {
+    if (!isOpen || !usuarioId || !oportunidadId) return;
+    setFullName(nombreUsuario);
+    setEmail(correoUsuario);
+  }, [isOpen, oportunidadId, usuarioId, nombreUsuario, correoUsuario]);
+
+  if (!isOpen || !opportunity || !usuario) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

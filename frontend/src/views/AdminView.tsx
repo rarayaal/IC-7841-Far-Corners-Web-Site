@@ -19,6 +19,7 @@ import { AdminTicketingView } from './AdminTicketingView';
 import { adminTexts } from '../lib/adminI18n';
 import { tienePermiso } from '../services/permisos';
 import { AdminNewsletterView } from './AdminNewsletterView';
+import { AdminGeneralUsersView } from './AdminGeneralUsersView';
 
 interface AdminViewProps {
   language: Language;
@@ -26,7 +27,7 @@ interface AdminViewProps {
 
 export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
   const txt = adminTexts[language];
-  const [activeTab, setActiveTab] = useState<'kpi' | 'donations' | 'projects' | 'ticketing' | 'content' | 'media' | 'retirement' | 'applicants' | 'audit' | 'messages' | 'contacts' | 'communities' | 'students' | 'volunteers' | 'profile' | 'users' | 'newsletter'>('kpi');
+  const [activeTab, setActiveTab] = useState<'kpi' | 'donations' | 'projects' | 'ticketing' | 'content' | 'media' | 'retirement' | 'applicants' | 'audit' | 'messages' | 'contacts' | 'communities' | 'students' | 'volunteers' | 'profile' | 'users' | 'newsletter' | 'generalUsers'>('kpi');
   
   // Dynamic state for CRUD demo
   const [shows, setShows] = useState<Show[]>(showsData);
@@ -225,6 +226,20 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
           </button>
         )}
 
+        {puedeGestionarUsuarios && (
+          <button
+            onClick={() => setActiveTab('generalUsers')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold
+                        transition-all whitespace-nowrap ${
+              activeTab === 'generalUsers'
+                ? 'bg-brand-green text-brand-navy shadow-glow-green font-extrabold'
+                : 'bg-brand-navy text-slate-300 hover:text-white'
+            }`}
+          >
+            Usuarios generales
+          </button>
+        )}
+
         {puedeVerAuditoria && (
           <button
             onClick={() => setActiveTab('audit')}
@@ -357,6 +372,9 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
 
       {activeTab === 'messages' && puedeVerMensajes && (
         <AdminMessagesView />
+      )}
+      {activeTab === 'generalUsers' && puedeGestionarUsuarios && (
+        <AdminGeneralUsersView />
       )}
       {activeTab === 'communities' && <AdminCommunitiesView language={language} />}
       {activeTab === 'students' && <AdminStudentsView language={language} />}

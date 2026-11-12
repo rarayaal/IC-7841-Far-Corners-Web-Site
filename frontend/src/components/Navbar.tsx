@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { PageView, Language } from '../types';
+import type { UsuarioSesion } from '../services/sesion';
+import { puedeAccederAlPanel } from '../services/sesion';
 import { Globe, Search, Shield, Menu, X, Heart, Ticket, Calendar, Info, Users, UserPlus, Mail } from 'lucide-react';
 
 interface NavbarProps {
@@ -12,6 +14,10 @@ interface NavbarProps {
   onOpenTickets: () => void;
   isAdminMode: boolean;
   setIsAdminMode: (admin: boolean) => void;
+  usuario: UsuarioSesion | null;
+  verificandoSesion: boolean;
+  onAccederAdmin: () => void;
+  onCerrarSesion: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -24,6 +30,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenTickets,
   isAdminMode,
   setIsAdminMode,
+  usuario,
+  verificandoSesion,
+  onAccederAdmin,
+  onCerrarSesion,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -38,13 +48,15 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  const accesoAdmin = puedeAccederAlPanel(usuario);
+
   const navItems = [
     { id: 'home' as PageView, labelEs: 'Inicio', labelEn: 'Home', icon: Calendar },
     { id: 'about' as PageView, labelEs: 'Historia e Impacto', labelEn: 'About & Impact', icon: Info },
     { id: 'shows' as PageView, labelEs: 'Cartelera', labelEn: 'Shows', icon: Ticket },
     { id: 'participate' as PageView, labelEs: 'Programas y Comunidad', labelEn: 'Programs & Community', icon: Users },
     { id: 'register' as PageView, labelEs: 'Únete', labelEn: 'Join us', icon: UserPlus },
-  ];
+  ].filter((item) => !(usuario && item.id === 'register'));
 
   // "Donar" lleva a la sección de donaciones; desde ahí se continúa a Zeffy.
   const goToDonate = () => {
@@ -68,7 +80,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     >
       {/* Top Brand Tagline Bar */}
       <div className="bg-brand-navy border-b border-white/10 py-1.5 px-4 text-xs font-sans text-slate-200">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
+        <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
           <div className="flex items-center space-x-3">
             <span className="hidden sm:inline-block text-brand-lime font-bold tracking-wider text-[11px] uppercase">
               Arte que Conecta Comunidades
@@ -79,7 +91,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex flex-wrap items-center gap-2">
             {/* Language Selector */}
             <button
               onClick={toggleLanguage}
@@ -91,27 +103,42 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="font-semibold text-xs">{language.toUpperCase()}</span>
             </button>
 
-            {/* Admin Mode Toggle */}
-            <button
-              onClick={() => {
+            {verificandoSesion ? (
+              <span role="status" className="text-xs text-slate-300">
+                {language === 'es' ? 'Verificando sesión…' : 'Checking session…'}
+              </span>
+            ) : usuario ? (
+              <>
+                <span className="hidden md:inline text-xs text-slate-300 max-w-40 truncate" title={usuario.full_name}>
+                  {usuario.full_name}
+                </span>
+                {accesoAdmin && (
+                  <button type="button" onClick={() => {
+                    setMobileMenuOpen(false);
+                    onAccederAdmin();
+                  }} className={`flex min-h-10 items-center gap-1.5 px-3 py-1 rounded text-xs transition-colors ${
+                    isAdminMode ? 'bg-brand-green text-brand-navy font-extrabold' : 'bg-white/10 hover:bg-white/20 text-brand-cream'
+                  }`}>
+                    <Shield className="w-3.5 h-3.5" />
+                    <span>{language === 'es' ? 'Acceso admin' : 'Admin access'}</span>
+                  </button>
+                )}
+                <button type="button" onClick={() => {
+                  setMobileMenuOpen(false);
+                  onCerrarSesion();
+                }} className="min-h-10 px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-xs text-brand-cream">
+                  {language === 'es' ? 'Cerrar sesión' : 'Sign out'}
+                </button>
+              </>
+            ) : (
+              <button type="button" onClick={() => {
                 setMobileMenuOpen(false);
-
-                if (isAdminMode) {
-                  setCurrentPage('admin');
-                  return;
-                }
-
-                setCurrentPage('loginAdmin');
-              }}
-              className={`flex min-h-10 items-center space-x-1.5 px-3 py-1 rounded text-xs transition-colors ${
-                isAdminMode
-                  ? 'bg-brand-green text-brand-navy font-extrabold shadow-glow-green'
-                  : 'bg-white/10 hover:bg-white/20 text-brand-cream'
-              }`}
-            >
-              <Shield className="w-3.5 h-3.5 text-brand-blue" />
-              <span>{isAdminMode ? (language === 'es' ? 'Panel Admin' : 'Admin Panel') : (language === 'es' ? 'Acceso Admin' : 'Admin Login')}</span>
-            </button>
+                setIsAdminMode(false);
+                setCurrentPage('login');
+              }} className="min-h-10 px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-xs text-brand-cream">
+                {language === 'es' ? 'Iniciar sesión' : 'Sign in'}
+              </button>
+            )}
           </div>
         </div>
       </div>
