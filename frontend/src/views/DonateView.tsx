@@ -63,25 +63,25 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onOpenDonateMo
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-12 sm:space-y-16 animate-fadeIn">
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto space-y-3">
-        <span className="inline-block px-4 py-1.5 rounded-full bg-brand-green/20 text-brand-lime text-xs font-bold uppercase tracking-wider border border-brand-green/40">
+        <span className="inline-block px-4 py-1.5 rounded-full bg-brand-green/20 text-brand-forest dark:text-brand-lime text-xs font-bold uppercase tracking-wider border border-brand-green/40">
           {t.badge}
         </span>
-        <h1 className="font-serif text-4xl sm:text-5xl font-bold text-white tracking-tight">
+        <h1 className="font-serif text-4xl sm:text-5xl font-bold text-brand-navy dark:text-white tracking-tight">
           {t.title}
         </h1>
-        <p className="text-slate-300 text-sm leading-relaxed">
+        <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
           {t.subtitle}
         </p>
       </div>
 
       {/* Direct Donation Registration Form */}
-      <div className="bg-brand-navy border border-brand-green/40 rounded-3xl p-8 max-w-3xl mx-auto space-y-6 shadow-glow-green">
-        <div className="border-b border-white/10 pb-4">
-          <h2 className="font-serif text-2xl font-bold text-white flex items-center gap-2">
+      <div className="bg-white dark:bg-brand-navy border border-brand-green/40 rounded-3xl p-8 max-w-3xl mx-auto space-y-6 shadow-glow-green">
+        <div className="border-b border-slate-200 dark:border-white/10 pb-4">
+          <h2 className="font-serif text-2xl font-bold text-brand-navy dark:text-white flex items-center gap-2">
             <Heart className="w-6 h-6 text-brand-green fill-brand-green" />
             <span>{t.registerTitle}</span>
           </h2>
-          <p className="text-xs text-slate-300 mt-1">
+          <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
             {t.registerSubtitle}
           </p>
         </div>
@@ -90,7 +90,7 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onOpenDonateMo
           <form onSubmit={handleSubmitDonation} className="space-y-5">
             {/* Payment Method Selector (Identical to TicketModal) */}
             <div>
-              <label className="block text-xs font-semibold uppercase text-slate-300 mb-2">
+              <label className="block text-xs font-semibold uppercase text-slate-600 dark:text-slate-300 mb-2">
                 Selecciona Modo de Pago:
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -100,7 +100,7 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onOpenDonateMo
                   className={`p-3 rounded-xl border text-xs font-bold text-center transition-all ${
                     paymentMethod === 'sinpe'
                       ? 'bg-brand-green border-brand-lime text-brand-navy shadow-glow-green'
-                      : 'bg-white/5 border-white/10 text-slate-300'
+                      : 'bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300'
                   }`}
                 >
                   SINPE Móvil
@@ -111,7 +111,7 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onOpenDonateMo
                   className={`p-3 rounded-xl border text-xs font-bold text-center transition-all ${
                     paymentMethod === 'zeffy'
                       ? 'bg-brand-green border-brand-lime text-brand-navy shadow-glow-green'
-                      : 'bg-white/5 border-white/10 text-slate-300'
+                      : 'bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300'
                   }`}
                 >
                   Zeffy (0% com)
@@ -122,7 +122,7 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onOpenDonateMo
                   className={`p-3 rounded-xl border text-xs font-bold text-center transition-all ${
                     paymentMethod === 'card'
                       ? 'bg-brand-green border-brand-lime text-brand-navy shadow-glow-green'
-                      : 'bg-white/5 border-white/10 text-slate-300'
+                      : 'bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300'
                   }`}
                 >
                   Tarjeta / Stripe
@@ -131,18 +131,18 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onOpenDonateMo
             </div>
 
             {paymentMethod === 'sinpe' && (
-              <div className="bg-brand-navyDark p-4 rounded-xl border border-white/10 space-y-3 text-xs">
-                <div className="flex justify-between items-center pb-2 border-b border-white/10">
-                  <span className="text-slate-300 font-semibold">
+              <div className="bg-[#F8F8F2] dark:bg-brand-navyDark p-4 rounded-xl border border-slate-200 dark:border-white/10 space-y-3 text-xs">
+                <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-white/10">
+                  <span className="text-slate-600 dark:text-slate-300 font-semibold">
                     {t.sinpeNumberTitle}
                   </span>
-                  <span className="font-mono font-bold text-brand-lime text-sm bg-brand-navy px-2 py-0.5 rounded border border-brand-border">8888-9999</span>
+                  <span className="font-mono font-bold text-brand-forest dark:text-brand-lime text-sm bg-white dark:bg-brand-navy px-2 py-0.5 rounded border border-slate-200 dark:border-brand-border">8888-9999</span>
                 </div>
-                <p className="text-slate-300">
+                <p className="text-slate-600 dark:text-slate-300">
                   {t.sinpeInstructions}
                 </p>
                 <div>
-                  <label className="block text-slate-400 mb-1">
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">
                     {t.sinpeRefLabel}
                   </label>
                   <input
@@ -150,30 +150,30 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onOpenDonateMo
                     value={refNumber}
                     onChange={(e) => setRefNumber(e.target.value)}
                     placeholder={t.sinpeRefPlaceholder}
-                    className="w-full px-3 py-1.5 bg-brand-navy border border-brand-border rounded text-white font-mono"
+                    className="w-full px-3 py-1.5 bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border rounded text-brand-navy dark:text-white font-mono"
                   />
                 </div>
               </div>
             )}
 
             {paymentMethod === 'zeffy' && (
-              <div className="bg-brand-navyDark p-4 rounded-xl border border-white/10 text-xs space-y-1">
-                <p className="text-slate-200 font-semibold">
+              <div className="bg-[#F8F8F2] dark:bg-brand-navyDark p-4 rounded-xl border border-slate-200 dark:border-white/10 text-xs space-y-1">
+                <p className="text-slate-700 dark:text-slate-200 font-semibold">
                   {t.zeffyTitle}
                 </p>
-                <p className="text-slate-300">
+                <p className="text-slate-600 dark:text-slate-300">
                   {t.zeffySubtitle}
                 </p>
               </div>
             )}
 
             {paymentMethod === 'card' && (
-              <div className="bg-brand-navyDark p-4 rounded-xl border border-white/10 text-xs space-y-1">
-                <div className="flex items-center space-x-2 text-slate-200">
+              <div className="bg-[#F8F8F2] dark:bg-brand-navyDark p-4 rounded-xl border border-slate-200 dark:border-white/10 text-xs space-y-1">
+                <div className="flex items-center space-x-2 text-slate-700 dark:text-slate-200">
                   <CreditCard className="w-4 h-4 text-brand-blue" />
                   <span>{t.cardTitle}</span>
                 </div>
-                <p className="text-slate-300">
+                <p className="text-slate-600 dark:text-slate-300">
                   {t.cardSubtitle}
                 </p>
               </div>
@@ -182,7 +182,7 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onOpenDonateMo
             {/* Donor Form Fields */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
                   {t.donorNameLabel}
                 </label>
                 <input
@@ -191,11 +191,11 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onOpenDonateMo
                   value={donorName}
                   onChange={(e) => setDonorName(e.target.value)}
                   placeholder={t.donorNamePlaceholder}
-                  className="w-full px-3.5 py-2.5 bg-brand-navyDark border border-brand-border rounded-xl text-xs text-white focus:border-brand-green focus:outline-none"
+                  className="w-full px-3.5 py-2.5 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded-xl text-xs text-brand-navy dark:text-white focus:border-brand-green focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
                   {t.donorEmailLabel}
                 </label>
                 <input
@@ -204,17 +204,17 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onOpenDonateMo
                   value={donorEmail}
                   onChange={(e) => setDonorEmail(e.target.value)}
                   placeholder={t.donorEmailPlaceholder}
-                  className="w-full px-3.5 py-2.5 bg-brand-navyDark border border-brand-border rounded-xl text-xs text-white focus:border-brand-green focus:outline-none"
+                  className="w-full px-3.5 py-2.5 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded-xl text-xs text-brand-navy dark:text-white focus:border-brand-green focus:outline-none"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
                 {t.amountLabel}
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-2.5 font-mono text-xs text-brand-lime font-bold">$</span>
+                <span className="absolute left-3.5 top-2.5 font-mono text-xs text-brand-forest dark:text-brand-lime font-bold">$</span>
                 <input
                   type="number"
                   required
@@ -222,9 +222,9 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onOpenDonateMo
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="50"
-                  className="w-full pl-8 pr-12 py-2.5 bg-brand-navyDark border border-brand-border rounded-xl text-xs text-white focus:border-brand-green focus:outline-none font-mono font-bold"
+                  className="w-full pl-8 pr-12 py-2.5 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded-xl text-xs text-brand-navy dark:text-white focus:border-brand-green focus:outline-none font-mono font-bold"
                 />
-                <span className="absolute right-3.5 top-2.5 font-mono text-[10px] text-slate-400">USD</span>
+                <span className="absolute right-3.5 top-2.5 font-mono text-[10px] text-slate-500 dark:text-slate-400">USD</span>
               </div>
             </div>
 
@@ -237,7 +237,7 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onOpenDonateMo
 
             <button
               type="submit"
-              className="w-full py-3.5 btn-green text-brand-navy hover:text-white text-xs font-extrabold rounded-xl shadow-glow-green transition-all flex items-center justify-center space-x-2 uppercase tracking-wider"
+              className="w-full py-3.5 btn-green text-brand-navy hover:text-brand-navy dark:text-white text-xs font-extrabold rounded-xl shadow-glow-green transition-all flex items-center justify-center space-x-2 uppercase tracking-wider"
             >
               <Send className="w-4 h-4" />
               <span>
@@ -252,15 +252,15 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onOpenDonateMo
             <div className="inline-flex p-3 rounded-full bg-brand-green/20 text-brand-green border border-brand-green/40">
               <CheckCircle2 className="w-10 h-10" />
             </div>
-            <h4 className="font-serif text-xl font-bold text-white">
+            <h4 className="font-serif text-xl font-bold text-brand-navy dark:text-white">
               {t.successTitle}
             </h4>
-            <p className="text-xs text-slate-300">
+            <p className="text-xs text-slate-600 dark:text-slate-300">
               {t.successMsg(donorName, amount)}
             </p>
             <button
               onClick={() => setSubmitted(false)}
-              className="px-6 py-2.5 bg-white/10 text-white text-xs font-semibold rounded-xl"
+              className="px-6 py-2.5 bg-white/10 text-brand-navy dark:text-white text-xs font-semibold rounded-xl"
             >
               {t.registerAnotherBtn}
             </button>

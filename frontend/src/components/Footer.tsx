@@ -90,23 +90,23 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
   }
 
   const inputBoletinClass =
-    'w-full rounded-xl border border-brand-border bg-brand-navyDark ' +
-    'px-4 py-3 text-white placeholder-slate-400 ' +
+    'w-full rounded-xl border border-slate-300 dark:border-brand-border bg-white dark:bg-brand-navyDark ' +
+    'px-4 py-3 text-brand-navy dark:text-white placeholder-slate-400 ' +
     'focus:outline-none focus:border-brand-green';
 
   return (
-    <footer className="bg-brand-navyDark border-t border-brand-border text-slate-300 text-sm font-sans relative overflow-hidden">
+    <footer className="bg-[#F8F8F2] dark:bg-brand-navyDark border-t border-slate-200 dark:border-brand-border text-slate-600 dark:text-slate-300 text-sm font-sans relative overflow-hidden transition-colors">
       {/* Mailchimp Newsletter Section */}
-      <div className="border-b border-brand-border bg-brand-navy py-12 px-4 sm:px-6 lg:px-8">
+      <div className="border-b border-slate-200 dark:border-brand-border bg-slate-100 dark:bg-brand-navy py-12 px-4 sm:px-6 lg:px-8 transition-colors">
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-8">
           <div className="max-w-xl text-center lg:text-left">
-            <span className="inline-block px-3 py-1 rounded-full bg-brand-green/20 text-brand-lime text-xs font-bold uppercase tracking-wider mb-2 border border-brand-green/40">
+            <span className="inline-block px-3 py-1 rounded-full bg-brand-green/20 text-brand-forest dark:text-brand-lime text-xs font-bold uppercase tracking-wider mb-2 border border-brand-green/50">
               {t.newsletterBadge}
             </span>
-            <h3 className="font-serif text-2xl sm:text-3xl font-bold text-white tracking-tight">
+            <h3 className="font-serif text-2xl sm:text-3xl font-bold text-brand-navy dark:text-white tracking-tight">
               {t.newsletterTitle}
             </h3>
-            <p className="mt-2 text-slate-300">
+            <p className="mt-2 text-slate-600 dark:text-slate-300">
               {t.newsletterSubtitle}
             </p>
           </div>
@@ -118,7 +118,7 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
                   <div>
                     <label
                       htmlFor="boletin-nombre"
-                      className="mb-1 block text-sm text-white"
+                      className="mb-1 block text-sm font-medium text-brand-navy dark:text-white"
                     >
                       {t.firstName}
                     </label>
@@ -138,7 +138,7 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
                   <div>
                     <label
                       htmlFor="boletin-apellido"
-                      className="mb-1 block text-sm text-white"
+                      className="mb-1 block text-sm font-medium text-brand-navy dark:text-white"
                     >
                       {t.lastName}
                     </label>
@@ -159,7 +159,7 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
                 <div>
                   <label
                     htmlFor="boletin-correo"
-                    className="mb-1 block text-sm text-white"
+                    className="mb-1 block text-sm font-medium text-brand-navy dark:text-white"
                   >
                     {t.email}
                   </label>
@@ -176,7 +176,7 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
                   />
                 </div>
 
-                <label className="flex items-start gap-3 text-xs text-slate-200">
+                <label className="flex items-start gap-3 text-xs text-slate-600 dark:text-slate-200">
                   <input
                     type="checkbox"
                     required
@@ -225,19 +225,20 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
         {/* About Far Corners */}
         <div className="space-y-4">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-lg bg-brand-navy p-1 border border-brand-green/50 flex items-center justify-center">
-              <img src="/recursos/IMG_2903.PNG" alt="Logo" className="w-full h-full object-contain" />
+            <div className="w-10 h-10 rounded-lg bg-white dark:bg-brand-navy p-1 border border-slate-200 dark:border-brand-green/50 flex items-center justify-center shadow-sm dark:shadow-none">
+              <img src="/recursos/IMG_2903_COLOR.PNG" alt="Logo" className="w-full h-full object-contain dark:hidden" />
+              <img src="/recursos/IMG_2903.PNG" alt="Logo" className="w-full h-full object-contain hidden dark:block" />
             </div>
             <div>
-              <span className="font-serif text-xl font-bold text-white tracking-tight">Far Corners</span>
+              <span className="font-serif text-xl font-bold text-brand-navy dark:text-white tracking-tight">Far Corners</span>
               <span className="block text-[9px] uppercase tracking-widest text-brand-blue font-bold">{language === 'es' ? 'Teatro Comunitario' : 'Community Theatre'}</span>
             </div>
           </div>
-          <p className="text-xs leading-relaxed text-slate-300">
+          <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
             {t.aboutDesc}
           </p>
           <div className="pt-2 flex flex-col items-start gap-3">
-            <span className="inline-block text-[11px] px-2.5 py-1 rounded bg-brand-navy text-brand-lime font-semibold border border-brand-border">
+            <span className="inline-block text-[11px] px-2.5 py-1 rounded bg-white dark:bg-brand-navy text-brand-forest dark:text-brand-lime font-semibold border border-slate-200 dark:border-brand-border shadow-sm dark:shadow-none">
               {t.taglineBadge}
             </span>
 
@@ -246,10 +247,10 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
               onClick={() => setCurrentPage('contact')}
               className="inline-flex items-center gap-2 rounded-xl
                         border border-brand-green/50 bg-brand-green/10
-                        px-4 py-2.5 text-sm font-semibold text-white
+                        px-4 py-2.5 text-sm font-semibold text-brand-navy dark:text-white
                         hover:bg-brand-green/20 transition-colors"
             >
-              <Mail className="h-4 w-4 text-brand-green" />
+              <Mail className="h-4 w-4 text-brand-forest dark:text-brand-green" />
               {t.contactUsBtn}
             </button>
           </div>
@@ -257,7 +258,7 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
 
         {/* Navigation */}
         <div>
-          <h4 className="font-serif text-base font-bold text-white uppercase tracking-wider mb-4 border-b border-brand-green/40 pb-2">
+          <h4 className="font-serif text-base font-bold text-brand-navy dark:text-white uppercase tracking-wider mb-4 border-b border-brand-green/40 pb-2">
             {t.siteNav}
           </h4>
           <ul className="space-y-2.5 text-xs">
@@ -291,7 +292,7 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
 
         {/* Global Footprint */}
         <div>
-          <h4 className="font-serif text-base font-bold text-white uppercase tracking-wider mb-4 border-b border-brand-green/40 pb-2">
+          <h4 className="font-serif text-base font-bold text-brand-navy dark:text-white uppercase tracking-wider mb-4 border-b border-brand-green/40 pb-2">
             {t.globalFootprint}
           </h4>
           {!cargandoContactos && !errorContactos && (
@@ -304,7 +305,7 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
 
         {/* Contact & Info */}
         <div>
-          <h4 className="font-serif text-base font-bold text-white uppercase tracking-wider mb-4 border-b border-brand-green/40 pb-2">
+          <h4 className="font-serif text-base font-bold text-brand-navy dark:text-white uppercase tracking-wider mb-4 border-b border-brand-green/40 pb-2">
             {t.contactAndInfo}
           </h4>
 
@@ -336,10 +337,10 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
       </div>
 
       {/* Bottom Bar */}
-      <div className="bg-brand-navyDeep border-t border-brand-border py-6 px-4 sm:px-6 lg:px-8 text-xs text-center text-slate-400">
+      <div className="bg-slate-200/70 dark:bg-brand-navyDeep border-t border-slate-200 dark:border-brand-border py-6 px-4 sm:px-6 lg:px-8 text-xs text-center text-slate-500 dark:text-slate-400">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <p>{t.copyright}</p>
-          <p className="text-[11px] text-slate-300">
+          <p className="text-[11px] text-slate-600 dark:text-slate-300">
             People • Stories • Community Through Art
           </p>
         </div>

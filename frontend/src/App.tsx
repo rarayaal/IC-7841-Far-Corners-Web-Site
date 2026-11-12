@@ -6,6 +6,7 @@ import { SearchModal } from './components/SearchModal';
 import { TicketModal } from './components/TicketModal';
 import { DonationModal } from './components/DonationModal';
 import { VolunteerModal } from './components/VolunteerModal';
+import { useTheme } from './hooks/useTheme';
 
 import { HomeView } from './views/HomeView';
 import { AboutView } from './views/AboutView';
@@ -21,6 +22,7 @@ import { cerrarSesion, puedeAccederAlPanel } from './services/sesion';
 import { showsData, opportunitiesData } from './data/mockData';
 
 export function App() {
+  const { theme, toggleTheme } = useTheme();
   const [currentPage, setCurrentPage] = useState<PageView>('home');
   const [language, setLanguage] = useState<Language>('es');
   const [isAdminMode, setIsAdminMode] = useState<boolean>(false);
@@ -101,9 +103,11 @@ export function App() {
   }, [postulacionSolicitada, verificandoSesion, usuario]);
 
   return (
-    <div className="min-h-screen bg-brand-navyDark text-brand-cream font-sans flex flex-col justify-between selection:bg-brand-green selection:text-brand-navy">
+    <div className="min-h-screen bg-[#F8F8F2] text-brand-navy dark:bg-brand-navyDark dark:text-brand-cream font-sans flex flex-col justify-between selection:bg-brand-green selection:text-brand-navy transition-colors duration-200">
       {/* Navigation */}
       <Navbar
+        theme={theme}
+        toggleTheme={toggleTheme}
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         language={language}

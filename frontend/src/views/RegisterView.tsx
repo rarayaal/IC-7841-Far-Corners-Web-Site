@@ -26,8 +26,8 @@ export const RegisterView = ({
   const [enviando, setEnviando] = useState(false);
 
   const inputClass =
-    'w-full px-4 py-3 bg-brand-navyDark border border-brand-border ' +
-    'rounded-xl text-white focus:border-brand-green focus:outline-none';
+    'w-full px-4 py-3 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border ' +
+    'rounded-xl text-brand-navy dark:text-white focus:border-brand-green focus:outline-none';
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -89,21 +89,21 @@ export const RegisterView = ({
   return (
     <div className="max-w-xl mx-auto px-4 py-12">
       <div className="text-center mb-8 space-y-3">
-        <h1 className="font-serif text-4xl font-bold text-white">
+        <h1 className="font-serif text-4xl font-bold text-brand-navy dark:text-white">
           {t.registerTitle}
         </h1>
 
-        <p className="text-slate-300">
+        <p className="text-slate-600 dark:text-slate-300">
           {t.registerSubtitle}
         </p>
       </div>
 
-      <div className="bg-brand-navy border border-brand-border rounded-3xl p-6 sm:p-8">
+      <div className="bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border rounded-3xl p-6 sm:p-8">
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label
               htmlFor="register-name"
-              className="block text-sm text-slate-300 mb-2"
+              className="block text-sm text-slate-600 dark:text-slate-300 mb-2"
             >
               {t.fullName}
             </label>
@@ -125,7 +125,7 @@ export const RegisterView = ({
           <div>
             <label
               htmlFor="register-email"
-              className="block text-sm text-slate-300 mb-2"
+              className="block text-sm text-slate-600 dark:text-slate-300 mb-2"
             >
               {t.email}
             </label>
@@ -147,7 +147,7 @@ export const RegisterView = ({
           <div>
             <label
               htmlFor="register-password"
-              className="block text-sm text-slate-300 mb-2"
+              className="block text-sm text-slate-600 dark:text-slate-300 mb-2"
             >
               {t.password}
             </label>
@@ -168,7 +168,7 @@ export const RegisterView = ({
 
             <p
               id="register-password-help"
-              className="text-xs text-slate-400 mt-2"
+              className="text-xs text-slate-500 dark:text-slate-400 mt-2"
             >
               {t.passwordHelp}
             </p>
@@ -177,7 +177,7 @@ export const RegisterView = ({
           <div>
             <label
               htmlFor="register-confirmation"
-              className="block text-sm text-slate-300 mb-2"
+              className="block text-sm text-slate-600 dark:text-slate-300 mb-2"
             >
               {t.confirmPassword}
             </label>
@@ -203,7 +203,7 @@ export const RegisterView = ({
           )}
 
           {mensaje && (
-            <p role="status" className="text-sm text-slate-200">
+            <p role="status" className="text-sm text-slate-700 dark:text-slate-200">
               {mensaje}
             </p>
           )}
@@ -212,7 +212,7 @@ export const RegisterView = ({
             type="submit"
             disabled={enviando}
             className="w-full py-3 btn-green
-                        text-brand-navy hover:text-white font-bold
+                        text-brand-navy hover:text-brand-navy dark:text-white font-bold
                         rounded-xl transition-colors
                         disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -223,10 +223,10 @@ export const RegisterView = ({
         {/* Separador de autenticación federada */}
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-white/10" />
+            <div className="w-full border-t border-slate-200 dark:border-white/10" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-brand-navy px-3 text-slate-400 font-medium">
+            <span className="bg-white dark:bg-brand-navy px-3 text-slate-500 dark:text-slate-400 font-medium">
               {t.orContinueWith}
             </span>
           </div>
@@ -247,7 +247,7 @@ export const RegisterView = ({
         />
 
         {onNavigateToLogin && (
-          <p className="text-center text-sm text-slate-300 mt-6">
+          <p className="text-center text-sm text-slate-600 dark:text-slate-300 mt-6">
             {t.alreadyHaveAccount}{' '}
             <button
               type="button"

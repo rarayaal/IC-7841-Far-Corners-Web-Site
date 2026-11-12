@@ -88,13 +88,13 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-12 sm:space-y-16 animate-fadeIn">
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto space-y-3">
-        <span className="inline-block px-4 py-1.5 rounded-full bg-brand-green/20 text-brand-lime text-xs font-bold uppercase tracking-wider border border-brand-green/40">
+        <span className="inline-block px-4 py-1.5 rounded-full bg-brand-green/20 text-brand-forest dark:text-brand-lime text-xs font-bold uppercase tracking-wider border border-brand-green/40">
           {t.channelsTitle}
         </span>
-        <h1 className="font-serif text-4xl sm:text-5xl font-bold text-white tracking-tight">
+        <h1 className="font-serif text-4xl sm:text-5xl font-bold text-brand-navy dark:text-white tracking-tight">
           {t.title}
         </h1>
-        <p className="text-slate-300 text-sm leading-relaxed">
+        <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
           {t.subtitle}
         </p>
       </div>
@@ -102,13 +102,13 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       {/* Main Aligned Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
         {/* Contact Information Box */}
-        <div className="bg-brand-navy border border-brand-border rounded-3xl p-6 sm:p-8 space-y-6">
-          <h3 className="font-serif text-2xl font-bold text-white border-b border-white/10 pb-3">
+        <div className="bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border rounded-3xl p-6 sm:p-8 space-y-6">
+          <h3 className="font-serif text-2xl font-bold text-brand-navy dark:text-white border-b border-slate-200 dark:border-white/10 pb-3">
             {t.channelsSubtitle}
           </h3>
 
           {cargandoContactos && (
-            <p role="status" className="text-xs text-slate-300">
+            <p role="status" className="text-xs text-slate-600 dark:text-slate-300">
               {language === 'es'
                 ? 'Cargando contactos...'
                 : 'Loading contact information...'}
@@ -130,7 +130,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                 language={language}
               />
             ) : (
-              <p className="text-xs text-slate-300">
+              <p className="text-xs text-slate-600 dark:text-slate-300">
                 {language === 'es'
                   ? 'No hay medios de contacto publicados.'
                   : 'No contact information is currently available.'}
@@ -140,9 +140,9 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         </div>
 
         {/* Contact Form Box */}
-        <div className="bg-brand-navy border border-brand-border rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between">
+        <div className="bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between">
           <div className="space-y-4">
-            <h3 className="font-serif text-2xl font-bold text-white border-b border-white/10 pb-3">
+            <h3 className="font-serif text-2xl font-bold text-brand-navy dark:text-white border-b border-slate-200 dark:border-white/10 pb-3">
               {t.formTitle}
             </h3>
 
@@ -150,7 +150,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">{t.nameLabel} *</label>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">{t.nameLabel} *</label>
                     <input
                       type="text"
                       required
@@ -158,11 +158,11 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder={t.namePlaceholder}
-                      className="w-full px-3.5 py-2.5 bg-brand-navyDark border border-brand-border rounded-lg text-xs text-white focus:border-brand-green focus:outline-none"
+                      className="w-full px-3.5 py-2.5 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded-lg text-xs text-brand-navy dark:text-white focus:border-brand-green focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">{t.emailLabel} *</label>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">{t.emailLabel} *</label>
                     <input
                       type="email"
                       required
@@ -170,13 +170,13 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       placeholder={t.emailPlaceholder}
-                      className="w-full px-3.5 py-2.5 bg-brand-navyDark border border-brand-border rounded-lg text-xs text-white focus:border-brand-green focus:outline-none"
+                      className="w-full px-3.5 py-2.5 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded-lg text-xs text-brand-navy dark:text-white focus:border-brand-green focus:outline-none"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">{t.subjectLabel} *</label>
+                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">{t.subjectLabel} *</label>
                   <input
                     type="text"
                     required
@@ -184,12 +184,12 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                     value={formData.subject}
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                     placeholder={t.subjectPlaceholder}
-                    className="w-full px-3.5 py-2.5 bg-brand-navyDark border border-brand-border rounded-lg text-xs text-white focus:border-brand-green focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded-lg text-xs text-brand-navy dark:text-white focus:border-brand-green focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">{t.messageLabel} *</label>
+                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">{t.messageLabel} *</label>
                   <textarea
                     required
                     rows={4}
@@ -197,7 +197,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     placeholder={t.messagePlaceholder}
-                    className="w-full px-3.5 py-2.5 bg-brand-navyDark border border-brand-border rounded-lg text-xs text-white focus:border-brand-green focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded-lg text-xs text-brand-navy dark:text-white focus:border-brand-green focus:outline-none"
                   ></textarea>
                 </div>
 
@@ -211,7 +211,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                   type="submit"
                   disabled={enviando}
                   className="w-full py-3.5 btn-green
-                            text-brand-navy hover:text-white text-xs font-extrabold
+                            text-brand-navy hover:text-brand-navy dark:text-white text-xs font-extrabold
                             rounded-xl shadow-glow-green transition-all flex
                             items-center justify-center space-x-2 uppercase tracking-wider
                             disabled:opacity-50 disabled:cursor-not-allowed"
@@ -227,12 +227,12 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                 <div className="inline-flex p-3 rounded-full bg-brand-green/20 text-brand-green border border-brand-green/40">
                   <CheckCircle2 className="w-10 h-10" />
                 </div>
-                <h4 className="font-serif text-xl font-bold text-white">{t.successTitle}</h4>
-                <p className="text-xs text-slate-300">
+                <h4 className="font-serif text-xl font-bold text-brand-navy dark:text-white">{t.successTitle}</h4>
+                <p className="text-xs text-slate-600 dark:text-slate-300">
                   {language === 'es' ? (
-                    <>Gracias <strong className="text-white">{formData.name}</strong>. Responderemos a tu correo (<span className="text-brand-lime">{formData.email}</span>) a la brevedad.</>
+                    <>Gracias <strong className="text-brand-navy dark:text-white">{formData.name}</strong>. Responderemos a tu correo (<span className="text-brand-forest dark:text-brand-lime">{formData.email}</span>) a la brevedad.</>
                   ) : (
-                    <>Thank you <strong className="text-white">{formData.name}</strong>. We will reply to your email (<span className="text-brand-lime">{formData.email}</span>) shortly.</>
+                    <>Thank you <strong className="text-brand-navy dark:text-white">{formData.name}</strong>. We will reply to your email (<span className="text-brand-forest dark:text-brand-lime">{formData.email}</span>) shortly.</>
                   )}
                 </p>
                 <button
@@ -246,7 +246,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                     setErrorEnvio('');
                     setSubmitted(false);
                   }}
-                  className="px-6 py-2.5 bg-white/10 text-white text-xs font-semibold rounded-xl hover:bg-white/20 transition-colors"
+                  className="px-6 py-2.5 bg-white/10 text-brand-navy dark:text-white text-xs font-semibold rounded-xl hover:bg-white/20 transition-colors"
                 >
                   {t.sendAnotherBtn}
                 </button>
