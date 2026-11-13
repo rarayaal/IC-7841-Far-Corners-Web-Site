@@ -1,11 +1,15 @@
 import { useState, type FormEvent } from 'react';
 import { apiAdmin } from '../services/apiAdmin';
+import { adminTexts } from '../lib/adminI18n';
+import type { Language } from '../types';
 
 interface ReplyDraftFormProps {
   mensajeId: string;
+  language?: Language;
 }
 
-export const ReplyDraftForm = ({ mensajeId }: ReplyDraftFormProps) => {
+export const ReplyDraftForm = ({ mensajeId, language = 'es' }: ReplyDraftFormProps) => {
+  const txt = adminTexts[language].replyForm;
   const [texto, setTexto] = useState('');
   const [idioma, setIdioma] = useState<'' | 'es' | 'en'>('');
   const [enviando, setEnviando] = useState(false);
@@ -25,12 +29,12 @@ export const ReplyDraftForm = ({ mensajeId }: ReplyDraftFormProps) => {
     const contenido = texto.trim();
 
     if (!contenido || contenido.length > 10000) {
-      setError('La respuesta debe contener entre 1 y 10000 caracteres.');
+      setError(txt.charRangeError);
       return;
     }
 
     if (!idioma) {
-      setError('Selecciona el idioma de la respuesta.');
+      setError(txt.langRequiredError);
       return;
     }
 
@@ -55,25 +59,27 @@ export const ReplyDraftForm = ({ mensajeId }: ReplyDraftFormProps) => {
 
       if (!respuesta.ok) {
         throw new Error(
-          datos?.message ?? 'No se pudo confirmar el envío.'
+          datos?.message ?? (language === 'es' ? 'No se pudo confirmar el envío.' : 'Could not confirm delivery.')
         );
       }
 
       if (datos?.enviado !== true) {
-        throw new Error('El servidor no confirmó el envío.');
+        throw new Error(language === 'es' ? 'El servidor no confirmó el envío.' : 'Server did not confirm delivery.');
       }
 
       setTexto('');
       setIdioma('');
       setAdvertencia(datos.advertencia === true);
       setConfirmacion(
-        datos.message ?? 'Respuesta enviada correctamente.'
+        datos.message ?? txt.success
       );
     } catch (error) {
       setError(
         error instanceof Error
           ? error.message
-          : 'Se perdió la conexión. Comprueba el estado del correo antes de volver a enviarlo.'
+          : (language === 'es'
+              ? 'Se perdió la conexión. Comprueba el estado del correo antes de volver a enviarlo.'
+              : 'Connection lost. Check email delivery status before retrying.')
       );
     } finally {
       setEnviando(false);
@@ -91,7 +97,7 @@ export const ReplyDraftForm = ({ mensajeId }: ReplyDraftFormProps) => {
             htmlFor={`idioma-${mensajeId}`}
             className="mb-2 block text-sm font-bold text-white"
           >
-            Idioma y remitente de la respuesta
+            {txt.languageLabel}
           </label>
 
           <select
@@ -110,12 +116,12 @@ export const ReplyDraftForm = ({ mensajeId }: ReplyDraftFormProps) => {
             className="w-full rounded-xl border border-brand-border
                        bg-brand-navyDark p-3 text-sm text-white"
           >
-            <option value="">Selecciona un idioma</option>
+            <option value="">{txt.selectLanguage}</option>
             <option value="es">
-              Español — info@teatrofarcorners.org
+              {txt.esOption}
             </option>
             <option value="en">
-              Inglés — info@farcornersmusicals.org
+              {txt.enOption}
             </option>
           </select>
         </div>
@@ -125,7 +131,7 @@ export const ReplyDraftForm = ({ mensajeId }: ReplyDraftFormProps) => {
             htmlFor={`respuesta-${mensajeId}`}
             className="mb-2 block text-sm font-bold text-white"
           >
-            Redactar respuesta
+            {txt.composeLabel}
           </label>
 
           <textarea
@@ -138,7 +144,7 @@ export const ReplyDraftForm = ({ mensajeId }: ReplyDraftFormProps) => {
               setTexto(evento.target.value);
               setConfirmacion('');
             }}
-            placeholder="Escribe la respuesta en el idioma seleccionado…"
+            placeholder={txt.placeholder}
             className="w-full rounded-xl border border-brand-border
                        bg-brand-navyDark p-3 text-sm text-white
                        focus:border-brand-green focus:outline-none"
@@ -146,8 +152,7 @@ export const ReplyDraftForm = ({ mensajeId }: ReplyDraftFormProps) => {
         </div>
 
         <p className="text-xs text-slate-300">
-          La respuesta se enviará por correo al visitante y se guardará
-          en el sistema. El texto no se traduce automáticamente.
+          {txt.warningNotice}
         </p>
 
         <button
@@ -158,7 +163,7 @@ export const ReplyDraftForm = ({ mensajeId }: ReplyDraftFormProps) => {
                      hover:text-white disabled:cursor-not-allowed
                      disabled:opacity-50"
         >
-          {enviando ? 'Enviando…' : 'Enviar respuesta'}
+          {enviando ? txt.sendingBtn : txt.sendBtn}
         </button>
       </fieldset>
 

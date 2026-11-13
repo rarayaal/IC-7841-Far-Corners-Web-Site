@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, RefreshCw, Filter, AlertCircle, FileText, ChevronDown } from 'lucide-react';
 import { apiAdminJson } from '../services/apiAdmin';
+import { adminTexts } from '../lib/adminI18n';
+import type { Language } from '../types';
 
 interface AuditLog {
   id: string;
@@ -17,7 +19,12 @@ interface AuditLog {
   created_at: string;
 }
 
-export const AdminAuditView: React.FC = () => {
+interface AdminAuditViewProps {
+  language?: Language;
+}
+
+export const AdminAuditView: React.FC<AdminAuditViewProps> = ({ language = 'es' }) => {
+  const txt = adminTexts[language].audit;
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +46,7 @@ export const AdminAuditView: React.FC = () => {
       const res = await apiAdminJson<{ data: AuditLog[] }>(`/api/v1/audit/logs?${params.toString()}`);
       setLogs(Array.isArray(res?.data) ? res.data : []);
     } catch (err: any) {
-      setError(err?.message || 'Error al obtener la bitácora de auditoría');
+      setError(err?.message || txt.fetchError);
     } finally {
       setLoading(false);
     }
@@ -56,10 +63,10 @@ export const AdminAuditView: React.FC = () => {
         <div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <Shield className="w-6 h-6 text-[#77C65E]" />
-            Bitácora de Auditoría del Sistema
+            {txt.title}
           </h2>
           <p className="text-slate-400 text-sm mt-1">
-            Registro inmutable de acciones administrativas, mutaciones y eventos de seguridad.
+            {txt.subtitle}
           </p>
         </div>
         <button
@@ -68,7 +75,7 @@ export const AdminAuditView: React.FC = () => {
           className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white font-semibold text-xs rounded-xl transition-all flex items-center gap-2"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          Refrescar
+          {txt.refresh}
         </button>
       </div>
 
@@ -76,7 +83,7 @@ export const AdminAuditView: React.FC = () => {
       <div className="bg-[#00162e] border border-white/10 rounded-2xl p-4 flex flex-wrap gap-4 items-center">
         <div className="flex items-center gap-2 text-xs font-semibold text-slate-300">
           <Filter className="w-4 h-4 text-[#77C65E]" />
-          <span>Filtros:</span>
+          <span>{txt.filters}</span>
         </div>
 
         {/* Filtro Acciones */}
@@ -86,10 +93,10 @@ export const AdminAuditView: React.FC = () => {
             onChange={(e) => setActionFilter(e.target.value)}
             className="appearance-none bg-[#000d1a] border border-white/10 hover:border-white/20 focus:border-[#77C65E] rounded-xl text-white text-xs pl-3.5 pr-9 py-2 outline-none cursor-pointer transition-all shadow-inner"
           >
-            <option value="">Todas las acciones</option>
-            <option value="create">Crear (create)</option>
-            <option value="update">Modificar (update)</option>
-            <option value="delete">Eliminar (delete)</option>
+            <option value="">{txt.allActions}</option>
+            <option value="create">{txt.actions.create}</option>
+            <option value="update">{txt.actions.update}</option>
+            <option value="delete">{txt.actions.delete}</option>
           </select>
           <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
@@ -101,13 +108,14 @@ export const AdminAuditView: React.FC = () => {
             onChange={(e) => setEntityFilter(e.target.value)}
             className="appearance-none bg-[#000d1a] border border-white/10 hover:border-white/20 focus:border-[#77C65E] rounded-xl text-white text-xs pl-3.5 pr-9 py-2 outline-none cursor-pointer transition-all shadow-inner"
           >
-            <option value="">Todas las entidades</option>
-            <option value="users">Usuarios (users)</option>
-            <option value="user_permissions">Permisos (user_permissions)</option>
-            <option value="shows">Obras / Shows (shows)</option>
-            <option value="events">Eventos (events)</option>
-            <option value="tickets">Boletos (tickets)</option>
-            <option value="donations">Donaciones (donations)</option>
+            <option value="">{txt.allEntities}</option>
+            <option value="users">{txt.entities.users}</option>
+            <option value="user_permissions">{txt.entities.permissions}</option>
+            <option value="shows">{txt.entities.shows}</option>
+            <option value="events">{txt.entities.events}</option>
+            <option value="tickets">{txt.entities.tickets}</option>
+            <option value="donations">{txt.entities.donations}</option>
+            <option value="institutional_content">{txt.entities.institutionalContent}</option>
           </select>
           <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
@@ -124,27 +132,31 @@ export const AdminAuditView: React.FC = () => {
       {/* Tabla de Auditoría */}
       <div className="bg-[#00162e] border border-white/10 rounded-2xl overflow-hidden shadow-xl">
         {loading ? (
-          <div className="p-12 text-center text-slate-400 text-sm">Cargando registros de auditoría...</div>
+          <div className="p-12 text-center text-slate-400 text-sm">
+            {language === 'es' ? 'Cargando registros de auditoría...' : 'Loading audit records...'}
+          </div>
         ) : logs.length === 0 ? (
-          <div className="p-12 text-center text-slate-400 text-sm">No se encontraron eventos registrados con los filtros seleccionados.</div>
+          <div className="p-12 text-center text-slate-400 text-sm">
+            {txt.detailModal.emptyState}
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-300">
               <thead className="bg-[#002244] text-[11px] uppercase font-mono text-slate-300 border-b border-white/10">
                 <tr>
-                  <th className="py-3.5 px-4">Fecha y Hora</th>
-                  <th className="py-3.5 px-4">Acción</th>
-                  <th className="py-3.5 px-4">Entidad</th>
-                  <th className="py-3.5 px-4">Usuario Responsable</th>
-                  <th className="py-3.5 px-4">IP / Agente</th>
-                  <th className="py-3.5 px-4 text-right">Detalle</th>
+                  <th className="py-3.5 px-4">{txt.table.date}</th>
+                  <th className="py-3.5 px-4">{txt.table.action}</th>
+                  <th className="py-3.5 px-4">{txt.table.entity}</th>
+                  <th className="py-3.5 px-4">{txt.table.user}</th>
+                  <th className="py-3.5 px-4">{txt.table.ip}</th>
+                  <th className="py-3.5 px-4 text-right">{txt.table.details}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5 font-mono text-[11px]">
                 {logs.map((log) => (
                   <tr key={log.id} className="hover:bg-white/5 transition-colors">
                     <td className="py-3.5 px-4 text-slate-400 whitespace-nowrap">
-                      {new Date(log.created_at).toLocaleString('es-CR')}
+                      {new Date(log.created_at).toLocaleString(language === 'es' ? 'es-CR' : 'en-US')}
                     </td>
                     <td className="py-3.5 px-4">
                       <span className={`px-2 py-0.5 rounded font-bold text-[10px] ${
@@ -160,7 +172,7 @@ export const AdminAuditView: React.FC = () => {
                       {log.table_name} {log.record_id ? `(${log.record_id.substring(0, 8)}...)` : ''}
                     </td>
                     <td className="py-3.5 px-4 font-sans text-slate-300">
-                      {log.user_email || log.user_name || log.user_id || 'Sistema / Anónimo'}
+                      {log.user_email || log.user_name || log.user_id || (language === 'es' ? 'Sistema / Anónimo' : 'System / Anonymous')}
                     </td>
                     <td className="py-3.5 px-4 text-slate-400 text-[10px]">
                       {log.ip_address || '127.0.0.1'}
@@ -171,7 +183,7 @@ export const AdminAuditView: React.FC = () => {
                         className="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-white rounded-lg text-[10px] font-sans font-semibold inline-flex items-center gap-1"
                       >
                         <FileText className="w-3 h-3" />
-                        Ver JSON
+                        JSON
                       </button>
                     </td>
                   </tr>
@@ -190,7 +202,7 @@ export const AdminAuditView: React.FC = () => {
               <div>
                 <h3 className="text-base font-bold text-white flex items-center gap-2">
                   <FileText className="w-4 h-4 text-[#77C65E]" />
-                  Detalle del Evento de Auditoría
+                  {txt.detailModal.title}
                 </h3>
                 <p className="text-xs text-slate-400 font-mono mt-0.5">ID: {selectedLog.id}</p>
               </div>
@@ -201,13 +213,13 @@ export const AdminAuditView: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <h4 className="text-xs font-bold text-slate-300 mb-2 uppercase tracking-wider">Estado Anterior (old_values)</h4>
+                <h4 className="text-xs font-bold text-slate-300 mb-2 uppercase tracking-wider">{txt.detailModal.oldValues}</h4>
                 <pre className="p-3 bg-[#000d1a] border border-white/10 rounded-xl text-[11px] font-mono text-amber-300/90 overflow-x-auto max-h-60">
                   {JSON.stringify(selectedLog.old_values, null, 2) || 'null'}
                 </pre>
               </div>
               <div>
-                <h4 className="text-xs font-bold text-slate-300 mb-2 uppercase tracking-wider">Estado Nuevo (new_values)</h4>
+                <h4 className="text-xs font-bold text-slate-300 mb-2 uppercase tracking-wider">{txt.detailModal.newValues}</h4>
                 <pre className="p-3 bg-[#000d1a] border border-white/10 rounded-xl text-[11px] font-mono text-emerald-300/90 overflow-x-auto max-h-60">
                   {JSON.stringify(selectedLog.new_values, null, 2) || 'null'}
                 </pre>
@@ -219,7 +231,7 @@ export const AdminAuditView: React.FC = () => {
                 onClick={() => setSelectedLog(null)}
                 className="px-4 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold"
               >
-                Cerrar
+                {txt.detailModal.close}
               </button>
             </div>
           </div>

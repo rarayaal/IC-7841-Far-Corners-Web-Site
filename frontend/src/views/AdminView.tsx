@@ -16,7 +16,7 @@ import { AdminAuditView } from './AdminAuditView';
 import { AdminProjectsView } from './AdminProjectsView';
 import { AdminDonationsView } from './AdminDonationsView';
 import { AdminTicketingView } from './AdminTicketingView';
-import { adminTexts } from '../lib/adminI18n';
+import { adminTexts, statusLabel } from '../lib/adminI18n';
 import { tienePermiso } from '../services/permisos';
 import { AdminNewsletterView } from './AdminNewsletterView';
 import { AdminGeneralUsersView } from './AdminGeneralUsersView';
@@ -376,17 +376,17 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
       {activeTab === 'donations' && <AdminDonationsView language={language} />}
       {activeTab === 'projects' && <AdminProjectsView language={language} />}
       {activeTab === 'newsletter' && puedeVerBoletin && (
-        <AdminNewsletterView />
+        <AdminNewsletterView language={language} />
       )}
       {activeTab === 'contacts' && puedeGestionarContactos && (
-        <AdminContactChannelsView />
+        <AdminContactChannelsView language={language} />
       )}
 
       {activeTab === 'messages' && puedeVerMensajes && (
-        <AdminMessagesView />
+        <AdminMessagesView language={language} />
       )}
       {activeTab === 'generalUsers' && puedeGestionarUsuarios && (
-        <AdminGeneralUsersView />
+        <AdminGeneralUsersView language={language} />
       )}
       {activeTab === 'communities' && <AdminCommunitiesView language={language} />}
       {activeTab === 'students' && <AdminStudentsView language={language} />}
@@ -399,38 +399,38 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-brand-navy p-5 rounded-2xl border border-brand-border space-y-2">
               <div className="flex justify-between items-center text-xs text-slate-300">
-                <span>Recaudación Donaciones</span>
+                <span>{txt.kpi.donationsTitle}</span>
                 <Heart className="w-4 h-4 text-brand-green fill-current" />
               </div>
               <span className="font-mono text-3xl font-extrabold text-brand-lime block">$4,250 USD</span>
-              <span className="text-[11px] text-brand-green block">+15% este mes</span>
+              <span className="text-[11px] text-brand-green block">{txt.kpi.donationsGrowth}</span>
             </div>
 
             <div className="bg-brand-navy p-5 rounded-2xl border border-brand-border space-y-2">
               <div className="flex justify-between items-center text-xs text-slate-300">
-                <span>Boletos Vendidos 2026</span>
+                <span>{txt.kpi.ticketsTitle}</span>
                 <Ticket className="w-4 h-4 text-brand-blue" />
               </div>
               <span className="font-mono text-3xl font-extrabold text-white block">182</span>
-              <span className="text-[11px] text-slate-300 block">De 250 boletos totales</span>
+              <span className="text-[11px] text-slate-300 block">{txt.kpi.ticketsTotal}</span>
             </div>
 
             <div className="bg-brand-navy p-5 rounded-2xl border border-brand-border space-y-2">
               <div className="flex justify-between items-center text-xs text-slate-300">
-                <span>Postulantes Activos</span>
+                <span>{txt.kpi.applicantsTitle}</span>
                 <Users className="w-4 h-4 text-brand-blue" />
               </div>
               <span className="font-mono text-3xl font-extrabold text-white block">14</span>
-              <span className="text-[11px] text-slate-300 block">Pasantías & Voluntarios</span>
+              <span className="text-[11px] text-slate-300 block">{txt.kpi.applicantsSub}</span>
             </div>
 
             <div className="bg-brand-navy p-5 rounded-2xl border border-brand-border space-y-2">
               <div className="flex justify-between items-center text-xs text-slate-300">
-                <span>Concurrencia Sistema</span>
+                <span>{txt.kpi.concurrencyTitle}</span>
                 <Shield className="w-4 h-4 text-brand-green" />
               </div>
               <span className="font-mono text-3xl font-extrabold text-brand-green block">28</span>
-              <span className="text-[11px] text-slate-300 block">Usuarios simultáneos (Max 100)</span>
+              <span className="text-[11px] text-slate-300 block">{txt.kpi.concurrencySub}</span>
             </div>
           </div>
 
@@ -438,10 +438,10 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
           <div className="bg-brand-navy p-6 rounded-3xl border border-brand-border space-y-4">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="font-serif text-lg font-bold text-white">Venta de Entradas por Obra Teatral</h3>
-                <p className="text-xs text-slate-300">Distribución de boletos vendidos en la plataforma</p>
+                <h3 className="font-serif text-lg font-bold text-white">{txt.kpi.salesChartTitle}</h3>
+                <p className="text-xs text-slate-300">{txt.kpi.salesChartSub}</p>
               </div>
-              <span className="text-xs text-brand-lime font-mono">Actualizado en tiempo real</span>
+              <span className="text-xs text-brand-lime font-mono">{txt.kpi.updatedRealtime}</span>
             </div>
 
             {/* SVG Custom Bar Chart */}
@@ -456,7 +456,11 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
                   <div key={i} className="space-y-1 text-xs">
                     <div className="flex justify-between text-slate-200 font-semibold">
                       <span>{bar.name}</span>
-                      <span className="font-mono font-bold text-brand-lime">{bar.count} boletos ({percentage}%)</span>
+                      <span className="font-mono font-bold text-brand-lime">
+                        {txt.kpi.ticketsSold
+                          .replace('{count}', String(bar.count))
+                          .replace('{percentage}', String(percentage))}
+                      </span>
                     </div>
                     <div className="w-full bg-brand-navyDark h-4 rounded-full overflow-hidden border border-white/10 p-0.5">
                       <div
@@ -477,36 +481,36 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
         <div className="space-y-6 animate-fadeIn">
           <div className="flex justify-between items-center">
             <div>
-              <h3 className="font-serif text-xl font-bold text-white">Inventario y Eventos de Boletería</h3>
-              <p className="text-xs text-slate-300">Crear, editar disponibilidad y administrar valor de boletos</p>
+              <h3 className="font-serif text-xl font-bold text-white">{txt.ticketing.title}</h3>
+              <p className="text-xs text-slate-300">{txt.ticketing.subtitle}</p>
             </div>
             <button
               onClick={() => setShowFormOpen(!showFormOpen)}
               className="px-4 py-2 bg-brand-green hover:bg-brand-forest text-brand-navy hover:text-white text-xs font-extrabold rounded-xl shadow-glow-green flex items-center space-x-1.5 uppercase tracking-wider"
             >
               <Plus className="w-4 h-4" />
-              <span>{showFormOpen ? 'Cancelar' : 'Agregar Obra a Cartelera'}</span>
+              <span>{showFormOpen ? txt.ticketing.cancel : txt.ticketing.addShow}</span>
             </button>
           </div>
 
           {/* New Show Form */}
           {showFormOpen && (
             <form onSubmit={handleCreateShow} className="bg-brand-navyDark p-5 rounded-2xl border border-brand-green/40 space-y-4 text-xs">
-              <h4 className="font-serif text-sm font-bold text-brand-lime">Registrar Nueva Producción Teatral</h4>
+              <h4 className="font-serif text-sm font-bold text-brand-lime">{txt.ticketing.newShowTitle}</h4>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-slate-300 mb-1">Título de la Obra *</label>
+                  <label className="block text-slate-300 mb-1">{txt.ticketing.form.titleLabel}</label>
                   <input
                     type="text"
                     required
                     value={newShowTitle}
                     onChange={(e) => setNewShowTitle(e.target.value)}
-                    placeholder="Ej. El Fantasma de la Ópera"
+                    placeholder={txt.ticketing.form.titlePlaceholder}
                     className="w-full px-3 py-2 bg-brand-navy border border-brand-border rounded text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-300 mb-1">Año de Temporada *</label>
+                  <label className="block text-slate-300 mb-1">{txt.ticketing.form.yearLabel}</label>
                   <input
                     type="number"
                     required
@@ -516,7 +520,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-300 mb-1">Capacidad Total de Boletos *</label>
+                  <label className="block text-slate-300 mb-1">{txt.ticketing.form.capacityLabel}</label>
                   <input
                     type="number"
                     required
@@ -527,7 +531,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
                 </div>
               </div>
               <button type="submit" className="px-5 py-2 bg-brand-green text-brand-navy font-extrabold rounded-lg">
-                Guardar Obra en Sistema
+                {txt.ticketing.form.saveShow}
               </button>
             </form>
           )}
@@ -537,12 +541,12 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
             <table className="w-full text-left text-xs text-slate-300">
               <thead className="bg-brand-navyDark text-slate-300 font-mono text-[11px] uppercase border-b border-white/10">
                 <tr>
-                  <th className="p-4">Obra / Producción</th>
-                  <th className="p-4">Año</th>
-                  <th className="p-4">Tarifa General</th>
-                  <th className="p-4">Boletos Libres</th>
-                  <th className="p-4">Estado</th>
-                  <th className="p-4 text-right">Acciones</th>
+                  <th className="p-4">{txt.ticketing.table.show}</th>
+                  <th className="p-4">{txt.ticketing.table.year}</th>
+                  <th className="p-4">{txt.ticketing.table.price}</th>
+                  <th className="p-4">{txt.ticketing.table.available}</th>
+                  <th className="p-4">{txt.ticketing.table.status}</th>
+                  <th className="p-4 text-right">{txt.ticketing.table.actions}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5 font-sans">
@@ -551,12 +555,14 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
                     <td className="p-4 font-bold text-white">{s.title}</td>
                     <td className="p-4 font-mono text-brand-lime">{s.year}</td>
                     <td className="p-4 font-mono">₡{s.priceGeneral.toLocaleString()}</td>
-                    <td className="p-4 font-mono font-bold text-brand-green">{s.availableTickets} entradas</td>
+                    <td className="p-4 font-mono font-bold text-brand-green">
+                      {txt.ticketing.ticketsCount.replace('{count}', String(s.availableTickets))}
+                    </td>
                     <td className="p-4">
                       <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${
                         s.status === 'current' ? 'bg-brand-green/20 text-brand-lime' : 'bg-brand-navyDark text-slate-400'
                       }`}>
-                        {s.status}
+                        {statusLabel(s.status, language)}
                       </span>
                     </td>
                     <td className="p-4 text-right space-x-2">
@@ -595,22 +601,24 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
         <div className="space-y-6 animate-fadeIn">
           <div className="flex justify-between items-center">
             <div>
-              <h3 className="font-serif text-xl font-bold text-white">Gestión de Postulantes a Pasantías</h3>
-              <p className="text-xs text-slate-300">Revisar solicitudes de estudiantes internacionales y voluntarios</p>
+              <h3 className="font-serif text-xl font-bold text-white">{txt.applicants.title}</h3>
+              <p className="text-xs text-slate-300">{txt.applicants.subtitle}</p>
             </div>
-            <span className="text-xs font-mono text-brand-lime font-bold">{apps.length} solicitudes activas</span>
+            <span className="text-xs font-mono text-brand-lime font-bold">
+              {txt.applicants.activeCount.replace('{count}', String(apps.length))}
+            </span>
           </div>
 
           <div className="bg-brand-navy border border-brand-border rounded-2xl overflow-hidden">
             <table className="w-full text-left text-xs text-slate-300">
               <thead className="bg-brand-navyDark text-slate-300 font-mono text-[11px] uppercase border-b border-white/10">
                 <tr>
-                  <th className="p-4">ID</th>
-                  <th className="p-4">Postulante</th>
-                  <th className="p-4">País</th>
-                  <th className="p-4">Puesto Solicitado</th>
-                  <th className="p-4">Estado</th>
-                  <th className="p-4 text-right">Actualizar Estado</th>
+                  <th className="p-4">{txt.applicants.table.id}</th>
+                  <th className="p-4">{txt.applicants.table.applicant}</th>
+                  <th className="p-4">{txt.applicants.table.country}</th>
+                  <th className="p-4">{txt.applicants.table.role}</th>
+                  <th className="p-4">{txt.applicants.table.status}</th>
+                  <th className="p-4 text-right">{txt.applicants.table.updateStatus}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -637,13 +645,13 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
                         onClick={() => handleUpdateAppStatus(app.id, 'Entrevista')}
                         className="px-2.5 py-1 rounded bg-brand-blue/20 text-brand-blue text-[10px] font-bold hover:bg-brand-blue/30"
                       >
-                        Entrevista
+                        {txt.applicants.btnInterview}
                       </button>
                       <button
                         onClick={() => handleUpdateAppStatus(app.id, 'Aprobado')}
                         className="px-2.5 py-1 rounded bg-brand-green/20 text-brand-green text-[10px] font-bold hover:bg-brand-green/30"
                       >
-                        Aprobar
+                        {txt.applicants.btnApprove}
                       </button>
                     </td>
                   </tr>
@@ -657,10 +665,10 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
            {/* TAB: AUDIT LOG */}
       {activeTab === 'audit' && (
         puedeVerAuditoria ? (
-          <AdminAuditView />
+          <AdminAuditView language={language} />
         ) : (
           <div className="bg-[#00162e] border border-white/10 rounded-2xl p-8 text-center text-rose-400">
-            No tienes permisos para ver la bitácora de auditoría. Inicia sesión como administrador general.
+            {txt.audit.noPermissions}
           </div>
         )
       )}
@@ -668,10 +676,10 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
       {/* TAB: GESTIÓN DE USUARIOS */}
       {activeTab === 'users' && (
         puedeGestionarUsuarios ? (
-          <AdminUsersManagementView />
+          <AdminUsersManagementView language={language} />
         ) : (
           <div className="bg-[#00162e] border border-white/10 rounded-2xl p-8 text-center text-rose-400">
-            No tienes permisos para gestionar usuarios administrativos. Inicia sesión como administrador general.
+            {txt.generalUsers.noPermissions}
           </div>
         )
       )}

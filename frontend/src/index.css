@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-brand-navyDark text-brand-cream antialiased overflow-x-hidden;
+    @apply bg-[#F8F8F2] text-[#002244] dark:bg-brand-navyDark dark:text-brand-cream antialiased overflow-x-hidden transition-colors duration-200;
   }
 }
 
@@ -46,12 +46,20 @@
   }
 }
 
-/* Custom radial gradient using Far Corners brand colors: Navy #002244 and Green #77C65E */
+/* Custom radial gradient using Far Corners brand colors */
 .bg-radial-gradient {
+  background: radial-gradient(circle at 50% 30%, rgba(119, 198, 94, 0.12) 0%, rgba(248, 248, 242, 0.8) 50%, rgba(240, 240, 235, 1) 100%);
+}
+
+.dark .bg-radial-gradient {
   background: radial-gradient(circle at 50% 30%, rgba(119, 198, 94, 0.18) 0%, rgba(0, 34, 68, 0.4) 40%, rgba(0, 22, 46, 1) 80%);
 }
 
 .bg-radial-navy {
+  background: radial-gradient(circle at 50% 20%, rgba(74, 144, 214, 0.15) 0%, rgba(248, 248, 242, 1) 80%);
+}
+
+.dark .bg-radial-navy {
   background: radial-gradient(circle at 50% 20%, rgba(74, 144, 214, 0.2) 0%, rgba(0, 34, 68, 1) 75%);
 }
 
@@ -60,11 +68,17 @@
   width: 8px;
 }
 ::-webkit-scrollbar-track {
+  background: #eaeae4;
+}
+.dark ::-webkit-scrollbar-track {
   background: #00162e;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e4066;
+  background: #c2c8d0;
   border-radius: 4px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #1e4066;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #77C65E;

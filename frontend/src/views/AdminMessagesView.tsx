@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { ReplyDraftForm } from './ReplyDraftForm';
 import { tienePermiso } from '../services/permisos';
 import { apiAdmin } from '../services/apiAdmin';
+import { adminTexts } from '../lib/adminI18n';
+import type { Language } from '../types';
 
 interface MensajeContacto {
   id: string;
@@ -13,13 +15,12 @@ interface MensajeContacto {
   created_at: string;
 }
 
-const etiquetasEstado = {
-  new: 'Nuevo',
-  read: 'Leído',
-  replied: 'Respondido',
-};
+interface AdminMessagesViewProps {
+  language?: Language;
+}
 
-export const AdminMessagesView = () => {
+export const AdminMessagesView = ({ language = 'es' }: AdminMessagesViewProps) => {
+  const txt = adminTexts[language].messages;
   const [mensajes, setMensajes] = useState<MensajeContacto[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
@@ -34,15 +35,15 @@ export const AdminMessagesView = () => {
         });
 
         if (respuesta.status === 401) {
-          throw new Error('Tu sesión expiró. Inicia sesión nuevamente.');
+          throw new Error(txt.sessionExpired);
         }
 
         if (respuesta.status === 403) {
-          throw new Error('No tienes permiso para consultar los mensajes.');
+          throw new Error(txt.noPermission);
         }
 
         if (!respuesta.ok) {
-          throw new Error('No se pudieron cargar los mensajes.');
+          throw new Error(txt.loadError);
         }
 
         const datos: MensajeContacto[] = await respuesta.json();
@@ -60,7 +61,7 @@ export const AdminMessagesView = () => {
         setError(
           error instanceof Error
             ? error.message
-            : 'Ocurrió un error al cargar los mensajes.'
+            : txt.loadError
         );
       } finally {
         if (!controller.signal.aborted) {
@@ -72,24 +73,26 @@ export const AdminMessagesView = () => {
     void cargarMensajes();
 
     return () => controller.abort();
-  }, []);
+  }, [language, txt.sessionExpired, txt.noPermission, txt.loadError]);
+
   const puedeResponder =
-  tienePermiso('contact_messages:read') &&
-  tienePermiso('contact_messages:reply');
+    tienePermiso('contact_messages:read') &&
+    tienePermiso('contact_messages:reply');
+
   return (
     <section className="space-y-5">
       <div>
         <h2 className="font-serif text-xl font-bold text-white">
-          Mensajes de contacto
+          {txt.title}
         </h2>
         <p className="text-sm text-slate-300">
-          Consultas recibidas desde el formulario de contacto.
+          {txt.subtitle}
         </p>
       </div>
 
       {cargando && (
         <p role="status" className="text-slate-300">
-          Cargando mensajes...
+          {txt.loading}
         </p>
       )}
 
@@ -101,7 +104,7 @@ export const AdminMessagesView = () => {
 
       {!cargando && !error && mensajes.length === 0 && (
         <p className="text-slate-300">
-          Todavía no hay mensajes.
+          {txt.empty}
         </p>
       )}
 
@@ -120,9 +123,9 @@ export const AdminMessagesView = () => {
             </span>
 
             <span className="mt-2 block text-xs text-brand-green">
-              {etiquetasEstado[mensaje.status]}
+              {txt.status[mensaje.status]}
               {' · '}
-              {new Date(mensaje.created_at).toLocaleString('es-CR')}
+              {new Date(mensaje.created_at).toLocaleString(language === 'es' ? 'es-CR' : 'en-US')}
             </span>
           </summary>
 
@@ -132,7 +135,7 @@ export const AdminMessagesView = () => {
             </p>
 
             {puedeResponder && (
-              <ReplyDraftForm mensajeId={mensaje.id} />
+              <ReplyDraftForm mensajeId={mensaje.id} language={language} />
             )}
           </div>
         </details>

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { apiAdmin } from '../services/apiAdmin';
+import { adminTexts } from '../lib/adminI18n';
+import type { Language } from '../types';
 
 interface ContactoNewsletter {
   id: string;
@@ -17,15 +19,12 @@ interface ListadoNewsletter {
   total_paginas: number;
 }
 
-const etiquetasEstado: Record<string, string> = {
-  subscribed: 'Suscrito',
-  pending: 'Pendiente de confirmación',
-  unsubscribed: 'Dado de baja',
-  cleaned: 'Correo no entregable',
-  transactional: 'No suscrito al boletín',
-};
+interface AdminNewsletterViewProps {
+  language?: Language;
+}
 
-export const AdminNewsletterView = () => {
+export const AdminNewsletterView = ({ language = 'es' }: AdminNewsletterViewProps) => {
+  const txt = adminTexts[language].newsletter;
   const [datos, setDatos] = useState<ListadoNewsletter | null>(null);
   const [pagina, setPagina] = useState(1);
   const [estado, setEstado] = useState('');
@@ -118,12 +117,11 @@ export const AdminNewsletterView = () => {
     <section className="space-y-5">
       <div>
         <h2 className="font-serif text-xl font-bold text-white">
-          Boletín
+          {txt.title}
         </h2>
 
         <p className="text-sm text-slate-300">
-          Contactos de la audiencia de Mailchimp, incluidos los
-          registrados desde otros medios.
+          {txt.subtitle}
         </p>
       </div>
 
@@ -141,7 +139,7 @@ export const AdminNewsletterView = () => {
             htmlFor="newsletter-busqueda"
             className="mb-1 block text-sm text-slate-300"
             >
-            Buscar por nombre, apellido o correo
+            {txt.searchPlaceholder}
             </label>
 
             <input
@@ -150,7 +148,7 @@ export const AdminNewsletterView = () => {
             maxLength={254}
             value={textoBusqueda}
             onChange={(event) => setTextoBusqueda(event.target.value)}
-            placeholder="Nombre, apellido o correo completo"
+            placeholder={txt.searchPlaceholder}
             className="w-full rounded-xl border border-brand-border
                         bg-brand-navyDark px-3 py-2 text-white"
             />
@@ -161,7 +159,7 @@ export const AdminNewsletterView = () => {
             disabled={cargando}
             className={botonClass}
         >
-            Buscar
+            {language === 'es' ? 'Buscar' : 'Search'}
         </button>
 
         <button
@@ -175,7 +173,7 @@ export const AdminNewsletterView = () => {
             }}
             className={botonClass}
         >
-            Limpiar
+            {language === 'es' ? 'Limpiar' : 'Clear'}
         </button>
       </form>
       <div className="flex flex-wrap items-end gap-3">
@@ -184,7 +182,7 @@ export const AdminNewsletterView = () => {
             htmlFor="newsletter-estado"
             className="mb-1 block text-sm text-slate-300"
           >
-            Estado de suscripción
+            {language === 'es' ? 'Estado de suscripción' : 'Subscription status'}
           </label>
 
           <select
@@ -197,8 +195,8 @@ export const AdminNewsletterView = () => {
             className="rounded-xl border border-brand-border
                        bg-brand-navyDark px-3 py-2 text-white"
           >
-            <option value="">Todos</option>
-            {Object.entries(etiquetasEstado).map(([valor, etiqueta]) => (
+            <option value="">{txt.filterAll}</option>
+            {Object.entries(txt.status).map(([valor, etiqueta]) => (
               <option key={valor} value={valor}>
                 {etiqueta}
               </option>
@@ -212,7 +210,7 @@ export const AdminNewsletterView = () => {
           onClick={() => setActualizacion((valor) => valor + 1)}
           className={botonClass}
         >
-          Actualizar
+          {language === 'es' ? 'Actualizar' : 'Refresh'}
         </button>
 
         <a
@@ -221,13 +219,13 @@ export const AdminNewsletterView = () => {
           rel="noopener noreferrer"
           className={botonClass}
         >
-          Abrir Mailchimp
+          {txt.manageLink}
         </a>
       </div>
 
       {cargando && (
         <p role="status" className="text-slate-300">
-          Cargando contactos…
+          {txt.loading}
         </p>
       )}
 
@@ -240,22 +238,22 @@ export const AdminNewsletterView = () => {
       {!cargando && !error && datos && (
         <>
           <p className="text-sm text-slate-300">
-            Contactos que coinciden con el filtro: {datos.total}
+            {txt.totalSubscribers} {datos.total}
           </p>
 
           {datos.contactos.length === 0 ? (
             <p className="text-slate-300">
-              No hay contactos para este filtro.
+              {txt.empty}
             </p>
           ) : (
             <div className="overflow-x-auto rounded-2xl border border-brand-border">
               <table className="w-full text-left text-sm">
                 <thead className="bg-brand-navy text-white">
                   <tr>
-                    <th scope="col" className="px-4 py-3">Nombre</th>
-                    <th scope="col" className="px-4 py-3">Apellido</th>
-                    <th scope="col" className="px-4 py-3">Correo</th>
-                    <th scope="col" className="px-4 py-3">Estado</th>
+                    <th scope="col" className="px-4 py-3">{language === 'es' ? 'Nombre' : 'First Name'}</th>
+                    <th scope="col" className="px-4 py-3">{language === 'es' ? 'Apellido' : 'Last Name'}</th>
+                    <th scope="col" className="px-4 py-3">{txt.table.email}</th>
+                    <th scope="col" className="px-4 py-3">{txt.table.status}</th>
                   </tr>
                 </thead>
 
@@ -272,7 +270,7 @@ export const AdminNewsletterView = () => {
                         {contacto.email}
                       </td>
                       <td className="px-4 py-3">
-                        {etiquetasEstado[contacto.status] ??
+                        {(txt.status as Record<string, string>)[contacto.status] ??
                           contacto.status}
                       </td>
                     </tr>
@@ -289,12 +287,13 @@ export const AdminNewsletterView = () => {
               onClick={() => setPagina((valor) => valor - 1)}
               className={botonClass}
             >
-              Anterior
+              {txt.pagination.prev}
             </button>
 
             <span className="text-sm text-slate-300">
-              Página {datos.pagina} de{' '}
-              {Math.max(1, datos.total_paginas)}
+              {txt.pagination.page
+                .replace('{current}', String(datos.pagina))
+                .replace('{total}', String(Math.max(1, datos.total_paginas)))}
             </span>
 
             <button
@@ -303,7 +302,7 @@ export const AdminNewsletterView = () => {
               onClick={() => setPagina((valor) => valor + 1)}
               className={botonClass}
             >
-              Siguiente
+              {txt.pagination.next}
             </button>
           </div>
         </>

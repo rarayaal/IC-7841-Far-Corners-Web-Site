@@ -3,12 +3,14 @@ import { Language } from '../types';
 import { Send, CheckCircle2 } from 'lucide-react';
 import { useContactChannels } from '../hooks/useContactChannels';
 import { ContactChannelsList } from '../components/ContactChannelsList';
+import { getTranslations } from '../lib/i18n';
 
 interface ContactViewProps {
   language: Language;
 }
 
 export const ContactView: React.FC<ContactViewProps> = ({ language }) => {
+  const t = getTranslations(language).views.contact;
   const {
   contactos,
   cargando: cargandoContactos,
@@ -65,9 +67,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       setErrorEnvio(
         typeof datos?.message === 'string'
           ? datos.message
-          : language === 'es'
-            ? 'No se pudo enviar el mensaje.'
-            : 'The message could not be sent.'
+          : t.errorDefault
       );
       return;
     }
@@ -88,31 +88,27 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-12 sm:space-y-16 animate-fadeIn">
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto space-y-3">
-        <span className="inline-block px-4 py-1.5 rounded-full bg-brand-green/20 text-brand-lime text-xs font-bold uppercase tracking-wider border border-brand-green/40">
-          {language === 'es' ? 'Atención a la Comunidad' : 'Get in Touch'}
+        <span className="inline-block px-4 py-1.5 rounded-full bg-brand-green/20 text-brand-forest dark:text-brand-lime text-xs font-bold uppercase tracking-wider border border-brand-green/40">
+          {t.channelsTitle}
         </span>
-        <h1 className="font-serif text-4xl sm:text-5xl font-bold text-white tracking-tight">
-          {language === 'es' ? 'Contacto y Canales Oficiales' : 'Contact Far Corners Theatre'}
+        <h1 className="font-serif text-4xl sm:text-5xl font-bold text-brand-navy dark:text-white tracking-tight">
+          {t.title}
         </h1>
-        <p className="text-slate-300 text-sm leading-relaxed">
-          {language === 'es'
-            ? '¿Tienes preguntas sobre boletería, inscripciones al campamento o pasantías? Envíanos un mensaje directo.'
-            : 'Have questions regarding ticket sales, camp enrollment, or internships? Reach out to us.'}
+        <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+          {t.subtitle}
         </p>
       </div>
 
       {/* Main Aligned Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
         {/* Contact Information Box */}
-        <div className="bg-brand-navy border border-brand-border rounded-3xl p-6 sm:p-8 space-y-6">
-          <h3 className="font-serif text-2xl font-bold text-white border-b border-white/10 pb-3">
-            {language === 'es'
-              ? 'Información de Contacto'
-              : 'Contact Information'}
+        <div className="bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border rounded-3xl p-6 sm:p-8 space-y-6">
+          <h3 className="font-serif text-2xl font-bold text-brand-navy dark:text-white border-b border-slate-200 dark:border-white/10 pb-3">
+            {t.channelsSubtitle}
           </h3>
 
           {cargandoContactos && (
-            <p role="status" className="text-xs text-slate-300">
+            <p role="status" className="text-xs text-slate-600 dark:text-slate-300">
               {language === 'es'
                 ? 'Cargando contactos...'
                 : 'Loading contact information...'}
@@ -134,7 +130,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                 language={language}
               />
             ) : (
-              <p className="text-xs text-slate-300">
+              <p className="text-xs text-slate-600 dark:text-slate-300">
                 {language === 'es'
                   ? 'No hay medios de contacto publicados.'
                   : 'No contact information is currently available.'}
@@ -144,62 +140,64 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         </div>
 
         {/* Contact Form Box */}
-        <div className="bg-brand-navy border border-brand-border rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between">
+        <div className="bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between">
           <div className="space-y-4">
-            <h3 className="font-serif text-2xl font-bold text-white border-b border-white/10 pb-3">Formulario Mensaje Directo</h3>
+            <h3 className="font-serif text-2xl font-bold text-brand-navy dark:text-white border-b border-slate-200 dark:border-white/10 pb-3">
+              {t.formTitle}
+            </h3>
 
             {!submitted ? (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Nombre Completo *</label>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">{t.nameLabel} *</label>
                     <input
                       type="text"
                       required
                       maxLength={200}
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="Tu nombre..."
-                      className="w-full px-3.5 py-2.5 bg-brand-navyDark border border-brand-border rounded-lg text-xs text-white focus:border-brand-green focus:outline-none"
+                      placeholder={t.namePlaceholder}
+                      className="w-full px-3.5 py-2.5 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded-lg text-xs text-brand-navy dark:text-white focus:border-brand-green focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Correo Electrónico *</label>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">{t.emailLabel} *</label>
                     <input
                       type="email"
                       required
                       maxLength={254}
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="tu@correo.com"
-                      className="w-full px-3.5 py-2.5 bg-brand-navyDark border border-brand-border rounded-lg text-xs text-white focus:border-brand-green focus:outline-none"
+                      placeholder={t.emailPlaceholder}
+                      className="w-full px-3.5 py-2.5 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded-lg text-xs text-brand-navy dark:text-white focus:border-brand-green focus:outline-none"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Asunto *</label>
+                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">{t.subjectLabel} *</label>
                   <input
                     type="text"
                     required
                     maxLength={255}
                     value={formData.subject}
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    placeholder="Consulta sobre boletería / campamento / pasantías..."
-                    className="w-full px-3.5 py-2.5 bg-brand-navyDark border border-brand-border rounded-lg text-xs text-white focus:border-brand-green focus:outline-none"
+                    placeholder={t.subjectPlaceholder}
+                    className="w-full px-3.5 py-2.5 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded-lg text-xs text-brand-navy dark:text-white focus:border-brand-green focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Mensaje *</label>
+                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">{t.messageLabel} *</label>
                   <textarea
                     required
                     rows={4}
                     maxLength={10000}
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    placeholder="Escribe aquí tu consulta en detalle..."
-                    className="w-full px-3.5 py-2.5 bg-brand-navyDark border border-brand-border rounded-lg text-xs text-white focus:border-brand-green focus:outline-none"
+                    placeholder={t.messagePlaceholder}
+                    className="w-full px-3.5 py-2.5 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded-lg text-xs text-brand-navy dark:text-white focus:border-brand-green focus:outline-none"
                   ></textarea>
                 </div>
 
@@ -213,16 +211,14 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                   type="submit"
                   disabled={enviando}
                   className="w-full py-3.5 btn-green
-                            text-brand-navy hover:text-white text-xs font-extrabold
+                            text-brand-navy hover:text-brand-navy dark:text-white text-xs font-extrabold
                             rounded-xl shadow-glow-green transition-all flex
                             items-center justify-center space-x-2 uppercase tracking-wider
                             disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Send className="w-4 h-4" />
                   <span>
-                    {enviando
-                      ? language === 'es' ? 'Enviando…' : 'Sending…'
-                      : language === 'es' ? 'Enviar mensaje' : 'Send message'}
+                    {enviando ? t.sendingBtn : t.sendBtn}
                   </span>
                 </button>
               </form>
@@ -231,9 +227,13 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                 <div className="inline-flex p-3 rounded-full bg-brand-green/20 text-brand-green border border-brand-green/40">
                   <CheckCircle2 className="w-10 h-10" />
                 </div>
-                <h4 className="font-serif text-xl font-bold text-white">¡Mensaje Enviado con Éxito!</h4>
-                <p className="text-xs text-slate-300">
-                  Gracias <strong className="text-white">{formData.name}</strong>. Responderemos a tu correo (<span className="text-brand-lime">{formData.email}</span>) a la brevedad.
+                <h4 className="font-serif text-xl font-bold text-brand-navy dark:text-white">{t.successTitle}</h4>
+                <p className="text-xs text-slate-600 dark:text-slate-300">
+                  {language === 'es' ? (
+                    <>Gracias <strong className="text-brand-navy dark:text-white">{formData.name}</strong>. Responderemos a tu correo (<span className="text-brand-forest dark:text-brand-lime">{formData.email}</span>) a la brevedad.</>
+                  ) : (
+                    <>Thank you <strong className="text-brand-navy dark:text-white">{formData.name}</strong>. We will reply to your email (<span className="text-brand-forest dark:text-brand-lime">{formData.email}</span>) shortly.</>
+                  )}
                 </p>
                 <button
                   onClick={() => {
@@ -246,9 +246,9 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                     setErrorEnvio('');
                     setSubmitted(false);
                   }}
-                  className="px-6 py-2.5 bg-white/10 text-white text-xs font-semibold rounded-xl"
+                  className="px-6 py-2.5 bg-white/10 text-brand-navy dark:text-white text-xs font-semibold rounded-xl hover:bg-white/20 transition-colors"
                 >
-                  Enviar Otro Mensaje
+                  {t.sendAnotherBtn}
                 </button>
               </div>
             )}

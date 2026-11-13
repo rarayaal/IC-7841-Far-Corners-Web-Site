@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { UserPlus, Shield, Check, X, Edit2, Power, AlertCircle, Key, ChevronDown } from 'lucide-react';
+import { UserPlus, Shield, Check, X, Power, AlertCircle, Key, ChevronDown } from 'lucide-react';
 import { apiAdminJson } from '../services/apiAdmin';
+import { adminTexts } from '../lib/adminI18n';
+import type { Language } from '../types';
 
 interface AdminUser {
   id: string;
@@ -12,52 +14,55 @@ interface AdminUser {
   created_at: string;
 }
 
-const AVAILABLE_PERMISSIONS = [
-  { code: 'users:manage', label: 'Gestionar Usuarios', desc: 'Crear, editar y desactivar administradores' },
-  { code: 'roles:manage', label: 'Gestionar Roles', desc: 'Asignar y revocar permisos del sistema' },
-  { code: 'audit:read', label: 'Consultar Auditoría', desc: 'Ver la bitácora de cambios' },
-  { code: 'content:manage', label: 'Contenido Institucional', desc: 'Editar historia, visión e impacto' },
-  { code: 'projects:manage', label: 'Proyectos Teatrales', desc: 'Administrar catálogo de obras' },
-  { code: 'events:manage', label: 'Eventos', desc: 'Gestionar cartelera y fechas' },
-  { code: 'tickets:manage', label: 'Boletería', desc: 'Gestionar inventario y precios de entradas' },
-  { code: 'donations:manage', label: 'Donaciones', desc: 'Ver y verificar aportes económicos' },
-  { code: 'community:manage', label: 'Comunidad', desc: 'Gestionar estudiantes y voluntarios' },
-  { code: 'media:manage', label: 'Multimedia', desc: 'Gestionar fotos y galería Cloudflare R2' },
-];
-
-interface RolePreset {
-  name: string;
-  permissions: string[];
+interface AdminUsersManagementViewProps {
+  language?: Language;
 }
 
-const ROLE_PRESETS: RolePreset[] = [
-  {
-    name: 'Boletería y Taquilla',
-    permissions: ['tickets:manage', 'events:manage'],
-  },
-  {
-    name: 'Tesorero / Donaciones',
-    permissions: ['donations:manage'],
-  },
-  {
-    name: 'Director Artístico',
-    permissions: ['projects:manage', 'events:manage', 'media:manage'],
-  },
-  {
-    name: 'Coordinador Comunitario',
-    permissions: ['community:manage'],
-  },
-  {
-    name: 'Editor de Contenido',
-    permissions: ['content:manage', 'media:manage'],
-  },
-  {
-    name: 'Acceso Completo',
-    permissions: AVAILABLE_PERMISSIONS.map((p) => p.code),
-  },
-];
+export const AdminUsersManagementView: React.FC<AdminUsersManagementViewProps> = ({
+  language = 'es',
+}) => {
+  const txt = adminTexts[language].usersManagement;
 
-export const AdminUsersManagementView: React.FC = () => {
+  const AVAILABLE_PERMISSIONS: { code: string; label: string; desc: string }[] = [
+    { code: 'users:manage', label: txt.permissions['users:manage'].label, desc: txt.permissions['users:manage'].desc },
+    { code: 'roles:manage', label: txt.permissions['roles:manage'].label, desc: txt.permissions['roles:manage'].desc },
+    { code: 'audit:read', label: txt.permissions['audit:read'].label, desc: txt.permissions['audit:read'].desc },
+    { code: 'content:manage', label: txt.permissions['content:manage'].label, desc: txt.permissions['content:manage'].desc },
+    { code: 'projects:manage', label: txt.permissions['projects:manage'].label, desc: txt.permissions['projects:manage'].desc },
+    { code: 'events:manage', label: txt.permissions['events:manage'].label, desc: txt.permissions['events:manage'].desc },
+    { code: 'tickets:manage', label: txt.permissions['tickets:manage'].label, desc: txt.permissions['tickets:manage'].desc },
+    { code: 'donations:manage', label: txt.permissions['donations:manage'].label, desc: txt.permissions['donations:manage'].desc },
+    { code: 'community:manage', label: txt.permissions['community:manage'].label, desc: txt.permissions['community:manage'].desc },
+    { code: 'media:manage', label: txt.permissions['media:manage'].label, desc: txt.permissions['media:manage'].desc },
+  ];
+
+  const ROLE_PRESETS = [
+    {
+      name: txt.presets.boxOffice,
+      permissions: ['tickets:manage', 'events:manage'],
+    },
+    {
+      name: txt.presets.treasurer,
+      permissions: ['donations:manage'],
+    },
+    {
+      name: txt.presets.artistic,
+      permissions: ['projects:manage', 'events:manage', 'media:manage'],
+    },
+    {
+      name: txt.presets.community,
+      permissions: ['community:manage'],
+    },
+    {
+      name: language === 'es' ? 'Editor de Contenido' : 'Content Editor',
+      permissions: ['content:manage', 'media:manage'],
+    },
+    {
+      name: language === 'es' ? 'Acceso Completo' : 'Full Access',
+      permissions: AVAILABLE_PERMISSIONS.map((p) => p.code),
+    },
+  ];
+
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -84,7 +89,7 @@ export const AdminUsersManagementView: React.FC = () => {
       const res = await apiAdminJson<{ data: AdminUser[] }>('/api/v1/admin/users');
       setUsers(Array.isArray(res?.data) ? res.data : []);
     } catch (err: any) {
-      setError(err?.message || 'Error al cargar usuarios administrativos');
+      setError(err?.message || txt.loadError);
     } finally {
       setLoading(false);
     }
@@ -112,7 +117,7 @@ export const AdminUsersManagementView: React.FC = () => {
         }),
       });
 
-      setSuccessMsg('Usuario administrativo creado correctamente.');
+      setSuccessMsg(txt.createSuccess);
       setShowCreateModal(false);
       setNewFullName('');
       setNewEmail('');
@@ -122,7 +127,7 @@ export const AdminUsersManagementView: React.FC = () => {
       fetchUsers();
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
-      setError(err?.message || 'Error al crear usuario');
+      setError(err?.message || txt.createError);
     } finally {
       setSubmitting(false);
     }
@@ -135,15 +140,18 @@ export const AdminUsersManagementView: React.FC = () => {
         method: 'PATCH',
         body: JSON.stringify({ status: nextStatus }),
       });
-      setSuccessMsg(`Estado de ${user.full_name} actualizado a ${nextStatus}.`);
+      setSuccessMsg(
+        txt.statusUpdated
+          .replace('{name}', user.full_name)
+          .replace('{status}', nextStatus === 'active' ? (language === 'es' ? 'activo' : 'active') : (language === 'es' ? 'inactivo' : 'inactive'))
+      );
       fetchUsers();
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (err: any) {
-      setError(err?.message || 'Error al cambiar estado');
+      setError(err?.message || txt.statusError);
       setTimeout(() => setError(null), 4000);
     }
   };
-
 
   const handleOpenPermsModal = (user: AdminUser) => {
     setSelectedUserForPerms(user);
@@ -157,16 +165,19 @@ export const AdminUsersManagementView: React.FC = () => {
         method: 'PATCH',
         body: JSON.stringify({ permissions: editPermissions }),
       });
-      setSuccessMsg(`Permisos de ${selectedUserForPerms.full_name} actualizados.`);
+      setSuccessMsg(
+        language === 'es'
+          ? `Permisos de ${selectedUserForPerms.full_name} actualizados.`
+          : `Permissions for ${selectedUserForPerms.full_name} updated.`
+      );
       setSelectedUserForPerms(null);
       fetchUsers();
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (err: any) {
-      setError(err?.message || 'Error al actualizar permisos');
+      setError(err?.message || (language === 'es' ? 'Error al actualizar permisos' : 'Error updating permissions'));
       setTimeout(() => setError(null), 4000);
     }
   };
-
 
   const togglePerm = (code: string) => {
     setEditPermissions((prev) =>
@@ -187,10 +198,10 @@ export const AdminUsersManagementView: React.FC = () => {
         <div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <Shield className="w-6 h-6 text-[#77C65E]" />
-            Gestión de Usuarios Administrativos
+            {txt.title}
           </h2>
           <p className="text-slate-400 text-sm mt-1">
-            Administra directores, líderes de área y asigna.
+            {txt.subtitle}
           </p>
         </div>
         <button
@@ -198,7 +209,7 @@ export const AdminUsersManagementView: React.FC = () => {
           className="px-4 py-2.5 bg-[#77C65E] hover:bg-[#008047] text-[#002244] hover:text-white font-bold text-xs rounded-xl transition-all shadow-glow-green flex items-center gap-2"
         >
           <UserPlus className="w-4 h-4" />
-          Nuevo Administrador
+          {txt.createUserBtn}
         </button>
       </div>
 
@@ -219,19 +230,19 @@ export const AdminUsersManagementView: React.FC = () => {
       {/* Tabla */}
       <div className="bg-[#00162e] border border-white/10 rounded-2xl overflow-hidden shadow-xl">
         {loading ? (
-          <div className="p-16 text-center text-slate-400 text-sm">Cargando personal administrativo...</div>
+          <div className="p-16 text-center text-slate-400 text-sm">{txt.loading}</div>
         ) : users.length === 0 ? (
-          <div className="p-16 text-center text-slate-400 text-sm">No hay usuarios administrativos registrados.</div>
+          <div className="p-16 text-center text-slate-400 text-sm">{txt.empty}</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-slate-300">
               <thead className="bg-[#002244] text-xs uppercase text-slate-300 border-b border-white/10">
                 <tr>
-                  <th className="py-4 px-6">Usuario</th>
-                  <th className="py-4 px-6">Rol</th>
-                  <th className="py-4 px-6">Estado</th>
-                  <th className="py-4 px-6">Permisos Asignados</th>
-                  <th className="py-4 px-6 text-right">Acciones</th>
+                  <th className="py-4 px-6">{txt.table.user}</th>
+                  <th className="py-4 px-6">{txt.table.role}</th>
+                  <th className="py-4 px-6">{txt.table.status}</th>
+                  <th className="py-4 px-6">{txt.table.permissions}</th>
+                  <th className="py-4 px-6 text-right">{txt.table.actions}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -249,7 +260,9 @@ export const AdminUsersManagementView: React.FC = () => {
                             : 'bg-blue-500/10 text-blue-300 border border-blue-500/20'
                         }`}
                       >
-                        {u.role === 'admin' ? 'Administrador General' : 'Administrador de Área'}
+                        {u.role === 'admin'
+                          ? (language === 'es' ? 'Administrador General' : 'Super Admin')
+                          : (language === 'es' ? 'Administrador de Área' : 'Area Manager')}
                       </span>
                     </td>
                     <td className="py-4 px-6">
@@ -261,12 +274,16 @@ export const AdminUsersManagementView: React.FC = () => {
                         }`}
                       >
                         <span className={`w-1.5 h-1.5 rounded-full ${u.status === 'active' ? 'bg-emerald-400' : 'bg-rose-400'}`} />
-                        {u.status === 'active' ? 'Activo' : 'Inactivo'}
+                        {u.status === 'active'
+                          ? (language === 'es' ? 'Activo' : 'Active')
+                          : (language === 'es' ? 'Inactivo' : 'Inactive')}
                       </span>
                     </td>
                     <td className="py-4 px-6">
                       {u.role === 'admin' ? (
-                        <span className="text-xs text-amber-400 font-medium italic">Acceso Total (Bypass)</span>
+                        <span className="text-xs text-amber-400 font-medium italic">
+                          {language === 'es' ? 'Acceso Total (Bypass)' : 'Full Access (Bypass)'}
+                        </span>
                       ) : u.permissions && u.permissions.length > 0 ? (
                         <div className="flex flex-wrap gap-1 max-w-xs">
                           {u.permissions.map((p) => (
@@ -276,7 +293,9 @@ export const AdminUsersManagementView: React.FC = () => {
                           ))}
                         </div>
                       ) : (
-                        <span className="text-xs text-slate-500 italic">Sin permisos asignados</span>
+                        <span className="text-xs text-slate-500 italic">
+                          {language === 'es' ? 'Sin permisos asignados' : 'No permissions assigned'}
+                        </span>
                       )}
                     </td>
                     <td className="py-4 px-6 text-right space-x-2">
@@ -284,10 +303,10 @@ export const AdminUsersManagementView: React.FC = () => {
                         <button
                           onClick={() => handleOpenPermsModal(u)}
                           className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-semibold transition-all inline-flex items-center gap-1.5"
-                          title="Gestionar Permisos"
+                          title={language === 'es' ? 'Gestionar Permisos' : 'Manage Permissions'}
                         >
                           <Key className="w-3.5 h-3.5" />
-                          Permisos
+                          {language === 'es' ? 'Permisos' : 'Permissions'}
                         </button>
                       )}
                       <button
@@ -297,7 +316,11 @@ export const AdminUsersManagementView: React.FC = () => {
                             ? 'bg-rose-500/10 border-rose-500/20 text-rose-400 hover:bg-rose-500/20'
                             : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20'
                         }`}
-                        title={u.status === 'active' ? 'Desactivar usuario' : 'Activar usuario'}
+                        title={
+                          u.status === 'active'
+                            ? (language === 'es' ? 'Desactivar usuario' : 'Deactivate user')
+                            : (language === 'es' ? 'Activar usuario' : 'Activate user')
+                        }
                       >
                         <Power className="w-4 h-4" />
                       </button>
@@ -318,7 +341,7 @@ export const AdminUsersManagementView: React.FC = () => {
             <div className="flex justify-between items-center border-b border-white/10 p-6 pb-4 shrink-0">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
                 <UserPlus className="w-5 h-5 text-[#77C65E]" />
-                Registrar Nuevo Administrador
+                {txt.modal.title}
               </h3>
               <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-white">
                 <X className="w-5 h-5" />
@@ -328,51 +351,51 @@ export const AdminUsersManagementView: React.FC = () => {
             {/* Contenido scrolleable del formulario */}
             <form onSubmit={handleCreateUser} className="p-6 pt-4 space-y-4 overflow-y-auto flex-grow">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Nombre Completo</label>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">{txt.modal.nameLabel}</label>
                 <input
                   type="text"
                   required
                   value={newFullName}
                   onChange={(e) => setNewFullName(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-[#000d1a] border border-white/10 rounded-xl text-white text-sm focus:border-[#77C65E] outline-none shadow-inner"
-                  placeholder="Ej. María Hernández"
+                  placeholder={language === 'es' ? 'Ej. María Hernández' : 'e.g. Maria Hernandez'}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Correo Electrónico</label>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">{txt.modal.emailLabel}</label>
                 <input
                   type="email"
                   required
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-[#000d1a] border border-white/10 rounded-xl text-white text-sm focus:border-[#77C65E] outline-none shadow-inner"
-                  placeholder="ejemplo@farcornerscr.org"
+                  placeholder={language === 'es' ? 'ejemplo@farcornerscr.org' : 'example@farcornersmusicals.org'}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Contraseña Temporal</label>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">{txt.modal.passLabel}</label>
                 <input
                   type="password"
                   required
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-[#000d1a] border border-white/10 rounded-xl text-white text-sm focus:border-[#77C65E] outline-none shadow-inner"
-                  placeholder="Min. 8 caracteres"
+                  placeholder={language === 'es' ? 'Min. 8 caracteres' : 'Min. 8 characters'}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Tipo de Administrador</label>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">{txt.modal.roleLabel}</label>
                 <div className="relative">
                   <select
                     value={newRole}
                     onChange={(e) => setNewRole(e.target.value as 'admin' | 'manager')}
                     className="w-full appearance-none px-3.5 pr-10 py-2.5 bg-[#000d1a] border border-white/10 rounded-xl text-white text-sm focus:border-[#77C65E] outline-none cursor-pointer transition-all shadow-inner"
                   >
-                    <option value="manager">Administrador de Área (Manager)</option>
-                    <option value="admin">Administrador General (Admin)</option>
+                    <option value="manager">{language === 'es' ? 'Administrador de Área (Manager)' : 'Area Manager'}</option>
+                    <option value="admin">{language === 'es' ? 'Administrador General (Admin)' : 'General Admin'}</option>
                   </select>
                   <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 </div>
@@ -383,7 +406,7 @@ export const AdminUsersManagementView: React.FC = () => {
                 <div className="space-y-3 pt-2 border-t border-white/5">
                   <div>
                     <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                      Plantillas Rápidas de Puesto (Presets):
+                      {txt.modal.presetLabel}
                     </label>
                     <div className="flex flex-wrap gap-1.5">
                       {ROLE_PRESETS.map((preset) => (
@@ -401,10 +424,10 @@ export const AdminUsersManagementView: React.FC = () => {
 
                   <div className="flex items-center justify-between pt-1">
                     <label className="block text-xs font-semibold text-slate-300">
-                      Personalizar Permisos Granulares
+                      {txt.modal.permissionsSection}
                     </label>
                     <span className="text-[10px] text-[#77C65E] font-mono">
-                      {newPermissions.length} de {AVAILABLE_PERMISSIONS.length} seleccionados
+                      {newPermissions.length} / {AVAILABLE_PERMISSIONS.length}
                     </span>
                   </div>
                   <div className="max-h-44 overflow-y-auto space-y-1.5 pr-1 border border-white/10 rounded-xl p-2 bg-[#000d1a]">
@@ -444,14 +467,14 @@ export const AdminUsersManagementView: React.FC = () => {
                   onClick={() => setShowCreateModal(false)}
                   className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold transition-all"
                 >
-                  Cancelar
+                  {txt.modal.cancel}
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
                   className="px-5 py-2 bg-[#77C65E] hover:bg-[#008047] text-[#002244] hover:text-white font-bold text-xs rounded-xl shadow-glow-green transition-all"
                 >
-                  {submitting ? 'Guardando...' : 'Crear Usuario'}
+                  {submitting ? txt.modal.creating : txt.modal.create}
                 </button>
               </div>
             </form>
@@ -467,10 +490,10 @@ export const AdminUsersManagementView: React.FC = () => {
               <div>
                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
                   <Key className="w-5 h-5 text-[#77C65E]" />
-                  Asignar Permisos del Sistema
+                  {txt.editModal.title}
                 </h3>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Usuario: <span className="text-white font-semibold">{selectedUserForPerms.full_name}</span>
+                  {language === 'es' ? 'Usuario' : 'User'}: <span className="text-white font-semibold">{selectedUserForPerms.full_name}</span>
                 </p>
               </div>
               <button onClick={() => setSelectedUserForPerms(null)} className="text-slate-400 hover:text-white">
@@ -481,7 +504,7 @@ export const AdminUsersManagementView: React.FC = () => {
             <div className="p-6 pt-4 space-y-3 overflow-y-auto flex-grow">
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  Plantillas Rápidas de Puesto (Presets):
+                  {txt.modal.presetLabel}
                 </label>
                 <div className="flex flex-wrap gap-1.5">
                   {ROLE_PRESETS.map((preset) => (
@@ -499,10 +522,10 @@ export const AdminUsersManagementView: React.FC = () => {
 
               <div className="flex items-center justify-between pt-1">
                 <label className="block text-xs font-semibold text-slate-300">
-                  Permisos Seleccionados
+                  {txt.modal.permissionsSection}
                 </label>
                 <span className="text-[10px] text-[#77C65E] font-mono">
-                  {editPermissions.length} de {AVAILABLE_PERMISSIONS.length} seleccionados
+                  {editPermissions.length} / {AVAILABLE_PERMISSIONS.length}
                 </span>
               </div>
 
@@ -541,14 +564,14 @@ export const AdminUsersManagementView: React.FC = () => {
                   onClick={() => setSelectedUserForPerms(null)}
                   className="px-4 py-2 bg-white/10 text-white rounded-xl text-xs font-semibold hover:bg-white/20 transition-all"
                 >
-                  Cancelar
+                  {txt.modal.cancel}
                 </button>
                 <button
                   type="button"
                   onClick={handleSavePermissions}
                   className="px-5 py-2 bg-[#77C65E] hover:bg-[#008047] text-[#002244] hover:text-white font-bold text-xs rounded-xl shadow-glow-green transition-all"
                 >
-                  Guardar Permisos
+                  {txt.editModal.saveChanges}
                 </button>
               </div>
             </div>
