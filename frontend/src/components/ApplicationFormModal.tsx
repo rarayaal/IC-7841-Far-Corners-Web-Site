@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Language, Opportunity, FormField, FormSection } from '../types';
-import { X, UserCheck, CheckCircle2, Loader2, Check, CloudOff, ChevronDown } from 'lucide-react';
+import { Language, PublicForm, FormField, FormSection } from '../types';
+import { X, UserCheck, CheckCircle2, Loader2, Check, CloudOff } from 'lucide-react';
 import type { UsuarioSesion } from '../services/sesion';
 import { apiAdminJson } from '../services/apiAdmin';
 
@@ -25,7 +25,7 @@ function mismosValores(a: Record<string, FieldValue>, b: Record<string, FieldVal
 interface ApplicationFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  opportunity: Opportunity | null;
+  form: PublicForm | null;
   language: Language;
   usuario: UsuarioSesion | null;
 }
@@ -35,7 +35,7 @@ type FieldValue = string | string[] | boolean;
 export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
   isOpen,
   onClose,
-  opportunity,
+  form,
   language,
   usuario,
 }) => {
@@ -54,7 +54,8 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
   const saveEnCursoRef = useRef(false);
   const resaveRef = useRef(false);
 
-  const formType = opportunity?.type;
+  const formType = form?.slug;
+  const tituloForm = form ? (language === 'es' ? form.title : form.title_en || form.title) : '';
 
   useEffect(() => {
     if (!isOpen || !formType || !usuario) return;
@@ -231,7 +232,7 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
     return orden;
   }, [campos, seccionesMeta]);
 
-  if (!isOpen || !opportunity || !usuario) return null;
+  if (!isOpen || !form || !usuario) return null;
 
   const cambiarValor = (field: FormField, valor: FieldValue) => {
     setValores((prev) => ({ ...prev, [field.field_key]: valor }));
@@ -250,7 +251,7 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
     try {
       await apiAdminJson(`/api/v1/forms/${formType}/submissions`, {
         method: 'POST',
-        body: JSON.stringify({ opportunity_id: opportunity.id, data: valores }),
+        body: JSON.stringify({ data: valores }),
       });
       await apiAdminJson(`/api/v1/forms/${formType}/draft`, { method: 'DELETE' }).catch(() => {});
       ultimoGuardadoRef.current = { ...valores };
@@ -317,7 +318,7 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                   )}
                 </span>
               </div>
-              <p className="text-xs text-brand-lime font-semibold">{opportunity.title}</p>
+              <p className="text-xs text-brand-lime font-semibold">{tituloForm}</p>
             </div>
           </div>
           <button onClick={cerrar} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10">
@@ -334,7 +335,7 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
               <h4 className="font-serif text-2xl font-bold text-white">¡Postulación Recibida!</h4>
               <p className="text-sm text-slate-300">
                 Gracias. El equipo directivo de Far Corners evaluará tu perfil para{' '}
-                <span className="text-brand-lime font-bold">{opportunity.title}</span>.
+                <span className="text-brand-lime font-bold">{tituloForm}</span>.
               </p>
               <button onClick={cerrar} className="w-full py-3 bg-brand-green text-brand-navy font-extrabold rounded-xl">
                 Entendido
@@ -450,7 +451,7 @@ const Campo: React.FC<CampoProps> = ({ campo, valor, onChange, onCheckboxGroup }
               required={requerido}
               value={(valor as string) ?? ''}
               onChange={(e) => onChange(e.target.value)}
-              className={`${claseInput} appearance-none pr-9 cursor-pointer [color-scheme:dark]`}
+              className={`${claseInput} fc-select cursor-pointer [color-scheme:dark]`}
             >
               <option value="" disabled>
                 Elegir…
@@ -461,7 +462,6 @@ const Campo: React.FC<CampoProps> = ({ campo, valor, onChange, onCheckboxGroup }
                 </option>
               ))}
             </select>
-            <ChevronDown className="w-4 h-4 text-slate-400 pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" />
           </div>
         </div>
       );

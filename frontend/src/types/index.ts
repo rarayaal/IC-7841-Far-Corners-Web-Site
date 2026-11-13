@@ -1,6 +1,6 @@
 export type Language = 'es' | 'en';
 
-export type PageView = 'home' | 'about' | 'shows' | 'participate' | 'donate' | 'contact' | 'admin' | 'register' | 'login';
+export type PageView = 'home' | 'about' | 'shows' | 'participate' | 'donate' | 'contact' | 'admin' | 'register' | 'login' | 'profile';
 
 export interface Show {
   id: string;
@@ -69,22 +69,27 @@ export interface AuditLogItem {
   timestamp: string;
 }
 
-export interface VolunteerApplication {
-  id: string;
-  name: string;
-  email: string;
-  country: string;
-  role: string;
-  status: 'Pendiente' | 'En Revisión' | 'Aprobado' | 'Entrevista';
-  date: string;
-}
-
 export type FormType = string;
 
-export interface Form {
+export type FormCategory = 'internship' | 'volunteer' | 'camp';
+
+/** Ficha con la que un formulario publicado aparece en la página pública. */
+export interface PublicForm {
   slug: string;
   title: string;
+  title_en: string | null;
   description: string | null;
+  description_en: string | null;
+  category: FormCategory | null;
+  period: string | null;
+  period_en: string | null;
+  requirements: { es?: string[]; en?: string[] } | null;
+  is_featured: boolean;
+  image_url: string | null;
+}
+
+export interface Form extends PublicForm {
+  is_published: boolean;
   field_count: number;
   submission_count: number;
 }
@@ -118,12 +123,27 @@ export interface FormField {
   display_order: number;
 }
 
+export interface FormSnapshot {
+  title: string;
+  sections: FormSection[];
+  fields: {
+    field_key: string;
+    label: string;
+    field_type: FormFieldType;
+    section: string;
+    options: string[] | null;
+    required: boolean;
+  }[];
+}
+
 export interface FormSubmission {
   id: string;
   form_type: FormType;
   opportunity_id: string | null;
   user_id: string;
   data: Record<string, unknown>;
+  /** Estructura del formulario tal como estaba cuando se envió. */
+  form_snapshot?: FormSnapshot | null;
   status: 'pending' | 'reviewed' | 'approved' | 'rejected';
   user_name: string;
   user_email: string;

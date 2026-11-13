@@ -1,4 +1,4 @@
-import { Show, ImpactProject, Opportunity, DonorTier, AuditLogItem, VolunteerApplication } from '../types';
+import { Show, ImpactProject, Opportunity, DonorTier, AuditLogItem } from '../types';
 
 export const showsData: Show[] = [
   {
@@ -292,26 +292,5 @@ export const auditLogsMock: AuditLogItem[] = [
     module: 'Contenido Institucional',
     details: 'Actualizada visión e impacto en Costa Rica Monteverde',
     timestamp: '2026-10-07 09:50:12'
-  }
-];
-
-export const volunteerAppsMock: VolunteerApplication[] = [
-  {
-    id: 'APP-101',
-    name: 'Emily Watson',
-    email: 'emily.watson@university.edu',
-    country: 'Estados Unidos',
-    role: 'Pasantía: Stage Manager',
-    status: 'En Revisión',
-    date: '2026-10-05'
-  },
-  {
-    id: 'APP-102',
-    name: 'José Pablo Solano',
-    email: 'j.solano@estudiantec.cr',
-    country: 'Costa Rica',
-    role: 'Voluntariado Cyber: Redes',
-    status: 'Aprobado',
-    date: '2026-10-04'
   }
 ];

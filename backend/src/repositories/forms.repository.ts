@@ -40,19 +40,168 @@ export interface NuevoCampo {
 export interface FormRow {
   slug: string;
   title: string;
+  title_en: string | null;
+  description: string | null;
+  description_en: string | null;
+  category: string | null;
+  period: string | null;
+  period_en: string | null;
+  requirements: unknown;
+  is_published: boolean;
+  is_featured: boolean;
+  image_url: string | null;
   field_count: number;
   submission_count: number;
 }
 
+// Ficha pública: lo que ve un visitante en "Programas y Comunidad".
+export interface FormPublicoRow {
+  slug: string;
+  title: string;
+  title_en: string | null;
+  description: string | null;
+  description_en: string | null;
+  category: string | null;
+  period: string | null;
+  period_en: string | null;
+  requirements: unknown;
+  is_featured: boolean;
+  image_url: string | null;
+}
+
+const COLUMNAS_FICHA = `slug, title, title_en, description, description_en,
+  category, period, period_en, requirements, is_published, is_featured, image_url`;
+
 export async function listarForms(): Promise<FormRow[]> {
   const result = await pool.query(
-    `SELECT f.slug, f.title,
+    `SELECT f.slug, f.title, f.title_en, f.description, f.description_en,
+            f.category, f.period, f.period_en, f.requirements, f.is_published, f.is_featured,
+            f.image_url,
             (SELECT COUNT(*)::int FROM form_fields ff WHERE ff.form_type = f.slug) AS field_count,
             (SELECT COUNT(*)::int FROM form_submissions fs WHERE fs.form_type = f.slug) AS submission_count
        FROM forms f
       ORDER BY f.title ASC`
   );
   return result.rows;
+}
+
+export async function listarFormsPublicados(): Promise<FormPublicoRow[]> {
+  const result = await pool.query(
+    `SELECT slug, title, title_en, description, description_en,
+            category, period, period_en, requirements, is_featured, image_url
+       FROM forms
+      WHERE is_published = TRUE
+      ORDER BY is_featured DESC, created_at ASC, slug ASC`
+  );
+  return result.rows;
+}
+
+export const CAMPOS_FICHA = [
+  "title",
+  "title_en",
+  "description",
+  "description_en",
+  "category",
+  "period",
+  "period_en",
+  "requirements",
+  "is_published",
+  "is_featured",
+  "image_url",
+] as const;
+export type CampoFicha = (typeof CAMPOS_FICHA)[number];
+
+// Actualiza solo los campos de la ficha pública que vengan en el cuerpo
+// (permite publicar/ocultar desde la lista sin tocar el resto de la ficha).
+export async function actualizarFichaForm(
+  slug: string,
+  cambios: Partial<Record<CampoFicha, unknown>>
+): Promise<FormRow | undefined> {
+  const asignaciones: string[] = [];
+  const valores: unknown[] = [slug];
+
+  for (const campo of CAMPOS_FICHA) {
+    if (!(campo in cambios)) continue;
+    valores.push(campo === "requirements" && cambios[campo] != null ? JSON.stringify(cambios[campo]) : cambios[campo]);
+    asignaciones.push(`${campo} = $${valores.length}`);
+  }
+
+  if (asignaciones.length === 0) {
+    const result = await pool.query(
+      `SELECT ${COLUMNAS_FICHA},
+              (SELECT COUNT(*)::int FROM form_fields ff WHERE ff.form_type = f.slug) AS field_count,
+              (SELECT COUNT(*)::int FROM form_submissions fs WHERE fs.form_type = f.slug) AS submission_count
+         FROM forms f WHERE slug = $1`,
+      [slug]
+    );
+    return result.rows[0];
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    // Un solo formulario destacado a la vez: al marcar uno se desmarcan los demás.
+    if (cambios.is_featured === true) {
+      await client.query(
+        "UPDATE forms SET is_featured = FALSE WHERE is_featured = TRUE AND slug <> $1",
+        [slug]
+      );
+    }
+    const result = await client.query(
+      `UPDATE forms
+          SET ${asignaciones.join(", ")}, updated_at = CURRENT_TIMESTAMP
+        WHERE slug = $1
+        RETURNING ${COLUMNAS_FICHA}`,
+      valores
+    );
+    await client.query("COMMIT");
+    return result.rows[0];
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+// Copia un formulario (ficha pública + secciones + preguntas) en uno nuevo,
+// oculto por defecto para que el admin lo revise antes de publicarlo.
+export async function duplicarForm(
+  slug: string,
+  nuevoSlug: string,
+  nuevoTitulo: string
+): Promise<{ slug: string; title: string; is_published: boolean } | undefined> {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const copia = await client.query(
+      `INSERT INTO forms (slug, title, title_en, description, description_en,
+                          category, period, period_en, requirements, image_url,
+                          sections, is_published)
+       SELECT $2, $3, title_en, description, description_en,
+              category, period, period_en, requirements, image_url, sections, FALSE
+         FROM forms WHERE slug = $1
+       RETURNING slug, title, is_published`,
+      [slug, nuevoSlug, nuevoTitulo]
+    );
+    if (!copia.rows[0]) {
+      await client.query("ROLLBACK");
+      return undefined;
+    }
+    await client.query(
+      `INSERT INTO form_fields (form_type, section, field_key, label, field_type, options, required, display_order)
+       SELECT $2, section, field_key, label, field_type, options, required, display_order
+         FROM form_fields WHERE form_type = $1`,
+      [slug, nuevoSlug]
+    );
+    await client.query("COMMIT");
+    return copia.rows[0];
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 export async function obtenerForm(slug: string): Promise<{ slug: string; title: string } | undefined> {
@@ -94,8 +243,8 @@ export interface SeccionEstructura {
 }
 
 // Reemplaza por completo la estructura del formulario (título, secciones y campos)
-// en una sola transacción. Los envíos se referencian por field_key, no por el id del
-// campo, así que recrear los campos es seguro.
+// en una sola transacción. Cada envío guarda una copia de la estructura con la que
+// fue completado, así que recrear los campos no altera los envíos anteriores.
 export async function reemplazarEstructura(
   form_type: string,
   title: string,
@@ -160,19 +309,48 @@ export async function obtenerSecciones(form_type: string): Promise<SeccionEstruc
   return [];
 }
 
+// Guarda el envío junto con una copia de la estructura vigente del formulario
+// (título, secciones y campos). Así el envío conserva el formato con el que fue
+// completado aunque un admin modifique o elimine campos después.
 export async function crearEnvio(
   form_type: string,
   opportunity_id: string | null,
   user_id: string,
   data: unknown
 ) {
-  const result = await pool.query(
-    `INSERT INTO form_submissions (form_type, opportunity_id, user_id, data)
-     VALUES ($1, $2, $3, $4)
-     RETURNING id, form_type, opportunity_id, user_id, data, status, created_at`,
-    [form_type, opportunity_id, user_id, JSON.stringify(data)]
-  );
-  return result.rows[0];
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const formResult = await client.query<{ title: string; sections: unknown }>(
+      `SELECT title, sections FROM forms WHERE slug = $1`,
+      [form_type]
+    );
+    const camposResult = await client.query(
+      `SELECT field_key, label, field_type, section, options, required
+         FROM form_fields
+        WHERE form_type = $1
+        ORDER BY display_order ASC, field_key ASC`,
+      [form_type]
+    );
+    const snapshot = {
+      title: formResult.rows[0]?.title ?? form_type,
+      sections: formResult.rows[0]?.sections ?? [],
+      fields: camposResult.rows,
+    };
+    const result = await client.query(
+      `INSERT INTO form_submissions (form_type, opportunity_id, user_id, data, form_snapshot)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id, form_type, opportunity_id, user_id, data, form_snapshot, status, created_at`,
+      [form_type, opportunity_id, user_id, JSON.stringify(data), JSON.stringify(snapshot)]
+    );
+    await client.query("COMMIT");
+    return result.rows[0];
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 export async function guardarBorrador(form_type: string, user_id: string, data: unknown): Promise<void> {
@@ -197,9 +375,19 @@ export async function borrarBorrador(form_type: string, user_id: string): Promis
   await pool.query(`DELETE FROM form_drafts WHERE form_type = $1 AND user_id = $2`, [form_type, user_id]);
 }
 
+// Los borradores caducan: se descartan los que llevan demasiado tiempo sin
+// editarse para que la tabla no crezca indefinidamente.
+export async function eliminarBorradoresAntiguos(dias: number): Promise<number> {
+  const result = await pool.query(
+    `DELETE FROM form_drafts WHERE updated_at < NOW() - ($1::int * INTERVAL '1 day')`,
+    [dias]
+  );
+  return result.rowCount ?? 0;
+}
+
 export async function obtenerEnvios(form_type: string) {
   const result = await pool.query(
-    `SELECT fs.id, fs.form_type, fs.opportunity_id, fs.user_id, fs.data, fs.status,
+    `SELECT fs.id, fs.form_type, fs.opportunity_id, fs.user_id, fs.data, fs.form_snapshot, fs.status,
             fs.reviewed_by, fs.reviewed_at, fs.review_notes, fs.created_at, fs.updated_at,
             u.full_name AS user_name, u.email AS user_email,
             r.full_name AS reviewed_by_name
@@ -209,6 +397,22 @@ export async function obtenerEnvios(form_type: string) {
       WHERE fs.form_type = $1
       ORDER BY fs.created_at DESC`,
     [form_type]
+  );
+  return result.rows;
+}
+
+export async function obtenerTodosEnvios() {
+  const result = await pool.query(
+    `SELECT fs.id, fs.form_type, fs.opportunity_id, fs.user_id, fs.data, fs.form_snapshot, fs.status,
+            fs.reviewed_by, fs.reviewed_at, fs.review_notes, fs.created_at, fs.updated_at,
+            u.full_name AS user_name, u.email AS user_email,
+            r.full_name AS reviewed_by_name,
+            f.title AS form_title
+       FROM form_submissions fs
+       JOIN forms f ON f.slug = fs.form_type
+       JOIN users u ON u.id = fs.user_id
+       LEFT JOIN users r ON r.id = fs.reviewed_by
+      ORDER BY fs.created_at DESC`
   );
   return result.rows;
 }

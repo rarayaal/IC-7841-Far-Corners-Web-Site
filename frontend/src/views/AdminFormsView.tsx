@@ -28,13 +28,29 @@ import {
   ChevronUp,
   X,
   Eye,
+  EyeOff,
+  Copy,
+  Globe,
   GripVertical,
   Save,
   ClipboardList,
   Inbox,
+  Star,
 } from 'lucide-react';
 
 const FIELD_TYPE_ORDER: FormFieldType[] = ['text', 'textarea', 'radio', 'checkbox', 'select', 'email', 'date', 'datetime'];
+
+// Forma mínima que necesitamos de la galería multimedia. Se declara aquí (y no
+// se importa de services/media) para que este formulario no dependa de los
+// cambios internos de la galería: si su forma cambia, el selector solo mostrará
+// menos imágenes, pero la ficha sigue funcionando con una URL.
+interface GaleriaImagen {
+  id: string;
+  url: string;
+  filename: string;
+  alt_text: string | null;
+  mime_type: string | null;
+}
 
 const CON_OPCIONES: FormFieldType[] = ['select', 'radio', 'checkbox'];
 
@@ -221,6 +237,57 @@ export const AdminFormsView: React.FC<{ language: Language }> = ({ language }) =
     }
   };
 
+  const duplicar = async (form: Form) => {
+    setError(null);
+    try {
+      await apiAdminJson(`/api/v1/forms/${form.slug}/duplicate`, {
+        method: 'POST',
+        body: JSON.stringify({ title: `${form.title} (${txt.copySuffix})` }),
+      });
+      await cargarForms();
+    } catch (err) {
+      setError((err as Error).message || txt.duplicateError);
+    }
+  };
+
+  const alternarVisibilidad = async (form: Form) => {
+    setError(null);
+    try {
+      await apiAdminJson(`/api/v1/forms/${form.slug}/publication`, {
+        method: 'PATCH',
+        body: JSON.stringify({ is_published: !form.is_published }),
+      });
+      setForms((prev) =>
+        prev.map((f) => (f.slug === form.slug ? { ...f, is_published: !form.is_published } : f))
+      );
+    } catch (err) {
+      setError((err as Error).message || txt.visibilityError);
+    }
+  };
+
+  const alternarDestacado = async (form: Form) => {
+    const destacar = !form.is_featured;
+    setError(null);
+    try {
+      await apiAdminJson(`/api/v1/forms/${form.slug}/publication`, {
+        method: 'PATCH',
+        body: JSON.stringify({ is_featured: destacar }),
+      });
+      // El backend garantiza un solo destacado: al marcar uno se desmarcan los demás.
+      setForms((prev) =>
+        prev.map((f) =>
+          f.slug === form.slug
+            ? { ...f, is_featured: destacar }
+            : destacar
+              ? { ...f, is_featured: false }
+              : f
+        )
+      );
+    } catch (err) {
+      setError((err as Error).message || txt.featuredError);
+    }
+  };
+
   const formActual = formSlug ? (forms.find((f) => f.slug === formSlug) ?? null) : null;
 
   if (vista === 'editor' && formSlug && formActual) {
@@ -289,7 +356,25 @@ export const AdminFormsView: React.FC<{ language: Language }> = ({ language }) =
           {forms.map((form) => (
             <div key={form.slug} className="bg-brand-navy border border-brand-border rounded-2xl p-4 flex flex-col gap-3">
               <div>
-                <h4 className="font-serif font-bold text-white text-sm leading-snug">{form.title}</h4>
+                <div className="flex items-start justify-between gap-2">
+                  <h4 className="font-serif font-bold text-white text-sm leading-snug">{form.title}</h4>
+                  <div className="flex shrink-0 items-center gap-1">
+                    {form.is_featured && (
+                      <span className="px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-amber-400/20 text-amber-300">
+                        {txt.featured}
+                      </span>
+                    )}
+                    <span
+                      className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${
+                        form.is_published
+                          ? 'bg-brand-green/20 text-brand-lime'
+                          : 'bg-white/10 text-slate-400'
+                      }`}
+                    >
+                      {form.is_published ? txt.published : txt.hidden}
+                    </span>
+                  </div>
+                </div>
                 <div className="flex items-center gap-4 mt-3 text-[11px] text-slate-400">
                   <span className="flex items-center gap-1">
                     <ClipboardList className="w-3.5 h-3.5" /> {form.field_count} {txt.questions}
@@ -300,32 +385,65 @@ export const AdminFormsView: React.FC<{ language: Language }> = ({ language }) =
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 pt-2 border-t border-white/5">
-                <button
-                  onClick={() => {
-                    setFormSlug(form.slug);
-                    setVista('editor');
-                  }}
-                  className="flex-1 px-3 py-1.5 bg-brand-green/15 hover:bg-brand-green/25 text-brand-lime text-xs font-bold rounded-lg"
-                >
-                  {txt.edit}
-                </button>
-                <button
-                  onClick={() => {
-                    setFormSlug(form.slug);
-                    setVista('respuestas');
-                  }}
-                  className="flex-1 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-slate-200 text-xs font-bold rounded-lg"
-                >
-                  {txt.viewResponses}
-                </button>
-                <button
-                  onClick={() => setFormAEliminar(form)}
-                  className="p-1.5 rounded bg-red-500/20 hover:bg-red-500/30 text-red-300"
-                  title={txt.delete}
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+              <div className="space-y-2 pt-2 border-t border-white/5">
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => {
+                      setFormSlug(form.slug);
+                      setVista('editor');
+                    }}
+                    className="px-2 py-1.5 bg-brand-green/15 hover:bg-brand-green/25 text-brand-lime text-[11px] font-bold rounded-lg whitespace-nowrap"
+                  >
+                    {txt.edit}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFormSlug(form.slug);
+                      setVista('respuestas');
+                    }}
+                    className="px-2 py-1.5 bg-white/10 hover:bg-white/20 text-slate-200 text-[11px] font-bold rounded-lg whitespace-nowrap"
+                  >
+                    {txt.viewResponses}
+                  </button>
+                  <button
+                    onClick={() => void alternarDestacado(form)}
+                    className={`flex items-center justify-center gap-1 px-2 py-1.5 rounded text-[11px] font-bold whitespace-nowrap ${
+                      form.is_featured
+                        ? 'bg-amber-400/20 hover:bg-amber-400/30 text-amber-300'
+                        : 'bg-white/10 hover:bg-white/20 text-slate-200'
+                    }`}
+                    title={form.is_featured ? txt.unfeature : txt.feature}
+                  >
+                    <Star className={`w-3.5 h-3.5 shrink-0 ${form.is_featured ? 'fill-current' : ''}`} />
+                    {form.is_featured ? txt.unfeatureShort : txt.featureShort}
+                  </button>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => void alternarVisibilidad(form)}
+                    className="flex items-center justify-center gap-1 px-2 py-1.5 rounded bg-white/10 hover:bg-white/20 text-slate-200 text-[11px] font-bold whitespace-nowrap"
+                    title={form.is_published ? txt.unpublish : txt.publish}
+                  >
+                    {form.is_published ? <EyeOff className="w-3.5 h-3.5 shrink-0" /> : <Eye className="w-3.5 h-3.5 shrink-0" />}
+                    {form.is_published ? txt.unpublishShort : txt.publishShort}
+                  </button>
+                  <button
+                    onClick={() => void duplicar(form)}
+                    className="flex items-center justify-center gap-1 px-2 py-1.5 rounded bg-white/10 hover:bg-white/20 text-slate-200 text-[11px] font-bold whitespace-nowrap"
+                    title={txt.duplicate}
+                  >
+                    <Copy className="w-3.5 h-3.5 shrink-0" />
+                    {txt.duplicateShort}
+                  </button>
+                  <button
+                    onClick={() => setFormAEliminar(form)}
+                    className="flex items-center justify-center gap-1 px-2 py-1.5 rounded bg-red-500/20 hover:bg-red-500/30 text-red-300 text-[11px] font-bold whitespace-nowrap"
+                    title={txt.delete}
+                  >
+                    <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                    {txt.delete}
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -371,6 +489,29 @@ const EditorFormulario: React.FC<EditorFormularioProps> = ({ form, onVolver, onG
   const [error, setError] = useState('');
 
   const [salirAbierto, setSalirAbierto] = useState(false);
+  const [avisoEstructura, setAvisoEstructura] = useState(false);
+
+  // Ficha pública: lo que ve un visitante en "Programas y Comunidad".
+  const [fichaAbierta, setFichaAbierta] = useState(false);
+  const [guardandoFicha, setGuardandoFicha] = useState(false);
+  const [ficha, setFicha] = useState({
+    title_en: form.title_en ?? '',
+    description: form.description ?? '',
+    description_en: form.description_en ?? '',
+    category: (form.category ?? '') as string,
+    period: form.period ?? '',
+    period_en: form.period_en ?? '',
+    requirementsEs: (form.requirements?.es ?? []).join('\n'),
+    requirementsEn: (form.requirements?.en ?? []).join('\n'),
+    image_url: form.image_url ?? '',
+  });
+
+  // Imágenes de la galería multimedia (se cargan solo al abrir el selector).
+  const [galeriaAbierta, setGaleriaAbierta] = useState(false);
+  const [galeria, setGaleria] = useState<GaleriaImagen[] | null>(null);
+  const [galeriaError, setGaleriaError] = useState('');
+  // URL que falló al cargar: se usa para avisar en vez de mostrar un ícono roto.
+  const [imagenRota, setImagenRota] = useState<string | null>(null);
 
   const [modalCampoAbierto, setModalCampoAbierto] = useState(false);
   const [campoEditando, setCampoEditando] = useState<CampoDraft | null>(null);
@@ -604,6 +745,12 @@ const EditorFormulario: React.FC<EditorFormularioProps> = ({ form, onVolver, onG
     });
   };
 
+  // El nombre se aplica mientras se escribe: así, al abrir una pregunta,
+  // la sección ya aparece con el nombre nuevo sin pulsar un botón de guardar.
+  const cambiarNombreSeccion = (localId: string, nombre: string) => {
+    setSecciones((prev) => prev.map((s) => (s.localId === localId ? { ...s, nombre } : s)));
+  };
+
   const guardarNombreSeccion = (localId: string, nombre: string) => {
     const limpio = nombre.trim();
     setSecciones((prev) =>
@@ -633,9 +780,15 @@ const EditorFormulario: React.FC<EditorFormularioProps> = ({ form, onVolver, onG
 
   // ----- Guardar todo -----
 
-  const guardar = async () => {
+  const guardar = async (confirmado = false) => {
     if (!titulo.trim()) {
       setError(txt.titleRequired);
+      return;
+    }
+    // Los envíos ya guardados conservan su propia instantánea del formulario;
+    // avisamos antes de cambiar la estructura si ya existen respuestas.
+    if (!confirmado && form.submission_count > 0) {
+      setAvisoEstructura(true);
       return;
     }
     setGuardando(true);
@@ -669,6 +822,71 @@ const EditorFormulario: React.FC<EditorFormularioProps> = ({ form, onVolver, onG
       setError((e as Error).message);
     } finally {
       setGuardando(false);
+    }
+  };
+
+  // Reutiliza la galería multimedia como fuente de fotos para la tarjeta.
+  const abrirGaleria = async () => {
+    if (galeriaAbierta) {
+      setGaleriaAbierta(false);
+      return;
+    }
+    setGaleriaAbierta(true);
+    if (galeria) return;
+    setGaleriaError('');
+    try {
+      const items = await apiAdminJson<unknown>('/api/v1/media');
+      const lista = Array.isArray(items) ? (items as GaleriaImagen[]) : [];
+      setGaleria(
+        lista.filter(
+          (item) =>
+            typeof item?.url === 'string' &&
+            item.url.length > 0 &&
+            (item.mime_type ?? '').startsWith('image/')
+        )
+      );
+    } catch (e) {
+      setGaleriaError((e as Error).message || txt.galleryError);
+    }
+  };
+
+  const guardarFicha = async () => {
+    if (!titulo.trim()) {
+      setError(txt.titleRequired);
+      return;
+    }
+    setGuardandoFicha(true);
+    setError('');
+    try {
+      const lineas = (texto: string) =>
+        texto
+          .split('\n')
+          .map((linea) => linea.trim())
+          .filter(Boolean);
+
+      await apiAdminJson(`/api/v1/forms/${form.slug}/publication`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          title: titulo.trim(),
+          title_en: ficha.title_en.trim() || null,
+          description: ficha.description.trim() || null,
+          description_en: ficha.description_en.trim() || null,
+          category: ficha.category || null,
+          period: ficha.period.trim() || null,
+          period_en: ficha.period_en.trim() || null,
+          requirements: {
+            es: lineas(ficha.requirementsEs),
+            en: lineas(ficha.requirementsEn),
+          },
+          image_url: ficha.image_url.trim() || null,
+        }),
+      });
+      setAviso(txt.publicCardSaved);
+      onGuardado();
+    } catch (e) {
+      setError((e as Error).message || txt.publicCardError);
+    } finally {
+      setGuardandoFicha(false);
     }
   };
 
@@ -811,7 +1029,7 @@ const EditorFormulario: React.FC<EditorFormularioProps> = ({ form, onVolver, onG
           <span className="hidden sm:inline">{txt.preview}</span>
         </button>
         <button
-          onClick={guardar}
+          onClick={() => void guardar()}
           disabled={guardando}
           className="px-4 py-2 bg-brand-green hover:bg-brand-forest text-brand-navy hover:text-white text-xs font-extrabold rounded-xl shadow-glow-green flex items-center space-x-1.5 uppercase tracking-wider shrink-0 disabled:opacity-50"
         >
@@ -821,6 +1039,207 @@ const EditorFormulario: React.FC<EditorFormularioProps> = ({ form, onVolver, onG
       </div>
 
       {error && <div className="bg-rose-500/10 border border-rose-500/40 text-rose-300 text-xs rounded-xl px-4 py-3">{error}</div>}
+
+      {/* Ficha pública en "Programas y Comunidad" */}
+      <div className="bg-brand-navy border border-brand-border rounded-2xl overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setFichaAbierta((v) => !v)}
+          className="w-full px-4 py-3 flex items-center gap-2 text-left hover:bg-white/5"
+        >
+          <Globe className="w-4 h-4 text-brand-green shrink-0" />
+          <span className="text-xs font-bold text-white uppercase tracking-wider flex-1">{txt.publicCard}</span>
+          <span
+            className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${
+              form.is_published ? 'bg-brand-green/20 text-brand-lime' : 'bg-white/10 text-slate-400'
+            }`}
+          >
+            {form.is_published ? txt.published : txt.hidden}
+          </span>
+          {fichaAbierta ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+        </button>
+
+        {fichaAbierta && (
+          <div className="border-t border-white/10 p-4 space-y-4">
+            <p className="text-[11px] text-slate-400">{txt.publicCardHint}</p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <label className="block text-xs text-slate-300">
+                {txt.titleEs}
+                <input
+                  type="text"
+                  maxLength={255}
+                  value={titulo}
+                  onChange={(e) => setTitulo(e.target.value)}
+                  className="mt-1 w-full px-3 py-2 bg-brand-navyDark border border-brand-border rounded text-white"
+                />
+              </label>
+              <label className="block text-xs text-slate-300">
+                {txt.titleEn}
+                <input
+                  type="text"
+                  maxLength={255}
+                  value={ficha.title_en}
+                  onChange={(e) => setFicha({ ...ficha, title_en: e.target.value })}
+                  className="mt-1 w-full px-3 py-2 bg-brand-navyDark border border-brand-border rounded text-white"
+                />
+              </label>
+              <label className="block text-xs text-slate-300">
+                {txt.category}
+                <select
+                  value={ficha.category}
+                  onChange={(e) => setFicha({ ...ficha, category: e.target.value })}
+                  className="fc-select mt-1 w-full px-3 py-2 bg-brand-navyDark border border-brand-border rounded text-white"
+                >
+                  <option value="">—</option>
+                  <option value="internship">{txt.categories.internship}</option>
+                  <option value="volunteer">{txt.categories.volunteer}</option>
+                  <option value="camp">{txt.categories.camp}</option>
+                </select>
+              </label>
+              <label className="block text-xs text-slate-300">
+                {txt.periodEs}
+                <input
+                  type="text"
+                  maxLength={255}
+                  value={ficha.period}
+                  onChange={(e) => setFicha({ ...ficha, period: e.target.value })}
+                  className="mt-1 w-full px-3 py-2 bg-brand-navyDark border border-brand-border rounded text-white"
+                />
+              </label>
+              <label className="block text-xs text-slate-300">
+                {txt.periodEn}
+                <input
+                  type="text"
+                  maxLength={255}
+                  value={ficha.period_en}
+                  onChange={(e) => setFicha({ ...ficha, period_en: e.target.value })}
+                  className="mt-1 w-full px-3 py-2 bg-brand-navyDark border border-brand-border rounded text-white"
+                />
+              </label>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <label className="block text-xs text-slate-300">
+                {txt.descriptionEs}
+                <textarea
+                  rows={3}
+                  value={ficha.description}
+                  onChange={(e) => setFicha({ ...ficha, description: e.target.value })}
+                  className="mt-1 w-full px-3 py-2 bg-brand-navyDark border border-brand-border rounded text-white resize-y"
+                />
+              </label>
+              <label className="block text-xs text-slate-300">
+                {txt.descriptionEn}
+                <textarea
+                  rows={3}
+                  value={ficha.description_en}
+                  onChange={(e) => setFicha({ ...ficha, description_en: e.target.value })}
+                  className="mt-1 w-full px-3 py-2 bg-brand-navyDark border border-brand-border rounded text-white resize-y"
+                />
+              </label>
+              <label className="block text-xs text-slate-300">
+                {txt.requirementsEs}
+                <textarea
+                  rows={4}
+                  value={ficha.requirementsEs}
+                  onChange={(e) => setFicha({ ...ficha, requirementsEs: e.target.value })}
+                  className="mt-1 w-full px-3 py-2 bg-brand-navyDark border border-brand-border rounded text-white resize-y"
+                />
+              </label>
+              <label className="block text-xs text-slate-300">
+                {txt.requirementsEn}
+                <textarea
+                  rows={4}
+                  value={ficha.requirementsEn}
+                  onChange={(e) => setFicha({ ...ficha, requirementsEn: e.target.value })}
+                  className="mt-1 w-full px-3 py-2 bg-brand-navyDark border border-brand-border rounded text-white resize-y"
+                />
+              </label>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-xs text-slate-300">
+                {txt.imageUrl}
+                <input
+                  type="text"
+                  value={ficha.image_url}
+                  onChange={(e) => setFicha({ ...ficha, image_url: e.target.value })}
+                  placeholder="/recursos/…"
+                  className="mt-1 w-full px-3 py-2 bg-brand-navyDark border border-brand-border rounded text-white"
+                />
+              </label>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => void abrirGaleria()}
+                  className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-slate-200 text-xs font-bold rounded-lg"
+                >
+                  {galeriaAbierta ? txt.closeGallery : txt.chooseFromGallery}
+                </button>
+                {ficha.image_url && (
+                  <button
+                    type="button"
+                    onClick={() => setFicha({ ...ficha, image_url: '' })}
+                    className="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-300 text-xs font-bold rounded-lg"
+                  >
+                    {txt.removeImage}
+                  </button>
+                )}
+                {ficha.image_url && imagenRota !== ficha.image_url && (
+                  <img
+                    src={ficha.image_url}
+                    alt=""
+                    onError={() => setImagenRota(ficha.image_url)}
+                    className="h-16 w-24 object-cover rounded-lg border border-brand-border"
+                  />
+                )}
+                {ficha.image_url && imagenRota === ficha.image_url && (
+                  <p className="text-[11px] text-rose-300">{txt.brokenImage}</p>
+                )}
+              </div>
+
+              {galeriaAbierta && (
+                <div className="border border-white/10 rounded-lg p-3">
+                  {galeriaError ? (
+                    <p className="text-[11px] text-rose-300">{galeriaError}</p>
+                  ) : !galeria ? (
+                    <p className="text-[11px] text-slate-400">{txt.loadingGallery}</p>
+                  ) : galeria.length === 0 ? (
+                    <p className="text-[11px] text-slate-400">{txt.emptyGallery}</p>
+                  ) : (
+                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                      {galeria.map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => setFicha({ ...ficha, image_url: item.url })}
+                          title={item.filename}
+                          className={`aspect-[4/3] rounded overflow-hidden border-2 ${
+                            ficha.image_url === item.url ? 'border-brand-green' : 'border-transparent hover:border-white/30'
+                          }`}
+                        >
+                          <img src={item.url} alt={item.alt_text ?? item.filename} className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => void guardarFicha()}
+              disabled={guardandoFicha}
+              className="px-4 py-2 bg-brand-green hover:bg-brand-forest text-brand-navy hover:text-white text-xs font-extrabold rounded-xl flex items-center space-x-1.5 uppercase tracking-wider disabled:opacity-50"
+            >
+              {guardandoFicha ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              <span>{txt.savePublicCard}</span>
+            </button>
+          </div>
+        )}
+      </div>
 
       {cargando ? (
         <div className="flex items-center justify-center py-16 text-slate-300">
@@ -843,13 +1262,15 @@ const EditorFormulario: React.FC<EditorFormularioProps> = ({ form, onVolver, onG
                     recienteId={recienteId}
                     renombrando={seccionEditando === seccion.localId}
                     tituloRenombrando={seccionTitulo}
-                    setTituloRenombrando={setSeccionTitulo}
+                    setTituloRenombrando={(t) => {
+                      setSeccionTitulo(t);
+                      cambiarNombreSeccion(seccion.localId, t);
+                    }}
                     onIniciarRenombrar={() => {
                       setSeccionEditando(seccion.localId);
                       setSeccionTitulo(seccion.nombre);
                     }}
                     onGuardarRenombrar={(nombre) => guardarNombreSeccion(seccion.localId, nombre)}
-                    onCancelarRenombrar={() => setSeccionEditando(null)}
                     onEliminarSeccion={() => setSeccionAEliminar(seccion.localId)}
                     onEditarCampo={abrirEdicion}
                     onEliminarCampo={eliminarCampo}
@@ -924,6 +1345,22 @@ const EditorFormulario: React.FC<EditorFormularioProps> = ({ form, onVolver, onG
         </Portal>
       )}
 
+      {avisoEstructura && (
+        <Portal>
+          <ModalConfirmar
+            titulo={txt.structureNoticeTitle}
+            mensaje={txt.structureNoticeMessage.replace('{count}', String(form.submission_count))}
+            textoCancelar={txt.cancel}
+            textoConfirmar={txt.structureNoticeConfirm}
+            onCancelar={() => setAvisoEstructura(false)}
+            onConfirmar={() => {
+              setAvisoEstructura(false);
+              void guardar(true);
+            }}
+          />
+        </Portal>
+      )}
+
       {aviso && (
         <Portal>
           <ToastRegion>
@@ -970,7 +1407,6 @@ interface SeccionCardProps {
   setTituloRenombrando: (t: string) => void;
   onIniciarRenombrar: () => void;
   onGuardarRenombrar: (nombre: string) => void;
-  onCancelarRenombrar: () => void;
   onEliminarSeccion: () => void;
   onEditarCampo: (campo: CampoDraft) => void;
   onEliminarCampo: (campo: CampoDraft) => void;
@@ -988,7 +1424,6 @@ const SeccionCard: React.FC<SeccionCardProps> = ({
   setTituloRenombrando,
   onIniciarRenombrar,
   onGuardarRenombrar,
-  onCancelarRenombrar,
   onEliminarSeccion,
   onEditarCampo,
   onEliminarCampo,
@@ -1021,30 +1456,23 @@ const SeccionCard: React.FC<SeccionCardProps> = ({
       >
         <GripVertical className="w-4 h-4 text-slate-500 shrink-0" />
         {renombrando ? (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              onGuardarRenombrar(tituloRenombrando);
+          <input
+            autoFocus
+            type="text"
+            value={tituloRenombrando}
+            onChange={(e) => setTituloRenombrando(e.target.value)}
+            onBlur={() => onGuardarRenombrar(tituloRenombrando)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                onGuardarRenombrar(tituloRenombrando);
+              }
             }}
-            className="flex items-center gap-2 flex-1"
+            placeholder={txt.sectionNamePlaceholder}
+            className="flex-1 px-2 py-1 bg-brand-navy border border-brand-border rounded text-xs text-white"
             onClick={(e) => e.stopPropagation()}
             onPointerDown={(e) => e.stopPropagation()}
-          >
-            <input
-              autoFocus
-              type="text"
-              value={tituloRenombrando}
-              onChange={(e) => setTituloRenombrando(e.target.value)}
-              placeholder={txt.sectionNamePlaceholder}
-              className="flex-1 px-2 py-1 bg-brand-navy border border-brand-border rounded text-xs text-white"
-            />
-            <button type="submit" className="p-1 rounded bg-brand-green text-brand-navy" title={txt.save}>
-              <Save className="w-3.5 h-3.5" />
-            </button>
-            <button type="button" onClick={onCancelarRenombrar} className="p-1 rounded bg-white/10 text-slate-200">
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </form>
+          />
         ) : (
           <>
             <span className="text-xs font-bold text-brand-lime uppercase tracking-wider flex-1 truncate">{tituloMostrar}</span>
@@ -1518,7 +1946,9 @@ const VistaRespuestas: React.FC<VistaRespuestasProps> = ({ form, onVolver }) => 
     }
   };
 
-  const labelCampo = (fieldKey: string) => {
+  const labelCampo = (envio: FormSubmission, fieldKey: string) => {
+    const enSnapshot = envio.form_snapshot?.fields?.find((f) => f.field_key === fieldKey);
+    if (enSnapshot) return enSnapshot.label;
     const campo = campos.find((c) => c.field_key === fieldKey);
     return campo ? campo.label : fieldKey;
   };
@@ -1569,7 +1999,7 @@ interface ListaEnviosProps {
   envios: FormSubmission[];
   envioAbierto: string | null;
   setEnvioAbierto: React.Dispatch<React.SetStateAction<string | null>>;
-  labelCampo: (fieldKey: string) => string;
+  labelCampo: (envio: FormSubmission, fieldKey: string) => string;
   cambiarEstado: (envio: FormSubmission, status: FormSubmission['status'], reviewNotes?: string) => void;
 }
 
@@ -1585,11 +2015,39 @@ const ListaEnvios: React.FC<ListaEnviosProps> = ({ envios, envioAbierto, setEnvi
     );
   }
 
+  // Usa la instantánea del envío para conservar el orden y las etiquetas con las
+  // que fue completado. Los campos que ya no existan en el formulario actual se
+  // siguen mostrando; los datos sin etiqueta conocida se agregan al final.
+  const entradasDe = (envio: FormSubmission) => {
+    const datos = envio.data ?? {};
+    const camposSnapshot = envio.form_snapshot?.fields ?? [];
+    if (camposSnapshot.length === 0) {
+      return Object.entries(datos).map(([clave, valor]) => ({
+        clave,
+        etiqueta: labelCampo(envio, clave),
+        valor,
+      }));
+    }
+    const incluidas = new Set<string>();
+    const filas = camposSnapshot
+      .filter((f) => Object.prototype.hasOwnProperty.call(datos, f.field_key))
+      .map((f) => {
+        incluidas.add(f.field_key);
+        return { clave: f.field_key, etiqueta: f.label, valor: datos[f.field_key] };
+      });
+    for (const [clave, valor] of Object.entries(datos)) {
+      if (!incluidas.has(clave)) {
+        filas.push({ clave, etiqueta: labelCampo(envio, clave), valor });
+      }
+    }
+    return filas;
+  };
+
   return (
     <div className="space-y-3">
       {envios.map((envio) => {
         const abierto = envioAbierto === envio.id;
-        const entradas = Object.entries(envio.data ?? {});
+        const entradas = entradasDe(envio);
         return (
           <div key={envio.id} className="bg-brand-navy border border-brand-border rounded-2xl overflow-hidden">
             <div className="px-4 py-3 flex flex-wrap items-center gap-3 text-xs">
@@ -1623,7 +2081,7 @@ const ListaEnvios: React.FC<ListaEnviosProps> = ({ envios, envioAbierto, setEnvi
             {abierto && (
               <div className="border-t border-white/10 px-4 py-4 space-y-4 bg-brand-navyDark">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
-                  {entradas.map(([clave, valor]) => {
+                  {entradas.map(({ clave, etiqueta, valor }) => {
                     const texto = Array.isArray(valor)
                       ? valor.join(', ')
                       : valor === true
@@ -1633,7 +2091,7 @@ const ListaEnvios: React.FC<ListaEnviosProps> = ({ envios, envioAbierto, setEnvi
                       : String(valor ?? '');
                     return (
                       <div key={clave} className="text-xs">
-                        <span className="text-slate-400 block">{labelCampo(clave)}</span>
+                        <span className="text-slate-400 block">{etiqueta}</span>
                         <span className="text-white whitespace-pre-wrap">{texto || '—'}</span>
                       </div>
                     );

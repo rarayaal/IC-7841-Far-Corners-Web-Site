@@ -2,15 +2,21 @@ import type { Request, Response } from "express";
 import {
   FIELD_TYPES,
   SUBMISSION_STATUSES,
+  CAMPOS_FICHA,
+  type CampoFicha,
   listarForms,
+  listarFormsPublicados,
   obtenerForm,
   crearForm,
   eliminarForm,
+  actualizarFichaForm,
+  duplicarForm,
   obtenerCampos,
   obtenerSecciones,
   reemplazarEstructura,
   crearEnvio,
   obtenerEnvios,
+  obtenerTodosEnvios,
   actualizarEstadoEnvio,
   guardarBorrador,
   obtenerBorrador,
@@ -18,6 +24,8 @@ import {
 } from "../repositories/forms.repository.js";
 
 const REGEX_SLUG = /^[a-z0-9][a-z0-9-]*$/;
+
+const CATEGORIAS = ["internship", "volunteer", "camp"] as const;
 
 function slugify(texto: string): string {
   return texto
@@ -113,6 +121,140 @@ export async function eliminarFormulario(req: Request<{ slug: string }>, res: Re
   } catch (error) {
     console.error("Error al eliminar el formulario:", error);
     res.status(500).json({ message: "No se pudo eliminar el formulario" });
+  }
+}
+
+// GET /api/v1/forms/published (público: lo consume la página Programas y Comunidad)
+export async function listarFormulariosPublicados(_req: Request, res: Response) {
+  try {
+    const forms = await listarFormsPublicados();
+    res.status(200).json(forms);
+  } catch (error) {
+    console.error("Error al listar los formularios publicados:", error);
+    res.status(500).json({ message: "No se pudieron obtener los formularios publicados" });
+  }
+}
+
+// POST /api/v1/forms/:slug/duplicate
+export async function duplicarFormulario(req: Request<{ slug: string }>, res: Response) {
+  const { slug } = req.params;
+  const { title } = req.body ?? {};
+
+  try {
+    const original = await obtenerForm(slug);
+    if (!original) {
+      res.status(404).json({ message: "Formulario no encontrado." });
+      return;
+    }
+
+    const titulo =
+      typeof title === "string" && title.trim() ? title.trim() : `${original.title} (copia)`;
+    const slugBase = (slugify(titulo) || `${slug}-copia`).slice(0, 80);
+
+    let intentos = 0;
+    while (true) {
+      const nuevoSlug = intentos === 0 ? slugBase : `${slugBase}-${intentos + 1}`;
+      try {
+        const copia = await duplicarForm(slug, nuevoSlug, titulo);
+        if (!copia) {
+          res.status(404).json({ message: "Formulario no encontrado." });
+          return;
+        }
+        res.status(201).json(copia);
+        return;
+      } catch (error) {
+        if ((error as { code?: string })?.code === "23505" && intentos < 50) {
+          intentos += 1;
+          continue;
+        }
+        throw error;
+      }
+    }
+  } catch (error) {
+    console.error("Error al duplicar el formulario:", error);
+    res.status(500).json({ message: "No se pudo duplicar el formulario" });
+  }
+}
+
+// PATCH /api/v1/forms/:slug/publication
+// Actualiza la ficha pública (título, descripción, categoría, periodo,
+// requisitos, visibilidad y destacado) sin tocar la estructura del formulario.
+export async function actualizarPublicacion(req: Request<{ slug: string }>, res: Response) {
+  const { slug } = req.params;
+  const cuerpo = req.body ?? {};
+  const cambios: Partial<Record<CampoFicha, unknown>> = {};
+
+  for (const campo of CAMPOS_FICHA) {
+    if (!(campo in cuerpo)) continue;
+    const valor = cuerpo[campo];
+
+    if (campo === "title") {
+      if (typeof valor !== "string" || !valor.trim()) {
+        res.status(400).json({ message: "El título público es obligatorio." });
+        return;
+      }
+      cambios.title = valor.trim();
+      continue;
+    }
+
+    if (campo === "is_published" || campo === "is_featured") {
+      if (typeof valor !== "boolean") {
+        res.status(400).json({ message: "La visibilidad debe ser verdadero o falso." });
+        return;
+      }
+      cambios[campo] = valor;
+      continue;
+    }
+
+    if (campo === "category") {
+      if (valor !== null && (typeof valor !== "string" || !(CATEGORIAS as readonly string[]).includes(valor))) {
+        res.status(400).json({ message: `La categoría debe ser una de: ${CATEGORIAS.join(", ")}` });
+        return;
+      }
+      cambios.category = valor;
+      continue;
+    }
+
+    if (campo === "requirements") {
+      if (valor === null) {
+        cambios.requirements = null;
+        continue;
+      }
+      if (typeof valor !== "object" || Array.isArray(valor)) {
+        res.status(400).json({ message: "Los requisitos deben ser un objeto con listas por idioma." });
+        return;
+      }
+      const normalizado: { es?: string[]; en?: string[] } = {};
+      for (const idioma of ["es", "en"] as const) {
+        const lista = (valor as Record<string, unknown>)[idioma];
+        if (lista === undefined) continue;
+        if (!Array.isArray(lista) || lista.some((item) => typeof item !== "string")) {
+          res.status(400).json({ message: "Cada requisito debe ser una lista de textos." });
+          return;
+        }
+        normalizado[idioma] = (lista as string[]).map((item) => item.trim()).filter(Boolean);
+      }
+      cambios.requirements = normalizado;
+      continue;
+    }
+
+    if (valor !== null && typeof valor !== "string") {
+      res.status(400).json({ message: `El campo ${campo} debe ser texto.` });
+      return;
+    }
+    cambios[campo] = typeof valor === "string" ? valor.trim() || null : null;
+  }
+
+  try {
+    const actualizado = await actualizarFichaForm(slug, cambios);
+    if (!actualizado) {
+      res.status(404).json({ message: "Formulario no encontrado." });
+      return;
+    }
+    res.status(200).json(actualizado);
+  } catch (error) {
+    console.error("Error al actualizar la ficha pública:", error);
+    res.status(500).json({ message: "No se pudo actualizar la ficha pública" });
   }
 }
 
@@ -280,6 +422,17 @@ export async function borrarBorradorHandler(req: Request<{ formType: string }>, 
   } catch (error) {
     console.error("Error al borrar el borrador del formulario:", error);
     res.status(500).json({ message: "No se pudo borrar el borrador del formulario" });
+  }
+}
+
+// GET /api/v1/forms/submissions
+export async function listarTodosEnvios(_req: Request, res: Response) {
+  try {
+    const envios = await obtenerTodosEnvios();
+    res.status(200).json(envios);
+  } catch (error) {
+    console.error("Error al obtener todos los envíos:", error);
+    res.status(500).json({ message: "No se pudieron obtener los envíos" });
   }
 }
 
