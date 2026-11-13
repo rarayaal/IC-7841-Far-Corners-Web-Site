@@ -2,7 +2,7 @@ export interface UsuarioSesion {
   id: string;
   full_name: string;
   email: string;
-  role: 'admin' | 'manager' | 'user' | 'visitor';
+  role: 'admin' | 'manager' | 'user';
   status: 'active';
   permissions: string[];
 }
@@ -17,7 +17,7 @@ export function interpretarUsuario(valor: unknown): UsuarioSesion {
   if (
     typeof u.id !== 'string' || !u.id ||
     typeof u.full_name !== 'string' || typeof u.email !== 'string' ||
-    !['admin', 'manager', 'user', 'visitor'].includes(String(u.role)) ||
+    !['admin', 'manager', 'user'].includes(String(u.role)) ||
     u.status !== 'active' || !Array.isArray(u.permissions) ||
     !u.permissions.every((p: unknown) => typeof p === 'string')
   ) {

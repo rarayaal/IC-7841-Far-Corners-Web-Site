@@ -6,22 +6,50 @@ import {
   modifyAdminUser,
   changeAdminStatus,
   updateAdminPermissions,
+  setParticipantType,
 } from "../services/admin-users.service.js";
 import { logAuditAction } from "../services/audit.service.js";
 
+const ROLES_VALIDOS = ["admin", "manager", "user"] as const;
+const PARTICIPANT_TYPES_VALIDOS = [
+  "internship",
+  "volunteer",
+  "camp",
+] as const;
+
 /**
- * GET /api/v1/admin/users - Listar usuarios administrativos
+ * GET /api/v1/admin/users - Listar usuarios con paginacion, busqueda y filtro por rol
  */
-export async function listAdminUsersController(_req: Request, res: Response): Promise<void> {
+export async function listAdminUsersController(req: Request, res: Response): Promise<void> {
   try {
-    const users = await getAdminUsersList();
-    res.status(200).json({ data: users });
+    const roleParam = req.query.role;
+    const role =
+      typeof roleParam === "string" && ROLES_VALIDOS.includes(roleParam as (typeof ROLES_VALIDOS)[number])
+        ? (roleParam as (typeof ROLES_VALIDOS)[number])
+        : undefined;
+
+    const search = typeof req.query.search === "string" ? req.query.search : undefined;
+
+    const page = Math.max(1, parseInt(String(req.query.page ?? "1"), 10) || 1);
+    const pageSize = Math.max(
+      1,
+      Math.min(parseInt(String(req.query.pageSize ?? "20"), 10) || 20, 100)
+    );
+
+    const result = await getAdminUsersList({ role, search, page, pageSize });
+
+    res.status(200).json({
+      data: result.rows,
+      total: result.total,
+      page,
+      pageSize,
+    });
   } catch (error: any) {
     res.status(500).json({
       type: "https://farcornerscr.org/errors/internal-server-error",
       title: "Error interno del servidor",
       status: 500,
-      detail: error.message ?? "No fue posible listar los usuarios administrativos",
+      detail: error.message ?? "No fue posible listar los usuarios",
     });
   }
 }
@@ -56,17 +84,17 @@ export async function createAdminUserController(req: Request, res: Response): Pr
         type: "https://farcornerscr.org/errors/bad-request",
         title: "Datos incompletos",
         status: 400,
-        detail: "Se requiere ingresar nombre completo, correo, contraseña temporal y rol ('admin' o 'manager')",
+        detail: "Se requiere ingresar nombre completo, correo, contraseña temporal y rol ('admin', 'manager' o 'user')",
       });
       return;
     }
 
-    if (!["admin", "manager"].includes(role)) {
+    if (!["admin", "manager", "user"].includes(role)) {
       res.status(400).json({
         type: "https://farcornerscr.org/errors/invalid-role",
         title: "Rol no permitido",
         status: 400,
-        detail: "El rol administrativo debe ser 'admin' o 'manager'",
+        detail: "El rol debe ser 'admin', 'manager' o 'user'",
       });
       return;
     }
@@ -117,17 +145,17 @@ export async function updateAdminUserController(req: Request, res: Response): Pr
         type: "https://farcornerscr.org/errors/bad-request",
         title: "Datos incompletos",
         status: 400,
-        detail: "Se requiere nombre completo, correo y rol ('admin' o 'manager')",
+        detail: "Se requiere nombre completo, correo y rol ('admin', 'manager' o 'user')",
       });
       return;
     }
 
-    if (!["admin", "manager"].includes(role)) {
+    if (!["admin", "manager", "user"].includes(role)) {
       res.status(400).json({
         type: "https://farcornerscr.org/errors/invalid-role",
         title: "Rol no permitido",
         status: 400,
-        detail: "El rol administrativo debe ser 'admin' o 'manager'",
+        detail: "El rol debe ser 'admin', 'manager' o 'user'",
       });
       return;
     }
@@ -245,6 +273,58 @@ export async function updateAdminRolesController(req: Request, res: Response): P
       title: "Error al actualizar permisos",
       status: 400,
       detail: error.message ?? "No se pudieron actualizar los permisos del usuario",
+    });
+  }
+}
+
+/**
+ * PATCH /api/v1/admin/users/:id/participant-type - Asignar o limpiar el tipo de participante
+ */
+export async function updateParticipantTypeController(req: Request, res: Response): Promise<void> {
+  try {
+    const id = String(req.params.id);
+    const { participant_type } = req.body;
+
+    if (
+      participant_type !== null &&
+      !PARTICIPANT_TYPES_VALIDOS.includes(
+        participant_type as (typeof PARTICIPANT_TYPES_VALIDOS)[number]
+      )
+    ) {
+      res.status(400).json({
+        type: "https://farcornerscr.org/errors/invalid-participant-type",
+        title: "Tipo de participante inválido",
+        status: 400,
+        detail: "El tipo de participante debe ser 'internship', 'volunteer', 'camp' o null",
+      });
+      return;
+    }
+
+    const updatedUser = await setParticipantType(
+      id,
+      participant_type as (typeof PARTICIPANT_TYPES_VALIDOS)[number] | null
+    );
+
+    await logAuditAction(
+      req.user?.userId ?? "sistema",
+      "update",
+      "users",
+      id,
+      null,
+      { participant_type },
+      req.ip ?? null
+    );
+
+    res.status(200).json({
+      message: "Tipo de participante actualizado exitosamente",
+      data: updatedUser,
+    });
+  } catch (error: any) {
+    res.status(400).json({
+      type: "https://farcornerscr.org/errors/bad-request",
+      title: "Error al actualizar tipo de participante",
+      status: 400,
+      detail: error.message ?? "No se pudo actualizar el tipo de participante",
     });
   }
 }

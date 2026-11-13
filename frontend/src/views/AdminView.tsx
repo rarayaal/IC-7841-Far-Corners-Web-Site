@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
-import { Language, Show, AuditLogItem, VolunteerApplication } from '../types';
-import { showsData, auditLogsMock, volunteerAppsMock } from '../data/mockData';
-import { Shield, Ticket, Users, Heart, Plus, Edit2, Trash2 } from 'lucide-react';
+import { Language, Show, AuditLogItem } from '../types';
+import { showsData, auditLogsMock } from '../data/mockData';
+import {
+  Shield, Ticket, Users, Heart, Plus, Edit2, Trash2,
+  LayoutDashboard, FolderKanban, GraduationCap, HandHeart, Building2,
+  ClipboardList, FileText, PenLine, Image, Archive, Phone, MessageSquare,
+  Mail, ScrollText, Tent,
+} from 'lucide-react';
 import { AdminMessagesView } from './AdminMessagesView';
 import { AdminContactChannelsView } from './AdminContactChannelsView';
 import { AdminCommunitiesView } from './AdminCommunitiesView';
 import { AdminStudentsView } from './AdminStudentsView';
+import { AdminCampsView } from './AdminCampsView';
 import { AdminVolunteersView } from './AdminVolunteersView';
-import { AdminProfileView } from './AdminProfileView';
 import { AdminInstitutionalView } from './AdminInstitutionalView';
 import { AdminMediaView } from './AdminMediaView';
 import { AdminRetirementView, canRetireSomething } from './AdminRetirementView';
@@ -19,8 +24,13 @@ import { AdminTicketingView } from './AdminTicketingView';
 import { adminTexts, statusLabel } from '../lib/adminI18n';
 import { tienePermiso } from '../services/permisos';
 import { AdminNewsletterView } from './AdminNewsletterView';
-import { AdminGeneralUsersView } from './AdminGeneralUsersView';
 import { AdminFormsView } from './AdminFormsView';
+import { AdminApplicantsView } from './AdminApplicantsView';
+
+type AdminTab =
+  | 'kpi' | 'donations' | 'projects' | 'ticketing' | 'content' | 'media'
+  | 'retirement' | 'applicants' | 'audit' | 'messages' | 'contacts'
+  | 'communities' | 'students' | 'volunteers' | 'camps' | 'users' | 'newsletter' | 'forms';
 
 interface AdminViewProps {
   language: Language;
@@ -28,11 +38,10 @@ interface AdminViewProps {
 
 export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
   const txt = adminTexts[language];
-  const [activeTab, setActiveTab] = useState<'kpi' | 'donations' | 'projects' | 'ticketing' | 'content' | 'media' | 'retirement' | 'applicants' | 'audit' | 'messages' | 'contacts' | 'communities' | 'students' | 'volunteers' | 'profile' | 'users' | 'newsletter' | 'generalUsers' | 'forms'>('kpi');
+  const [activeTab, setActiveTab] = useState<AdminTab>('kpi');
   
   // Dynamic state for CRUD demo
   const [shows, setShows] = useState<Show[]>(showsData);
-  const [apps, setApps] = useState<VolunteerApplication[]>(volunteerAppsMock);
   const [logs, setLogs] = useState<AuditLogItem[]>(auditLogsMock);
 
   // New Show state form
@@ -82,20 +91,6 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
     setShowFormOpen(false);
   };
 
-  const handleUpdateAppStatus = (id: string, status: VolunteerApplication['status']) => {
-    setApps(apps.map(a => a.id === id ? { ...a, status } : a));
-    
-    const newLog: AuditLogItem = {
-      id: `LOG-${Math.floor(1000 + Math.random() * 9000)}`,
-      user: 'Administrador General',
-      action: 'UPDATE',
-      module: 'Personas y Comunidad',
-      details: `Actualizado estado de postulación ${id} a "${status}"`,
-      timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19)
-    };
-    setLogs([newLog, ...logs]);
-  };
-
   const puedeGestionarContenido = tienePermiso('content:manage');
   const puedeGestionarMedia = tienePermiso('media:manage');
   const puedeRetirarContenido = canRetireSomething();
@@ -106,6 +101,50 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
   );
   const puedeGestionarUsuarios = tienePermiso('users:manage');
   const puedeVerAuditoria = tienePermiso('audit:read');
+
+  const sidebarGroups: {
+    label: string;
+    items: { key: AdminTab; label: string; icon: React.ComponentType<{ className?: string }>; visible?: boolean }[];
+  }[] = [
+    {
+      label: txt.sidebar.general,
+      items: [
+        { key: 'kpi', label: txt.tabs.kpi, icon: LayoutDashboard },
+        { key: 'ticketing', label: txt.tabs.ticketing, icon: Ticket },
+        { key: 'donations', label: txt.tabs.donations, icon: Heart },
+        { key: 'projects', label: txt.tabs.projects, icon: FolderKanban },
+      ],
+    },
+    {
+      label: txt.sidebar.people,
+      items: [
+        { key: 'users', label: txt.tabs.users, icon: Users, visible: puedeGestionarUsuarios },
+        { key: 'students', label: txt.tabs.students, icon: GraduationCap },
+        { key: 'volunteers', label: txt.tabs.volunteers, icon: HandHeart },
+        { key: 'camps', label: txt.tabs.camps, icon: Tent },
+        { key: 'communities', label: txt.tabs.communities, icon: Building2 },
+        { key: 'applicants', label: txt.tabs.applicants, icon: ClipboardList },
+        { key: 'forms', label: txt.tabs.forms, icon: FileText },
+      ],
+    },
+    {
+      label: txt.sidebar.content,
+      items: [
+        { key: 'content', label: txt.tabs.content, icon: PenLine, visible: puedeGestionarContenido },
+        { key: 'media', label: txt.tabs.media, icon: Image, visible: puedeGestionarMedia },
+        { key: 'retirement', label: txt.tabs.retirement, icon: Archive, visible: puedeRetirarContenido },
+        { key: 'contacts', label: txt.tabs.contacts, icon: Phone, visible: puedeGestionarContactos },
+      ],
+    },
+    {
+      label: txt.sidebar.records,
+      items: [
+        { key: 'messages', label: txt.tabs.messages, icon: MessageSquare, visible: puedeVerMensajes },
+        { key: 'newsletter', label: txt.tabs.newsletter, icon: Mail, visible: puedeVerBoletin },
+        { key: 'audit', label: txt.tabs.audit, icon: ScrollText, visible: puedeVerAuditoria },
+      ],
+    },
+  ];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 animate-fadeIn">
@@ -140,238 +179,45 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
         </div>
       </div>
 
-      {/* Tabs Bar */}
-      <div className="flex overflow-x-auto pb-2 border-b border-white/10 gap-2">
-        <button
-          onClick={() => setActiveTab('kpi')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-            activeTab === 'kpi'
-              ? 'bg-brand-green text-brand-navy shadow-glow-green font-extrabold'
-              : 'bg-brand-navy text-slate-300 hover:text-white'
-          }`}
-        >
-          Resumen & Métricas KPI
-        </button>
+      {/* Sidebar + contenido */}
+      <div className="flex flex-col lg:flex-row gap-6 mt-8 items-start">
+        <aside className="w-full lg:w-64 shrink-0">
+          <nav className="lg:sticky lg:top-24 space-y-6">
+            {sidebarGroups.map((group) => {
+              const items = group.items.filter((i) => i.visible !== false);
+              if (items.length === 0) return null;
+              return (
+                <div key={group.label}>
+                  <p className="text-[11px] uppercase tracking-widest text-slate-400 dark:text-slate-500 font-mono font-bold mb-2 px-1">
+                    {group.label}
+                  </p>
+                  <div className="space-y-1">
+                    {items.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = activeTab === item.key;
+                      return (
+                        <button
+                          key={item.key}
+                          onClick={() => setActiveTab(item.key)}
+                          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-semibold transition-all ${
+                            isActive
+                              ? 'bg-brand-green text-brand-navy shadow-glow-green font-extrabold'
+                              : 'bg-brand-navy text-slate-300 hover:text-white hover:bg-brand-navyCard'
+                          }`}
+                        >
+                          <Icon className="w-4 h-4 shrink-0" />
+                          <span className="truncate">{item.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </nav>
+        </aside>
 
-        <button
-          onClick={() => setActiveTab('ticketing')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-            activeTab === 'ticketing'
-              ? 'bg-brand-green text-brand-navy shadow-glow-green font-extrabold'
-              : 'bg-brand-navy text-slate-300 hover:text-white'
-          }`}
-        >
-          Gestión de Boletería
-        </button>
-
-        {puedeGestionarContenido && (
-          <button
-            onClick={() => setActiveTab('content')}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-              activeTab === 'content'
-                ? 'bg-brand-green text-brand-navy shadow-glow-green font-extrabold'
-                : 'bg-brand-navy text-slate-300 hover:text-white'
-            }`}
-          >
-            {txt.tabs.content}
-          </button>
-        )}
-
-        {puedeGestionarMedia && (
-          <button
-            onClick={() => setActiveTab('media')}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-              activeTab === 'media'
-                ? 'bg-brand-green text-brand-navy shadow-glow-green font-extrabold'
-                : 'bg-brand-navy text-slate-300 hover:text-white'
-            }`}
-          >
-            {txt.tabs.media}
-          </button>
-        )}
-
-        {puedeRetirarContenido && (
-          <button
-            onClick={() => setActiveTab('retirement')}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-              activeTab === 'retirement'
-                ? 'bg-brand-green text-brand-navy shadow-glow-green font-extrabold'
-                : 'bg-brand-navy text-slate-300 hover:text-white'
-            }`}
-          >
-            {txt.tabs.retirement}
-          </button>
-        )}
-
-        <button
-          onClick={() => setActiveTab('applicants')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-            activeTab === 'applicants'
-              ? 'bg-brand-green text-brand-navy shadow-glow-green font-extrabold'
-              : 'bg-brand-navy text-slate-300 hover:text-white'
-          }`}
-        >
-          Postulaciones
-        </button>
-
-        <button
-          onClick={() => setActiveTab('forms')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-            activeTab === 'forms'
-              ? 'bg-brand-green text-brand-navy shadow-glow-green font-extrabold'
-              : 'bg-brand-navy text-slate-300 hover:text-white'
-          }`}
-        >
-          Formularios
-        </button>
-
-        {puedeGestionarUsuarios && (
-          <button
-            onClick={() => setActiveTab('users')}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-              activeTab === 'users'
-                ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
-                : 'bg-[#002244] text-slate-300 hover:text-white'
-            }`}
-          >
-            Usuarios Administrativos
-          </button>
-        )}
-
-        {puedeGestionarUsuarios && (
-          <button
-            onClick={() => setActiveTab('generalUsers')}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold
-                        transition-all whitespace-nowrap ${
-              activeTab === 'generalUsers'
-                ? 'bg-brand-green text-brand-navy shadow-glow-green font-extrabold'
-                : 'bg-brand-navy text-slate-300 hover:text-white'
-            }`}
-          >
-            Usuarios generales
-          </button>
-        )}
-
-        {puedeVerAuditoria && (
-          <button
-            onClick={() => setActiveTab('audit')}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-              activeTab === 'audit'
-                ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
-                : 'bg-[#002244] text-slate-300 hover:text-white'
-            }`}
-          >
-            Bitácora de Cambios
-          </button>
-        )}
-
-        {puedeVerMensajes && (
-          <button
-            onClick={() => setActiveTab('messages')}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-              activeTab === 'messages'
-                ? 'bg-brand-green text-brand-navy shadow-glow-green font-extrabold'
-                : 'bg-brand-navy text-slate-300 hover:text-white'
-            }`}
-          >
-            Mensajes
-          </button>
-        )}
-        {puedeVerBoletin && (
-          <button
-            onClick={() => setActiveTab('newsletter')}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold
-                        transition-all whitespace-nowrap ${
-              activeTab === 'newsletter'
-                ? 'bg-brand-green text-brand-navy shadow-glow-green font-extrabold'
-                : 'bg-brand-navy text-slate-300 hover:text-white'
-            }`}
-          >
-            Boletín
-          </button>
-        )}
-
-        {puedeGestionarContactos && (
-          <button
-            onClick={() => setActiveTab('contacts')}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-              activeTab === 'contacts'
-                ? 'bg-brand-green text-brand-navy shadow-glow-green font-extrabold'
-                : 'bg-brand-navy text-slate-300 hover:text-white'
-            }`}
-          >
-            Medios de contacto
-          </button>
-        )}
-
-        <button
-          onClick={() => setActiveTab('donations')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-            activeTab === 'donations'
-              ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
-              : 'bg-[#002244] text-slate-300 hover:text-white'
-          }`}
-        >
-          {language === 'es' ? 'Donaciones' : 'Donations'}
-        </button>
-
-        <button
-          onClick={() => setActiveTab('projects')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-            activeTab === 'projects'
-              ? 'bg-[#77C65E] text-[#002244] shadow-glow-green font-extrabold'
-              : 'bg-[#002244] text-slate-300 hover:text-white'
-          }`}
-        >
-          {language === 'es' ? 'Proyectos' : 'Projects'}
-        </button>
-
-
-        <button
-          onClick={() => setActiveTab('communities')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-            activeTab === 'communities'
-              ? 'bg-brand-green text-brand-navy shadow-glow-green font-extrabold'
-              : 'bg-brand-navy text-slate-300 hover:text-white'
-          }`}
-        >
-          {txt.tabs.communities}
-        </button>
-
-        <button
-          onClick={() => setActiveTab('students')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-            activeTab === 'students'
-              ? 'bg-brand-green text-brand-navy shadow-glow-green font-extrabold'
-              : 'bg-brand-navy text-slate-300 hover:text-white'
-          }`}
-        >
-          {txt.tabs.students}
-        </button>
-
-        <button
-          onClick={() => setActiveTab('volunteers')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-            activeTab === 'volunteers'
-              ? 'bg-brand-green text-brand-navy shadow-glow-green font-extrabold'
-              : 'bg-brand-navy text-slate-300 hover:text-white'
-          }`}
-        >
-          {txt.tabs.volunteers}
-        </button>
-
-        <button
-          onClick={() => setActiveTab('profile')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-            activeTab === 'profile'
-              ? 'bg-brand-green text-brand-navy shadow-glow-green font-extrabold'
-              : 'bg-brand-navy text-slate-300 hover:text-white'
-          }`}
-        >
-          {txt.tabs.profile}
-        </button>
-      </div>
-
+        <div className="flex-1 min-w-0 w-full space-y-8">
       {/* Renderizado de vistas */}
       {activeTab === 'donations' && <AdminDonationsView language={language} />}
       {activeTab === 'projects' && <AdminProjectsView language={language} />}
@@ -385,14 +231,11 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
       {activeTab === 'messages' && puedeVerMensajes && (
         <AdminMessagesView language={language} />
       )}
-      {activeTab === 'generalUsers' && puedeGestionarUsuarios && (
-        <AdminGeneralUsersView language={language} />
-      )}
       {activeTab === 'communities' && <AdminCommunitiesView language={language} />}
       {activeTab === 'students' && <AdminStudentsView language={language} />}
       {activeTab === 'volunteers' && <AdminVolunteersView language={language} />}
+      {activeTab === 'camps' && <AdminCampsView language={language} />}
       {activeTab === 'forms' && <AdminFormsView language={language} />}
-      {activeTab === 'profile' && <AdminProfileView language={language} />}
       {activeTab === 'kpi' && (
         <div className="space-y-8 animate-fadeIn">
           {/* Top KPI Cards */}
@@ -596,70 +439,9 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
         <AdminRetirementView language={language} />
       )}
 
-      {/* TAB 4: APPLICANTS MANAGER */}
+      {/* TAB: BANDEJA UNIFICADA DE POSTULACIONES */}
       {activeTab === 'applicants' && (
-        <div className="space-y-6 animate-fadeIn">
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="font-serif text-xl font-bold text-white">{txt.applicants.title}</h3>
-              <p className="text-xs text-slate-300">{txt.applicants.subtitle}</p>
-            </div>
-            <span className="text-xs font-mono text-brand-lime font-bold">
-              {txt.applicants.activeCount.replace('{count}', String(apps.length))}
-            </span>
-          </div>
-
-          <div className="bg-brand-navy border border-brand-border rounded-2xl overflow-hidden">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="bg-brand-navyDark text-slate-300 font-mono text-[11px] uppercase border-b border-white/10">
-                <tr>
-                  <th className="p-4">{txt.applicants.table.id}</th>
-                  <th className="p-4">{txt.applicants.table.applicant}</th>
-                  <th className="p-4">{txt.applicants.table.country}</th>
-                  <th className="p-4">{txt.applicants.table.role}</th>
-                  <th className="p-4">{txt.applicants.table.status}</th>
-                  <th className="p-4 text-right">{txt.applicants.table.updateStatus}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {apps.map((app) => (
-                  <tr key={app.id} className="hover:bg-white/5 transition-colors">
-                    <td className="p-4 font-mono text-brand-lime">{app.id}</td>
-                    <td className="p-4">
-                      <span className="font-bold text-white block">{app.name}</span>
-                      <span className="text-[11px] text-slate-300">{app.email}</span>
-                    </td>
-                    <td className="p-4">{app.country}</td>
-                    <td className="p-4 font-semibold text-slate-200">{app.role}</td>
-                    <td className="p-4">
-                      <span className={`px-2.5 py-1 rounded text-[10px] uppercase font-bold ${
-                        app.status === 'Aprobado' ? 'bg-brand-green/20 text-brand-green' :
-                        app.status === 'Entrevista' ? 'bg-brand-blue/20 text-brand-blue' :
-                        'bg-amber-500/20 text-amber-300'
-                      }`}>
-                        {app.status}
-                      </span>
-                    </td>
-                    <td className="p-4 text-right space-x-1">
-                      <button
-                        onClick={() => handleUpdateAppStatus(app.id, 'Entrevista')}
-                        className="px-2.5 py-1 rounded bg-brand-blue/20 text-brand-blue text-[10px] font-bold hover:bg-brand-blue/30"
-                      >
-                        {txt.applicants.btnInterview}
-                      </button>
-                      <button
-                        onClick={() => handleUpdateAppStatus(app.id, 'Aprobado')}
-                        className="px-2.5 py-1 rounded bg-brand-green/20 text-brand-green text-[10px] font-bold hover:bg-brand-green/30"
-                      >
-                        {txt.applicants.btnApprove}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <AdminApplicantsView language={language} />
       )}
 
            {/* TAB: AUDIT LOG */}
@@ -679,11 +461,13 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
           <AdminUsersManagementView language={language} />
         ) : (
           <div className="bg-[#00162e] border border-white/10 rounded-2xl p-8 text-center text-rose-400">
-            {txt.generalUsers.noPermissions}
+            {txt.usersManagement.noPermissions}
           </div>
         )
       )}
 
+        </div>
+      </div>
     </div>
   );
 };

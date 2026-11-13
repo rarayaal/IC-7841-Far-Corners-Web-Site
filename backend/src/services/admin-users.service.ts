@@ -1,21 +1,29 @@
 import bcrypt from "bcrypt";
 import {
-  findAllAdminUsers,
+  findAllUsersPaginated,
   findUserById,
   countActiveAdmins,
   createAdminUser,
   updateAdminUser,
   updateAdminStatus,
   syncUserPermissions,
+  setUserParticipantType,
   AdminUserSummary,
+  UserRole,
+  ParticipantType,
 } from "../repositories/admin-users.repository.js";
 import { findUserByEmail } from "../repositories/auth.repository.js";
 
 /**
- * Obtiene la lista de usuarios administrativos
+ * Obtiene la lista paginada de usuarios con filtros por rol y busqueda
  */
-export async function getAdminUsersList(): Promise<AdminUserSummary[]> {
-  return findAllAdminUsers();
+export async function getAdminUsersList(filters: {
+  role?: UserRole;
+  search?: string;
+  page: number;
+  pageSize: number;
+}) {
+  return findAllUsersPaginated(filters);
 }
 
 /**
@@ -38,7 +46,7 @@ export async function registerAdminUser(
   fullName: string,
   email: string,
   temporaryPassword: string,
-  role: "admin" | "manager",
+  role: UserRole,
   permissions: string[] = []
 ): Promise<AdminUserSummary> {
   const existingUser = await findUserByEmail(email);
@@ -68,7 +76,7 @@ export async function modifyAdminUser(
   id: string,
   fullName: string,
   email: string,
-  newRole: "admin" | "manager"
+  newRole: UserRole
 ): Promise<AdminUserSummary> {
   const user = await findUserById(id);
 
@@ -142,6 +150,25 @@ export async function updateAdminPermissions(
   }
 
   await syncUserPermissions(userId, permissionCodes);
+
+  const updatedUser = await findUserById(userId);
+  return updatedUser!;
+}
+
+/**
+ * Asigna o limpia el tipo de participante de un usuario
+ */
+export async function setParticipantType(
+  userId: string,
+  participantType: ParticipantType | null
+): Promise<AdminUserSummary> {
+  const user = await findUserById(userId);
+
+  if (!user) {
+    throw new Error("Usuario no encontrado");
+  }
+
+  await setUserParticipantType(userId, participantType);
 
   const updatedUser = await findUserById(userId);
   return updatedUser!;

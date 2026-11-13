@@ -6,28 +6,36 @@ import {
   updateAdminUserController,
   updateAdminStatusController,
   updateAdminRolesController,
+  updateParticipantTypeController,
 } from "../controllers/admin-users.controller.js";
 import { authenticateToken } from "../middlewares/auth.middleware.js";
 import { requireRoles, requirePermission } from "../middlewares/rbac.middleware.js";
 
 export const adminUsersRouter = Router();
 
-// Todas las rutas de administracion requieren autenticacion previa
-adminUsersRouter.use(authenticateToken);
-
-// Gestion de cuentas administrativas
-adminUsersRouter.get(
-  "/users",
-  requireRoles(["admin"]),
-  listAdminUsersController
+// Gestion unificada de usuarios: admin y manager con permiso users:manage
+// pueden ver y editar a todos los usuarios del sistema.
+adminUsersRouter.use(
+  authenticateToken,
+  requireRoles(["admin", "manager"]),
+  requirePermission("users:manage")
 );
 
-adminUsersRouter.get(
-  "/users/:id",
-  requireRoles(["admin"]),
-  getAdminUserByIdController
+adminUsersRouter.get("/users", listAdminUsersController);
+
+adminUsersRouter.get("/users/:id", getAdminUserByIdController);
+
+adminUsersRouter.patch(
+  "/users/:id/status",
+  updateAdminStatusController
 );
 
+adminUsersRouter.patch(
+  "/users/:id/participant-type",
+  updateParticipantTypeController
+);
+
+// Crear usuarios, cambiar roles y asignar permisos queda restringido a admin.
 adminUsersRouter.post(
   "/users",
   requireRoles(["admin"]),
@@ -40,13 +48,6 @@ adminUsersRouter.put(
   updateAdminUserController
 );
 
-adminUsersRouter.patch(
-  "/users/:id/status",
-  requireRoles(["admin"]),
-  updateAdminStatusController
-);
-
-// Gestion granular de roles y permisos (CU-11)
 adminUsersRouter.patch(
   "/users/:id/roles",
   requireRoles(["admin"]),

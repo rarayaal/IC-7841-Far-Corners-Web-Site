@@ -1,18 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import { UserPlus, Shield, Check, X, Power, AlertCircle, Key, ChevronDown } from 'lucide-react';
+import React, { useState, useEffect, type FormEvent } from 'react';
+import {
+  UserPlus, Shield, Check, X, Power, AlertCircle, Key, ChevronDown,
+  ChevronRight, Search, RefreshCw,
+} from 'lucide-react';
 import { apiAdminJson } from '../services/apiAdmin';
-import { adminTexts } from '../lib/adminI18n';
+import { adminTexts, roleLabel, participantTypeLabel } from '../lib/adminI18n';
 import type { Language } from '../types';
+
+type UserRole = 'admin' | 'manager' | 'user';
+type ParticipantType = 'internship' | 'volunteer' | 'camp';
 
 interface AdminUser {
   id: string;
   full_name: string;
   email: string;
-  role: 'admin' | 'manager' | 'user';
+  role: UserRole;
   status: 'active' | 'inactive';
+  participant_type: ParticipantType | null;
   permissions: string[];
   created_at: string;
 }
+
+interface ListResponse {
+  data: AdminUser[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+const ROLE_ORDER: UserRole[] = ['admin', 'manager', 'user'];
+const PARTICIPANT_TYPES: ParticipantType[] = [
+  'internship',
+  'volunteer',
+  'camp',
+];
 
 interface AdminUsersManagementViewProps {
   language?: Language;
@@ -37,43 +58,44 @@ export const AdminUsersManagementView: React.FC<AdminUsersManagementViewProps> =
   ];
 
   const ROLE_PRESETS = [
-    {
-      name: txt.presets.boxOffice,
-      permissions: ['tickets:manage', 'events:manage'],
-    },
-    {
-      name: txt.presets.treasurer,
-      permissions: ['donations:manage'],
-    },
-    {
-      name: txt.presets.artistic,
-      permissions: ['projects:manage', 'events:manage', 'media:manage'],
-    },
-    {
-      name: txt.presets.community,
-      permissions: ['community:manage'],
-    },
-    {
-      name: language === 'es' ? 'Editor de Contenido' : 'Content Editor',
-      permissions: ['content:manage', 'media:manage'],
-    },
-    {
-      name: language === 'es' ? 'Acceso Completo' : 'Full Access',
-      permissions: AVAILABLE_PERMISSIONS.map((p) => p.code),
-    },
+    { name: txt.presets.boxOffice, permissions: ['tickets:manage', 'events:manage'] },
+    { name: txt.presets.treasurer, permissions: ['donations:manage'] },
+    { name: txt.presets.artistic, permissions: ['projects:manage', 'events:manage', 'media:manage'] },
+    { name: txt.presets.community, permissions: ['community:manage'] },
+    { name: language === 'es' ? 'Editor de Contenido' : 'Content Editor', permissions: ['content:manage', 'media:manage'] },
+    { name: language === 'es' ? 'Acceso Completo' : 'Full Access', permissions: AVAILABLE_PERMISSIONS.map((p) => p.code) },
   ];
 
+  const esAdmin = (() => {
+    try {
+      return (JSON.parse(localStorage.getItem('auth_user') || '{}') as { role?: string }).role === 'admin';
+    } catch {
+      return false;
+    }
+  })();
+
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(20);
+  const [roleFilter, setRoleFilter] = useState<'' | UserRole>('');
+  const [searchInput, setSearchInput] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [collapsed, setCollapsed] = useState<Record<UserRole, boolean>>({
+    admin: false,
+    manager: false,
+    user: true,
+  });
 
   // Modal Crear Usuario
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newFullName, setNewFullName] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  const [newRole, setNewRole] = useState<'admin' | 'manager'>('manager');
+  const [newRole, setNewRole] = useState<UserRole>('manager');
   const [newPermissions, setNewPermissions] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
@@ -81,13 +103,21 @@ export const AdminUsersManagementView: React.FC<AdminUsersManagementViewProps> =
   const [selectedUserForPerms, setSelectedUserForPerms] = useState<AdminUser | null>(null);
   const [editPermissions, setEditPermissions] = useState<string[]>([]);
 
-  // Cargar usuarios al montar
   const fetchUsers = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await apiAdminJson<{ data: AdminUser[] }>('/api/v1/admin/users');
-      setUsers(Array.isArray(res?.data) ? res.data : []);
+      const params = new URLSearchParams();
+      params.set('page', String(page));
+      params.set('pageSize', String(pageSize));
+      if (roleFilter) params.set('role', roleFilter);
+      if (searchTerm.trim()) params.set('search', searchTerm.trim());
+
+      const res = await apiAdminJson<ListResponse>(
+        `/api/v1/admin/users?${params.toString()}`
+      );
+      setUsers(Array.isArray(res.data) ? res.data : []);
+      setTotal(res.total || 0);
     } catch (err: any) {
       setError(err?.message || txt.loadError);
     } finally {
@@ -96,10 +126,63 @@ export const AdminUsersManagementView: React.FC<AdminUsersManagementViewProps> =
   };
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    void fetchUsers();
+  }, [page, roleFilter, searchTerm]);
 
-  const handleCreateUser = async (e: React.FormEvent) => {
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  const handleSearch = (e: FormEvent) => {
+    e.preventDefault();
+    setPage(1);
+    setSearchTerm(searchInput.trim());
+  };
+
+  const handleRoleFilter = (value: string) => {
+    setPage(1);
+    setRoleFilter(value as '' | UserRole);
+  };
+
+  const handleToggleStatus = async (user: AdminUser) => {
+    const nextStatus = user.status === 'active' ? 'inactive' : 'active';
+    try {
+      await apiAdminJson(`/api/v1/admin/users/${user.id}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: nextStatus }),
+      });
+      setSuccessMsg(
+        txt.statusUpdated
+          .replace('{name}', user.full_name)
+          .replace('{status}', nextStatus === 'active' ? (language === 'es' ? 'activo' : 'active') : (language === 'es' ? 'inactivo' : 'inactive'))
+      );
+      setUsers((prev) =>
+        prev.map((u) => (u.id === user.id ? { ...u, status: nextStatus } : u))
+      );
+      setTimeout(() => setSuccessMsg(null), 3000);
+    } catch (err: any) {
+      setError(err?.message || txt.statusError);
+      setTimeout(() => setError(null), 4000);
+    }
+  };
+
+  const handleParticipantType = async (user: AdminUser, value: string) => {
+    const participantType = value === '' ? null : (value as ParticipantType);
+    try {
+      await apiAdminJson(`/api/v1/admin/users/${user.id}/participant-type`, {
+        method: 'PATCH',
+        body: JSON.stringify({ participant_type: participantType }),
+      });
+      setSuccessMsg(txt.participantTypeUpdated);
+      setUsers((prev) =>
+        prev.map((u) => (u.id === user.id ? { ...u, participant_type: participantType } : u))
+      );
+      setTimeout(() => setSuccessMsg(null), 3000);
+    } catch (err: any) {
+      setError(err?.message || txt.participantTypeError);
+      setTimeout(() => setError(null), 4000);
+    }
+  };
+
+  const handleCreateUser = async (e: FormEvent) => {
     e.preventDefault();
     if (!newFullName || !newEmail || !newPassword) return;
 
@@ -113,7 +196,7 @@ export const AdminUsersManagementView: React.FC<AdminUsersManagementViewProps> =
           email: newEmail.trim().toLowerCase(),
           temporary_password: newPassword,
           role: newRole,
-          permissions: newPermissions,
+          permissions: newRole === 'manager' ? newPermissions : [],
         }),
       });
 
@@ -130,26 +213,6 @@ export const AdminUsersManagementView: React.FC<AdminUsersManagementViewProps> =
       setError(err?.message || txt.createError);
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  const handleToggleStatus = async (user: AdminUser) => {
-    const nextStatus = user.status === 'active' ? 'inactive' : 'active';
-    try {
-      await apiAdminJson(`/api/v1/admin/users/${user.id}/status`, {
-        method: 'PATCH',
-        body: JSON.stringify({ status: nextStatus }),
-      });
-      setSuccessMsg(
-        txt.statusUpdated
-          .replace('{name}', user.full_name)
-          .replace('{status}', nextStatus === 'active' ? (language === 'es' ? 'activo' : 'active') : (language === 'es' ? 'inactivo' : 'inactive'))
-      );
-      fetchUsers();
-      setTimeout(() => setSuccessMsg(null), 3000);
-    } catch (err: any) {
-      setError(err?.message || txt.statusError);
-      setTimeout(() => setError(null), 4000);
     }
   };
 
@@ -191,8 +254,101 @@ export const AdminUsersManagementView: React.FC<AdminUsersManagementViewProps> =
     );
   };
 
+  const renderRow = (u: AdminUser) => (
+    <tr key={u.id} className="hover:bg-white/5 transition-colors">
+      <td className="py-4 px-4 sm:px-6">
+        <div className="font-semibold text-white">{u.full_name}</div>
+        <div className="text-xs text-slate-400 font-mono break-all">{u.email}</div>
+      </td>
+      <td className="py-4 px-4 sm:px-6">
+        <span
+          className={`inline-block px-2.5 py-1 rounded-full text-xs font-bold uppercase ${
+            u.role === 'admin'
+              ? 'bg-amber-500/10 text-amber-300 border border-amber-500/20'
+              : u.role === 'manager'
+                ? 'bg-blue-500/10 text-blue-300 border border-blue-500/20'
+                : 'bg-slate-500/10 text-slate-300 border border-slate-500/20'
+          }`}
+        >
+          {roleLabel(u.role, language)}
+        </span>
+      </td>
+      <td className="py-4 px-4 sm:px-6">
+        <select
+          value={u.participant_type ?? ''}
+          onChange={(e) => void handleParticipantType(u, e.target.value)}
+          className="fc-select w-full max-w-[12rem] px-2.5 py-1.5 bg-[#000d1a] border border-white/10 rounded-lg text-xs text-white focus:border-[#77C65E] outline-none"
+        >
+          <option value="">{txt.participantTypeEmpty}</option>
+          {PARTICIPANT_TYPES.map((pt) => (
+            <option key={pt} value={pt}>
+              {participantTypeLabel(pt, language)}
+            </option>
+          ))}
+        </select>
+      </td>
+      <td className="py-4 px-4 sm:px-6">
+        {u.role === 'admin' ? (
+          <span className="text-xs text-amber-400 font-medium italic">
+            {language === 'es' ? 'Acceso Total (Bypass)' : 'Full Access (Bypass)'}
+          </span>
+        ) : u.role === 'manager' && u.permissions && u.permissions.length > 0 ? (
+          <div className="flex flex-wrap gap-1 max-w-xs">
+            {u.permissions.map((p) => (
+              <span key={p} className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] text-slate-300 font-mono">
+                {p}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <span className="text-xs text-slate-500 italic">—</span>
+        )}
+      </td>
+      <td className="py-4 px-4 sm:px-6">
+        <span
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+            u.status === 'active'
+              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+              : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+          }`}
+        >
+          <span className={`w-1.5 h-1.5 rounded-full ${u.status === 'active' ? 'bg-emerald-400' : 'bg-rose-400'}`} />
+          {u.status === 'active'
+            ? (language === 'es' ? 'Activo' : 'Active')
+            : (language === 'es' ? 'Inactivo' : 'Inactive')}
+        </span>
+      </td>
+      <td className="py-4 px-4 sm:px-6 text-right space-x-2">
+        {u.role !== 'admin' && esAdmin && (
+          <button
+            onClick={() => handleOpenPermsModal(u)}
+            className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-semibold transition-all inline-flex items-center gap-1.5"
+            title={language === 'es' ? 'Gestionar Permisos' : 'Manage Permissions'}
+          >
+            <Key className="w-3.5 h-3.5" />
+          </button>
+        )}
+        <button
+          onClick={() => handleToggleStatus(u)}
+          className={`p-1.5 rounded-lg border text-xs transition-all inline-flex items-center ${
+            u.status === 'active'
+              ? 'bg-rose-500/10 border-rose-500/20 text-rose-400 hover:bg-rose-500/20'
+              : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20'
+          }`}
+          title={
+            u.status === 'active'
+              ? (language === 'es' ? 'Desactivar usuario' : 'Deactivate user')
+              : (language === 'es' ? 'Activar usuario' : 'Activate user')
+          }
+        >
+          <Power className="w-4 h-4" />
+        </button>
+      </td>
+    </tr>
+  );
+
   return (
-    <div className="space-y-8 min-h-[70vh] pb-24">
+    <div className="space-y-6 min-h-[70vh] pb-24">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#00162e] border border-white/10 rounded-2xl p-6 shadow-xl">
         <div>
@@ -200,17 +356,17 @@ export const AdminUsersManagementView: React.FC<AdminUsersManagementViewProps> =
             <Shield className="w-6 h-6 text-[#77C65E]" />
             {txt.title}
           </h2>
-          <p className="text-slate-400 text-sm mt-1">
-            {txt.subtitle}
-          </p>
+          <p className="text-slate-400 text-sm mt-1">{txt.subtitle}</p>
         </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="px-4 py-2.5 bg-[#77C65E] hover:bg-[#008047] text-[#002244] hover:text-white font-bold text-xs rounded-xl transition-all shadow-glow-green flex items-center gap-2"
-        >
-          <UserPlus className="w-4 h-4" />
-          {txt.createUserBtn}
-        </button>
+        {esAdmin && (
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="px-4 py-2.5 bg-[#77C65E] hover:bg-[#008047] text-[#002244] hover:text-white font-bold text-xs rounded-xl transition-all shadow-glow-green flex items-center gap-2"
+          >
+            <UserPlus className="w-4 h-4" />
+            {txt.createUserBtn}
+          </button>
+        )}
       </div>
 
       {/* Alertas */}
@@ -227,117 +383,140 @@ export const AdminUsersManagementView: React.FC<AdminUsersManagementViewProps> =
         </div>
       )}
 
-      {/* Tabla */}
-      <div className="bg-[#00162e] border border-white/10 rounded-2xl overflow-hidden shadow-xl">
-        {loading ? (
-          <div className="p-16 text-center text-slate-400 text-sm">{txt.loading}</div>
-        ) : users.length === 0 ? (
-          <div className="p-16 text-center text-slate-400 text-sm">{txt.empty}</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-300">
-              <thead className="bg-[#002244] text-xs uppercase text-slate-300 border-b border-white/10">
-                <tr>
-                  <th className="py-4 px-6">{txt.table.user}</th>
-                  <th className="py-4 px-6">{txt.table.role}</th>
-                  <th className="py-4 px-6">{txt.table.status}</th>
-                  <th className="py-4 px-6">{txt.table.permissions}</th>
-                  <th className="py-4 px-6 text-right">{txt.table.actions}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {users.map((u) => (
-                  <tr key={u.id} className="hover:bg-white/5 transition-colors">
-                    <td className="py-4 px-6">
-                      <div className="font-semibold text-white">{u.full_name}</div>
-                      <div className="text-xs text-slate-400 font-mono">{u.email}</div>
-                    </td>
-                    <td className="py-4 px-6">
-                      <span
-                        className={`inline-block px-2.5 py-1 rounded-full text-xs font-bold uppercase ${
-                          u.role === 'admin'
-                            ? 'bg-amber-500/10 text-amber-300 border border-amber-500/20'
-                            : 'bg-blue-500/10 text-blue-300 border border-blue-500/20'
-                        }`}
-                      >
-                        {u.role === 'admin'
-                          ? (language === 'es' ? 'Administrador General' : 'Super Admin')
-                          : (language === 'es' ? 'Administrador de Área' : 'Area Manager')}
-                      </span>
-                    </td>
-                    <td className="py-4 px-6">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
-                          u.status === 'active'
-                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                            : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                        }`}
-                      >
-                        <span className={`w-1.5 h-1.5 rounded-full ${u.status === 'active' ? 'bg-emerald-400' : 'bg-rose-400'}`} />
-                        {u.status === 'active'
-                          ? (language === 'es' ? 'Activo' : 'Active')
-                          : (language === 'es' ? 'Inactivo' : 'Inactive')}
-                      </span>
-                    </td>
-                    <td className="py-4 px-6">
-                      {u.role === 'admin' ? (
-                        <span className="text-xs text-amber-400 font-medium italic">
-                          {language === 'es' ? 'Acceso Total (Bypass)' : 'Full Access (Bypass)'}
-                        </span>
-                      ) : u.permissions && u.permissions.length > 0 ? (
-                        <div className="flex flex-wrap gap-1 max-w-xs">
-                          {u.permissions.map((p) => (
-                            <span key={p} className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] text-slate-300 font-mono">
-                              {p}
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-xs text-slate-500 italic">
-                          {language === 'es' ? 'Sin permisos asignados' : 'No permissions assigned'}
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-4 px-6 text-right space-x-2">
-                      {u.role !== 'admin' && (
-                        <button
-                          onClick={() => handleOpenPermsModal(u)}
-                          className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-semibold transition-all inline-flex items-center gap-1.5"
-                          title={language === 'es' ? 'Gestionar Permisos' : 'Manage Permissions'}
-                        >
-                          <Key className="w-3.5 h-3.5" />
-                          {language === 'es' ? 'Permisos' : 'Permissions'}
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleToggleStatus(u)}
-                        className={`p-1.5 rounded-lg border text-xs transition-all inline-flex items-center ${
-                          u.status === 'active'
-                            ? 'bg-rose-500/10 border-rose-500/20 text-rose-400 hover:bg-rose-500/20'
-                            : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20'
-                        }`}
-                        title={
-                          u.status === 'active'
-                            ? (language === 'es' ? 'Desactivar usuario' : 'Deactivate user')
-                            : (language === 'es' ? 'Activar usuario' : 'Activate user')
-                        }
-                      >
-                        <Power className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {/* Barra de filtros */}
+      <form
+        onSubmit={handleSearch}
+        className="flex flex-col sm:flex-row gap-3 bg-[#00162e] border border-white/10 rounded-2xl p-4"
+      >
+        <div className="flex-1 flex items-center gap-2 bg-[#000d1a] border border-white/10 rounded-xl px-3">
+          <Search className="w-4 h-4 text-slate-400 shrink-0" />
+          <input
+            type="text"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder={txt.searchPlaceholder}
+            className="w-full bg-transparent py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none"
+          />
+        </div>
+        <select
+          value={roleFilter}
+          onChange={(e) => handleRoleFilter(e.target.value)}
+          className="fc-select px-3 py-2.5 bg-[#000d1a] border border-white/10 rounded-xl text-sm text-white focus:border-[#77C65E] outline-none"
+        >
+          <option value="">{txt.allRoles}</option>
+          <option value="admin">{roleLabel('admin', language)}</option>
+          <option value="manager">{roleLabel('manager', language)}</option>
+          <option value="user">{roleLabel('user', language)}</option>
+        </select>
+        <button
+          type="submit"
+          className="px-4 py-2.5 bg-[#77C65E] hover:bg-[#008047] text-[#002244] hover:text-white font-bold text-xs rounded-xl transition-all"
+        >
+          {language === 'es' ? 'Buscar' : 'Search'}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setSearchInput('');
+            setSearchTerm('');
+            setRoleFilter('');
+            setPage(1);
+          }}
+          className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold transition-all inline-flex items-center gap-1.5"
+        >
+          <RefreshCw className="w-3.5 h-3.5" />
+          {language === 'es' ? 'Limpiar' : 'Clear'}
+        </button>
+      </form>
+
+      {/* Listado agrupado por rol */}
+      {loading ? (
+        <div className="p-16 text-center text-slate-400 text-sm">{txt.loading}</div>
+      ) : users.length === 0 ? (
+        <div className="p-16 text-center text-slate-400 text-sm">{txt.empty}</div>
+      ) : (
+        <div className="space-y-4">
+          {ROLE_ORDER.map((role) => {
+            const rows = users.filter((u) => u.role === role);
+            if (rows.length === 0) return null;
+            const isCollapsed = collapsed[role];
+            return (
+              <div
+                key={role}
+                className="bg-[#00162e] border border-white/10 rounded-2xl overflow-hidden shadow-xl"
+              >
+                <button
+                  type="button"
+                  onClick={() => setCollapsed((prev) => ({ ...prev, [role]: !prev[role] }))}
+                  className="w-full flex items-center justify-between px-5 py-3.5 bg-[#002244] hover:bg-[#002a50] transition-colors"
+                >
+                  <span className="flex items-center gap-2 text-sm font-bold text-white">
+                    {isCollapsed ? (
+                      <ChevronRight className="w-4 h-4 text-[#77C65E]" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-[#77C65E]" />
+                    )}
+                    {roleLabel(role, language)}
+                    <span className="text-xs font-mono text-slate-400">({rows.length})</span>
+                  </span>
+                </button>
+
+                {!isCollapsed && (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm text-slate-300">
+                      <thead className="bg-[#00162e] text-xs uppercase text-slate-400 border-b border-white/10">
+                        <tr>
+                          <th className="py-3 px-4 sm:px-6">{txt.table.user}</th>
+                          <th className="py-3 px-4 sm:px-6">{txt.table.role}</th>
+                          <th className="py-3 px-4 sm:px-6">{txt.table.participantType}</th>
+                          <th className="py-3 px-4 sm:px-6">{txt.table.permissions}</th>
+                          <th className="py-3 px-4 sm:px-6">{txt.table.status}</th>
+                          <th className="py-3 px-4 sm:px-6 text-right">{txt.table.actions}</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5">
+                        {rows.map(renderRow)}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Paginación */}
+      {!loading && users.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+          <span className="text-xs text-slate-400 font-mono">
+            {txt.pagination.page.replace('{current}', String(page)).replace('{total}', String(totalPages))}
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            >
+              {txt.pagination.prev}
+            </button>
+            <button
+              type="button"
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            >
+              {txt.pagination.next}
+            </button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Modal Crear Usuario */}
       {showCreateModal && (
         <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
           <div className="bg-[#00162e] border border-white/15 rounded-2xl w-full max-w-lg my-auto max-h-[85vh] flex flex-col shadow-2xl">
-            {/* Header del Modal fijo */}
             <div className="flex justify-between items-center border-b border-white/10 p-6 pb-4 shrink-0">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
                 <UserPlus className="w-5 h-5 text-[#77C65E]" />
@@ -348,7 +527,6 @@ export const AdminUsersManagementView: React.FC<AdminUsersManagementViewProps> =
               </button>
             </div>
 
-            {/* Contenido scrolleable del formulario */}
             <form onSubmit={handleCreateUser} className="p-6 pt-4 space-y-4 overflow-y-auto flex-grow">
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1">{txt.modal.nameLabel}</label>
@@ -391,17 +569,16 @@ export const AdminUsersManagementView: React.FC<AdminUsersManagementViewProps> =
                 <div className="relative">
                   <select
                     value={newRole}
-                    onChange={(e) => setNewRole(e.target.value as 'admin' | 'manager')}
-                    className="w-full appearance-none px-3.5 pr-10 py-2.5 bg-[#000d1a] border border-white/10 rounded-xl text-white text-sm focus:border-[#77C65E] outline-none cursor-pointer transition-all shadow-inner"
+                    onChange={(e) => setNewRole(e.target.value as UserRole)}
+                    className="fc-select w-full px-3.5 py-2.5 bg-[#000d1a] border border-white/10 rounded-xl text-white text-sm focus:border-[#77C65E] outline-none cursor-pointer transition-all shadow-inner"
                   >
-                    <option value="manager">{language === 'es' ? 'Administrador de Área (Manager)' : 'Area Manager'}</option>
-                    <option value="admin">{language === 'es' ? 'Administrador General (Admin)' : 'General Admin'}</option>
+                    <option value="admin">{roleLabel('admin', language)}</option>
+                    <option value="manager">{roleLabel('manager', language)}</option>
+                    <option value="user">{roleLabel('user', language)}</option>
                   </select>
-                  <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 </div>
               </div>
 
-              {/* Si es Manager, mostrar selector de permisos con presets */}
               {newRole === 'manager' && (
                 <div className="space-y-3 pt-2 border-t border-white/5">
                   <div>
@@ -460,7 +637,6 @@ export const AdminUsersManagementView: React.FC<AdminUsersManagementViewProps> =
                 </div>
               )}
 
-              {/* Botones de acción */}
               <div className="flex justify-end gap-3 pt-4 border-t border-white/10 shrink-0">
                 <button
                   type="button"
