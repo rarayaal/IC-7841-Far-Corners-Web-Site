@@ -72,7 +72,7 @@ export async function obtenerUsuariosSinPerfilVoluntario() {
       u.email,
       u.participant_type
     FROM users u
-    WHERE u.participant_type IN ('volunteer', 'intern')
+    WHERE u.participant_type = 'volunteer'
       AND NOT EXISTS (
         SELECT 1 FROM volunteer_profiles vp WHERE vp.user_id = u.id
       )
@@ -85,9 +85,17 @@ export async function obtenerUsuariosSinPerfilVoluntario() {
 export async function eliminarPerfilVoluntario(id: string) {
   const result = await pool.query(
     `
-    DELETE FROM volunteer_profiles
-    WHERE id = $1
-    RETURNING id
+    WITH borrado AS (
+      DELETE FROM volunteer_profiles
+      WHERE id = $1
+      RETURNING user_id
+    )
+    UPDATE users u
+       SET participant_type = NULL, updated_at = CURRENT_TIMESTAMP
+      FROM borrado b
+     WHERE u.id = b.user_id
+       AND u.participant_type = 'volunteer'
+    RETURNING u.id
     `,
     [id]
   );

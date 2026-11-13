@@ -76,7 +76,7 @@ export async function obtenerUsuariosSinPerfilEstudiante() {
       u.email,
       u.participant_type
     FROM users u
-    WHERE u.participant_type = 'international_student'
+    WHERE u.participant_type = 'internship'
       AND NOT EXISTS (
         SELECT 1 FROM student_profiles sp WHERE sp.user_id = u.id
       )
@@ -89,9 +89,17 @@ export async function obtenerUsuariosSinPerfilEstudiante() {
 export async function eliminarPerfilEstudiante(id: string) {
   const result = await pool.query(
     `
-    DELETE FROM student_profiles
-    WHERE id = $1
-    RETURNING id
+    WITH borrado AS (
+      DELETE FROM student_profiles
+      WHERE id = $1
+      RETURNING user_id
+    )
+    UPDATE users u
+       SET participant_type = NULL, updated_at = CURRENT_TIMESTAMP
+      FROM borrado b
+     WHERE u.id = b.user_id
+       AND u.participant_type = 'internship'
+    RETURNING u.id
     `,
     [id]
   );
