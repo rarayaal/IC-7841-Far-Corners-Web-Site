@@ -1500,12 +1500,16 @@ const VistaRespuestas: React.FC<VistaRespuestasProps> = ({ form, onVolver }) => 
     cargar();
   }, [cargar]);
 
-  const cambiarEstado = async (envio: FormSubmission, status: FormSubmission['status']) => {
+  const cambiarEstado = async (
+    envio: FormSubmission,
+    status: FormSubmission['status'],
+    reviewNotes?: string
+  ) => {
     setError(null);
     try {
       await apiAdminJson(`/api/v1/forms/${form.slug}/submissions/${envio.id}/status`, {
         method: 'PUT',
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status, review_notes: reviewNotes ?? null }),
       });
       setAviso(txt.stateUpdated);
       await cargar();
@@ -1566,11 +1570,13 @@ interface ListaEnviosProps {
   envioAbierto: string | null;
   setEnvioAbierto: React.Dispatch<React.SetStateAction<string | null>>;
   labelCampo: (fieldKey: string) => string;
-  cambiarEstado: (envio: FormSubmission, status: FormSubmission['status']) => void;
+  cambiarEstado: (envio: FormSubmission, status: FormSubmission['status'], reviewNotes?: string) => void;
 }
 
 const ListaEnvios: React.FC<ListaEnviosProps> = ({ envios, envioAbierto, setEnvioAbierto, labelCampo, cambiarEstado }) => {
   const txt = useFormsTexts();
+  const [notas, setNotas] = useState<Record<string, string>>({});
+
   if (envios.length === 0) {
     return (
       <div className="bg-brand-navy border border-brand-border rounded-2xl p-8 text-center text-slate-400 text-sm">
@@ -1634,11 +1640,31 @@ const ListaEnvios: React.FC<ListaEnviosProps> = ({ envios, envioAbierto, setEnvi
                   })}
                 </div>
 
+                <div className="space-y-2 pt-3 border-t border-white/5">
+                  <label className="block text-[11px] font-semibold text-slate-400">
+                    {txt.reviewNotes}
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={notas[envio.id] ?? envio.review_notes ?? ''}
+                    onChange={(e) => setNotas((prev) => ({ ...prev, [envio.id]: e.target.value }))}
+                    placeholder={txt.reviewNotesPlaceholder}
+                    className="w-full px-3 py-2 bg-brand-navyDark border border-brand-border rounded-lg text-xs text-white focus:border-brand-green focus:outline-none"
+                  />
+                  {envio.reviewed_by_name && envio.reviewed_at && (
+                    <p className="text-[11px] text-slate-500">
+                      {txt.reviewedBy}: <span className="text-slate-300">{envio.reviewed_by_name}</span>
+                      {' · '}
+                      {txt.reviewedAt}: <span className="text-slate-300">{new Date(envio.reviewed_at).toLocaleString()}</span>
+                    </p>
+                  )}
+                </div>
+
                 <div className="flex flex-wrap gap-2 pt-2 border-t border-white/5">
                   {(['pending', 'reviewed', 'approved', 'rejected'] as const).map((estado) => (
                     <button
                       key={estado}
-                      onClick={() => cambiarEstado(envio, estado)}
+                      onClick={() => cambiarEstado(envio, estado, notas[envio.id] ?? envio.review_notes ?? '')}
                       disabled={envio.status === estado}
                       className={`px-3 py-1.5 rounded text-[11px] font-bold transition-all disabled:opacity-40 ${
                         envio.status === estado ? 'bg-brand-green text-brand-navy' : 'bg-white/10 text-slate-200 hover:bg-white/20'

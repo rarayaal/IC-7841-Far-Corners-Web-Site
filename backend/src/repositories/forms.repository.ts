@@ -21,7 +21,6 @@ export interface FormFieldRow {
   section: string;
   field_key: string;
   label: string;
-  label_en: string | null;
   field_type: string;
   options: unknown;
   required: boolean;
@@ -32,7 +31,6 @@ export interface NuevoCampo {
   section: string;
   field_key: string;
   label: string;
-  label_en?: string | null;
   field_type: string;
   options?: unknown;
   required?: boolean;
@@ -42,14 +40,13 @@ export interface NuevoCampo {
 export interface FormRow {
   slug: string;
   title: string;
-  description: string | null;
   field_count: number;
   submission_count: number;
 }
 
 export async function listarForms(): Promise<FormRow[]> {
   const result = await pool.query(
-    `SELECT f.slug, f.title, f.description,
+    `SELECT f.slug, f.title,
             (SELECT COUNT(*)::int FROM form_fields ff WHERE ff.form_type = f.slug) AS field_count,
             (SELECT COUNT(*)::int FROM form_submissions fs WHERE fs.form_type = f.slug) AS submission_count
        FROM forms f
@@ -58,33 +55,20 @@ export async function listarForms(): Promise<FormRow[]> {
   return result.rows;
 }
 
-export async function obtenerForm(slug: string): Promise<{ slug: string; title: string; description: string | null } | undefined> {
+export async function obtenerForm(slug: string): Promise<{ slug: string; title: string } | undefined> {
   const result = await pool.query(
-    `SELECT slug, title, description FROM forms WHERE slug = $1`,
+    `SELECT slug, title FROM forms WHERE slug = $1`,
     [slug]
   );
   return result.rows[0];
 }
 
-export async function crearForm(slug: string, title: string, description: string | null): Promise<{ slug: string; title: string; description: string | null }> {
+export async function crearForm(slug: string, title: string): Promise<{ slug: string; title: string }> {
   const result = await pool.query(
-    `INSERT INTO forms (slug, title, description)
-     VALUES ($1, $2, $3)
-     RETURNING slug, title, description`,
-    [slug, title, description]
-  );
-  return result.rows[0];
-}
-
-export async function actualizarForm(slug: string, title: string, description: string | null): Promise<{ slug: string; title: string; description: string | null } | undefined> {
-  const result = await pool.query(
-    `UPDATE forms
-        SET title = $2,
-            description = COALESCE($3, description),
-            updated_at = CURRENT_TIMESTAMP
-      WHERE slug = $1
-      RETURNING slug, title, description`,
-    [slug, title, description]
+    `INSERT INTO forms (slug, title)
+     VALUES ($1, $2)
+     RETURNING slug, title`,
+    [slug, title]
   );
   return result.rows[0];
 }
@@ -94,32 +78,9 @@ export async function eliminarForm(slug: string): Promise<{ slug: string } | und
   return result.rows[0];
 }
 
-export async function renombrarSeccion(form_type: string, desde: string, hasta: string): Promise<void> {
-  await pool.query(
-    `UPDATE form_fields
-        SET section = $3, updated_at = CURRENT_TIMESTAMP
-      WHERE form_type = $1 AND section = $2`,
-    [form_type, desde, hasta]
-  );
-}
-
-export async function eliminarSeccion(form_type: string, section: string, orfanar: boolean): Promise<void> {
-  if (orfanar) {
-    await pool.query(
-      `UPDATE form_fields
-          SET section = '', updated_at = CURRENT_TIMESTAMP
-        WHERE form_type = $1 AND section = $2`,
-      [form_type, section]
-    );
-  } else {
-    await pool.query(`DELETE FROM form_fields WHERE form_type = $1 AND section = $2`, [form_type, section]);
-  }
-}
-
 export interface CampoEstructura {
   field_key: string;
   label: string;
-  label_en?: string | null;
   field_type: string;
   section: string;
   options?: unknown;
@@ -152,14 +113,13 @@ export async function reemplazarEstructura(
     for (let i = 0; i < campos.length; i += 1) {
       const c = campos[i];
       await client.query(
-        `INSERT INTO form_fields (form_type, section, field_key, label, label_en, field_type, options, required, display_order)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        `INSERT INTO form_fields (form_type, section, field_key, label, field_type, options, required, display_order)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
         [
           form_type,
           c.section,
           c.field_key,
           c.label,
-          c.label_en ?? null,
           c.field_type,
           c.options != null ? JSON.stringify(c.options) : null,
           c.required,
@@ -178,7 +138,7 @@ export async function reemplazarEstructura(
 
 export async function obtenerCampos(form_type: string): Promise<FormFieldRow[]> {
   const result = await pool.query(
-    `SELECT id, form_type, section, field_key, label, label_en, field_type, options, required, display_order
+    `SELECT id, form_type, section, field_key, label, field_type, options, required, display_order
        FROM form_fields
       WHERE form_type = $1
       ORDER BY display_order ASC, field_key ASC`,
@@ -198,79 +158,6 @@ export async function obtenerSecciones(form_type: string): Promise<SeccionEstruc
     }));
   }
   return [];
-}
-
-export async function crearCampo(form_type: string, campo: NuevoCampo): Promise<FormFieldRow> {
-  const result = await pool.query(
-    `INSERT INTO form_fields (form_type, section, field_key, label, label_en, field_type, options, required, display_order)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-     RETURNING id, form_type, section, field_key, label, label_en, field_type, options, required, display_order`,
-    [
-      form_type,
-      campo.section,
-      campo.field_key,
-      campo.label,
-      campo.label_en ?? null,
-      campo.field_type,
-      campo.options != null ? JSON.stringify(campo.options) : null,
-      campo.required ?? false,
-      campo.display_order ?? 0,
-    ]
-  );
-  return result.rows[0];
-}
-
-export async function actualizarCampo(id: string, campo: Partial<NuevoCampo>): Promise<FormFieldRow | undefined> {
-  const result = await pool.query(
-    `UPDATE form_fields
-        SET section = COALESCE($2, section),
-            field_key = COALESCE($3, field_key),
-            label = COALESCE($4, label),
-            label_en = COALESCE($5, label_en),
-            field_type = COALESCE($6, field_type),
-            options = COALESCE($7, options),
-            required = COALESCE($8, required),
-            display_order = COALESCE($9, display_order),
-            updated_at = CURRENT_TIMESTAMP
-      WHERE id = $1
-      RETURNING id, form_type, section, field_key, label, label_en, field_type, options, required, display_order`,
-    [
-      id,
-      campo.section ?? null,
-      campo.field_key ?? null,
-      campo.label ?? null,
-      campo.label_en ?? null,
-      campo.field_type ?? null,
-      campo.options != null ? JSON.stringify(campo.options) : null,
-      campo.required ?? null,
-      campo.display_order ?? null,
-    ]
-  );
-  return result.rows[0];
-}
-
-export async function eliminarCampo(id: string): Promise<{ id: string } | undefined> {
-  const result = await pool.query(`DELETE FROM form_fields WHERE id = $1 RETURNING id`, [id]);
-  return result.rows[0];
-}
-
-export async function reordenarCampos(form_type: string, ids: string[]): Promise<void> {
-  const client = await pool.connect();
-  try {
-    await client.query("BEGIN");
-    for (let i = 0; i < ids.length; i += 1) {
-      await client.query(
-        `UPDATE form_fields SET display_order = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND form_type = $3`,
-        [i + 1, ids[i], form_type]
-      );
-    }
-    await client.query("COMMIT");
-  } catch (error) {
-    await client.query("ROLLBACK");
-    throw error;
-  } finally {
-    client.release();
-  }
 }
 
 export async function crearEnvio(
@@ -314,9 +201,11 @@ export async function obtenerEnvios(form_type: string) {
   const result = await pool.query(
     `SELECT fs.id, fs.form_type, fs.opportunity_id, fs.user_id, fs.data, fs.status,
             fs.reviewed_by, fs.reviewed_at, fs.review_notes, fs.created_at, fs.updated_at,
-            u.full_name AS user_name, u.email AS user_email
+            u.full_name AS user_name, u.email AS user_email,
+            r.full_name AS reviewed_by_name
        FROM form_submissions fs
        JOIN users u ON u.id = fs.user_id
+       LEFT JOIN users r ON r.id = fs.reviewed_by
       WHERE fs.form_type = $1
       ORDER BY fs.created_at DESC`,
     [form_type]

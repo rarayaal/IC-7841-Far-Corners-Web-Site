@@ -696,7 +696,6 @@ COMMIT;
 CREATE TABLE IF NOT EXISTS forms (
     slug VARCHAR(100) PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
-    description TEXT,
     sections JSONB,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -704,13 +703,12 @@ CREATE TABLE IF NOT EXISTS forms (
 
 ALTER TABLE forms ADD COLUMN IF NOT EXISTS sections JSONB;
 
-INSERT INTO forms (slug, title, description) VALUES
-    ('internship', 'Internship Application', 'International internship program'),
-    ('volunteer', 'Cyber Volunteer Application', 'Volunteer and intern positions'),
-    ('camp', 'Costa Rica Theatre Camp Application', 'Summer theatre camp')
+INSERT INTO forms (slug, title) VALUES
+    ('internship', 'Internship Application'),
+    ('volunteer', 'Cyber Volunteer Application'),
+    ('camp', 'Costa Rica Theatre Camp Application')
 ON CONFLICT (slug) DO UPDATE SET
     title = EXCLUDED.title,
-    description = EXCLUDED.description,
     updated_at = CURRENT_TIMESTAMP;
 
 CREATE TABLE IF NOT EXISTS form_fields (
@@ -719,7 +717,6 @@ CREATE TABLE IF NOT EXISTS form_fields (
     section VARCHAR(100) NOT NULL,
     field_key VARCHAR(100) NOT NULL,
     label VARCHAR(500) NOT NULL,
-    label_en VARCHAR(500),
     field_type VARCHAR(20) NOT NULL CHECK (field_type IN ('text', 'email', 'date', 'datetime', 'textarea', 'select', 'radio', 'checkbox')),
     options JSONB,
     required BOOLEAN NOT NULL DEFAULT FALSE,

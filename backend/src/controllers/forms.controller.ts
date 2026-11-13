@@ -5,16 +5,9 @@ import {
   listarForms,
   obtenerForm,
   crearForm,
-  actualizarForm,
   eliminarForm,
   obtenerCampos,
   obtenerSecciones,
-  crearCampo,
-  actualizarCampo,
-  eliminarCampo,
-  reordenarCampos,
-  renombrarSeccion,
-  eliminarSeccion,
   reemplazarEstructura,
   crearEnvio,
   obtenerEnvios,
@@ -68,7 +61,7 @@ export async function listarFormularios(_req: Request, res: Response) {
 
 // POST /api/v1/forms
 export async function crearFormulario(req: Request, res: Response) {
-  const { title, description, slug } = req.body ?? {};
+  const { title, slug } = req.body ?? {};
 
   if (typeof title !== "string" || !title.trim()) {
     res.status(400).json({ message: "El título es obligatorio." });
@@ -89,11 +82,7 @@ export async function crearFormulario(req: Request, res: Response) {
     // Si el slug ya existe (p. ej. varios "Sin título"), se agrega un sufijo.
     while (true) {
       try {
-        form = await crearForm(
-          slugFinal,
-          title.trim(),
-          typeof description === "string" && description.trim() ? description.trim() : null
-        );
+        form = await crearForm(slugFinal, title.trim());
         break;
       } catch (error) {
         if ((error as { code?: string })?.code === "23505" && intentos < 50) {
@@ -108,33 +97,6 @@ export async function crearFormulario(req: Request, res: Response) {
   } catch (error) {
     console.error("Error al crear el formulario:", error);
     res.status(500).json({ message: "No se pudo crear el formulario" });
-  }
-}
-
-// PUT /api/v1/forms/:slug
-export async function renombrarFormulario(req: Request<{ slug: string }>, res: Response) {
-  const { slug } = req.params;
-  const { title, description } = req.body ?? {};
-
-  if (typeof title !== "string" || !title.trim()) {
-    res.status(400).json({ message: "El título es obligatorio." });
-    return;
-  }
-
-  try {
-    const form = await actualizarForm(
-      slug,
-      title.trim(),
-      typeof description === "string" && description.trim() ? description.trim() : null
-    );
-    if (!form) {
-      res.status(404).json({ message: "Formulario no encontrado." });
-      return;
-    }
-    res.status(200).json(form);
-  } catch (error) {
-    console.error("Error al renombrar el formulario:", error);
-    res.status(500).json({ message: "No se pudo renombrar el formulario" });
   }
 }
 
@@ -166,176 +128,6 @@ export async function listarCampos(req: Request<{ formType: string }>, res: Resp
   } catch (error) {
     console.error("Error al obtener los campos del formulario:", error);
     res.status(500).json({ message: "No se pudieron obtener los campos del formulario" });
-  }
-}
-
-// POST /api/v1/forms/:formType/fields
-export async function agregarCampo(req: Request<{ formType: string }>, res: Response) {
-  const { formType } = req.params;
-  const { section, field_key, label, label_en, field_type, options, required, display_order } = req.body ?? {};
-
-  if (typeof section !== "string") {
-    res.status(400).json({ message: "La sección es inválida." });
-    return;
-  }
-  if (typeof field_key !== "string" || !/^[a-z0-9_]+$/.test(field_key)) {
-    res.status(400).json({ message: "El identificador debe contener solo letras minúsculas, números y guiones bajos." });
-    return;
-  }
-  if (typeof label !== "string" || !label.trim()) {
-    res.status(400).json({ message: "La etiqueta es obligatoria." });
-    return;
-  }
-  if (!validarFieldType(field_type, res)) return;
-  if (options !== undefined && options !== null && !Array.isArray(options)) {
-    res.status(400).json({ message: "Las opciones deben ser una lista." });
-    return;
-  }
-
-  try {
-    if (!(await asegurarForm(formType, res))) return;
-    const campo = await crearCampo(formType, {
-      section: section.trim(),
-      field_key: field_key.trim(),
-      label: label.trim(),
-      label_en: label_en ?? null,
-      field_type,
-      options: options ?? null,
-      required: Boolean(required),
-      display_order: Number.isInteger(display_order) ? display_order : 0,
-    });
-    res.status(201).json(campo);
-  } catch (error) {
-    if ((error as { code?: string })?.code === "23505") {
-      res.status(409).json({ message: "Ya existe un campo con ese identificador en este formulario." });
-      return;
-    }
-    console.error("Error al crear el campo:", error);
-    res.status(500).json({ message: "No se pudo crear el campo del formulario" });
-  }
-}
-
-// PUT /api/v1/forms/:formType/fields/:id
-export async function modificarCampo(req: Request<{ formType: string; id: string }>, res: Response) {
-  const { formType, id } = req.params;
-  const { section, field_key, label, label_en, field_type, options, required, display_order } = req.body ?? {};
-
-  if (field_type !== undefined && !validarFieldType(field_type, res)) return;
-  if (field_key !== undefined && typeof field_key !== "string") {
-    res.status(400).json({ message: "El identificador es inválido." });
-    return;
-  }
-  if (options !== undefined && options !== null && !Array.isArray(options)) {
-    res.status(400).json({ message: "Las opciones deben ser una lista." });
-    return;
-  }
-
-  try {
-    if (!(await asegurarForm(formType, res))) return;
-    const campo = await actualizarCampo(id, {
-      section: section ?? undefined,
-      field_key: field_key ?? undefined,
-      label: label ?? undefined,
-      label_en: label_en ?? undefined,
-      field_type: field_type ?? undefined,
-      options: options ?? undefined,
-      required: required === undefined ? undefined : Boolean(required),
-      display_order: display_order === undefined ? undefined : display_order,
-    });
-
-    if (!campo) {
-      res.status(404).json({ message: "Campo no encontrado" });
-      return;
-    }
-
-    res.status(200).json(campo);
-  } catch (error) {
-    console.error("Error al modificar el campo:", error);
-    res.status(500).json({ message: "No se pudo modificar el campo del formulario" });
-  }
-}
-
-// DELETE /api/v1/forms/:formType/fields/:id
-export async function borrarCampo(req: Request<{ formType: string; id: string }>, res: Response) {
-  const { formType, id } = req.params;
-  try {
-    if (!(await asegurarForm(formType, res))) return;
-    const eliminado = await eliminarCampo(id);
-    if (!eliminado) {
-      res.status(404).json({ message: "Campo no encontrado" });
-      return;
-    }
-    res.status(204).send();
-  } catch (error) {
-    console.error("Error al eliminar el campo:", error);
-    res.status(500).json({ message: "No se pudo eliminar el campo del formulario" });
-  }
-}
-
-// PUT /api/v1/forms/:formType/fields/reorder
-export async function reordenar(req: Request<{ formType: string }>, res: Response) {
-  const { formType } = req.params;
-  const { ids } = req.body ?? {};
-  if (!Array.isArray(ids) || ids.some((id) => typeof id !== "string")) {
-    res.status(400).json({ message: "Se requiere una lista de ids para reordenar." });
-    return;
-  }
-
-  try {
-    if (!(await asegurarForm(formType, res))) return;
-    await reordenarCampos(formType, ids);
-    res.status(200).json({ message: "Orden actualizado" });
-  } catch (error) {
-    console.error("Error al reordenar los campos:", error);
-    res.status(500).json({ message: "No se pudo reordenar los campos" });
-  }
-}
-
-// PUT /api/v1/forms/:formType/sections/rename
-export async function renombrarSeccionHandler(req: Request<{ formType: string }>, res: Response) {
-  const { formType } = req.params;
-  const { desde, hasta } = req.body ?? {};
-
-  if (typeof desde !== "string" || !desde.trim()) {
-    res.status(400).json({ message: "La sección de origen es obligatoria." });
-    return;
-  }
-  if (typeof hasta !== "string" || !hasta.trim()) {
-    res.status(400).json({ message: "El nuevo nombre de la sección es obligatorio." });
-    return;
-  }
-
-  try {
-    if (!(await asegurarForm(formType, res))) return;
-    await renombrarSeccion(formType, desde, hasta.trim());
-    res.status(200).json({ message: "Sección renombrada" });
-  } catch (error) {
-    console.error("Error al renombrar la sección:", error);
-    res.status(500).json({ message: "No se pudo renombrar la sección" });
-  }
-}
-
-// DELETE /api/v1/forms/:formType/sections
-export async function eliminarSeccionHandler(req: Request<{ formType: string }>, res: Response) {
-  const { formType } = req.params;
-  const { section, mode } = req.body ?? {};
-
-  if (typeof section !== "string" || !section.trim()) {
-    res.status(400).json({ message: "La sección a eliminar es obligatoria." });
-    return;
-  }
-  if (mode !== "delete" && mode !== "orphan") {
-    res.status(400).json({ message: "El modo debe ser 'delete' o 'orphan'." });
-    return;
-  }
-
-  try {
-    if (!(await asegurarForm(formType, res))) return;
-    await eliminarSeccion(formType, section, mode === "orphan");
-    res.status(200).json({ message: "Sección eliminada" });
-  } catch (error) {
-    console.error("Error al eliminar la sección:", error);
-    res.status(500).json({ message: "No se pudo eliminar la sección" });
   }
 }
 
@@ -372,7 +164,7 @@ export async function guardarEstructura(req: Request<{ formType: string }>, res:
     }
   }
 
-  const campos: { field_key: string; label: string; label_en: string | null; field_type: string; section: string; options: unknown; required: boolean }[] = [];
+  const campos: { field_key: string; label: string; field_type: string; section: string; options: unknown; required: boolean }[] = [];
   for (const f of fields) {
     if (!f || typeof f !== "object") {
       res.status(400).json({ message: "Cada campo debe ser un objeto." });
@@ -394,7 +186,6 @@ export async function guardarEstructura(req: Request<{ formType: string }>, res:
     campos.push({
       field_key: f.field_key.trim(),
       label: f.label.trim(),
-      label_en: typeof f.label_en === "string" && f.label_en.trim() ? f.label_en.trim() : null,
       field_type: f.field_type,
       section: typeof f.section === "string" ? f.section : "",
       options: f.options ?? null,

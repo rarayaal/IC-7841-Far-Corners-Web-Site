@@ -128,5 +128,8 @@ export interface FormSubmission {
   user_name: string;
   user_email: string;
   created_at: string;
-  review_notes?: string | null;
+  reviewed_by: string | null;
+  reviewed_by_name: string | null;
+  reviewed_at: string | null;
+  review_notes: string | null;
 }
