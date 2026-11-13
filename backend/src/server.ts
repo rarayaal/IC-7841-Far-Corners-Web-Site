@@ -4,6 +4,7 @@ import { projectsRouter } from "./routes/projects.routes.js";
 import { communitiesRouter } from "./routes/communities.routes.js";
 import { volunteersRouter } from "./routes/volunteers.routes.js";
 import { studentsRouter } from "./routes/students.routes.js";
+import { campsRouter } from "./routes/camps.routes.js";
 import { searchRouter } from "./routes/search.routes.js";
 import { institutionalRouter } from "./routes/institutional.routes.js";
 import { mediaRouter } from "./routes/media.routes.js";
@@ -17,8 +18,8 @@ import { auditRouter } from "./routes/audit.routes.js";
 import { contactMessagesRouter } from "./routes/contactMessages.routes.js";
 import { contactChannelsRouter } from "./routes/contactChannels.routes.js";
 import { newsletterRouter } from './routes/newsletter.routes.js';
-import { generalUsersRouter,} from './routes/general-users.routes.js';
 import { formsRouter } from "./routes/forms.routes.js";
+import { eliminarBorradoresAntiguos } from "./repositories/forms.repository.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 3000);
@@ -29,6 +30,7 @@ app.use(express.json());
 app.use("/api/v1/projects", projectsRouter);
 app.use("/api/v1/communities", communitiesRouter);
 app.use("/api/v1/students", studentsRouter);
+app.use("/api/v1/camps", campsRouter);
 app.use("/api/v1/volunteers", volunteersRouter);
 app.use("/api/v1/search", searchRouter);
 app.use("/api/v1/institutional", institutionalRouter);
@@ -38,7 +40,6 @@ app.use("/api/v1/tickets", ticketsRouter);
 app.use("/api/v1/donations", donationsRouter);
 app.use("/api/v1/contact-messages", contactMessagesRouter);
 app.use("/api/v1/contact-channels", contactChannelsRouter);
-app.use('/api/v1/admin/general-users', generalUsersRouter);
 
 // Rutas de registro publico de usuarios
 app.use("/api/v1/users", usersRouter);
@@ -100,6 +101,23 @@ app.get("/api/health/db", async (_req, res) => {
   }
 });
 
+// Los borradores de formulario se descartan a los 30 días sin editarse.
+const DIAS_BORRADOR = 30;
+const INTERVALO_LIMPIEZA_MS = 24 * 60 * 60 * 1000;
+
+async function ejecutarLimpiezaBorradores() {
+  try {
+    const eliminados = await eliminarBorradoresAntiguos(DIAS_BORRADOR);
+    if (eliminados > 0) {
+      console.log(`Borradores de formulario eliminados: ${eliminados}`);
+    }
+  } catch (error) {
+    console.error("No se pudieron limpiar los borradores de formulario:", error);
+  }
+}
+
 app.listen(port, "0.0.0.0", () => {
   console.log(`API disponible en http://localhost:${port}`);
+  void ejecutarLimpiezaBorradores();
+  setInterval(() => void ejecutarLimpiezaBorradores(), INTERVALO_LIMPIEZA_MS);
 });
