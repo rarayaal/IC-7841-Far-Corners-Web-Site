@@ -273,7 +273,7 @@ export const AdminProjectsView = ({ language }: { language: Language }) => {
                   <select
                     value={formulario.country}
                     onChange={(e) => setFormulario({ ...formulario, country: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-[#00162e] border border-[#1e4066] rounded-xl text-white focus:border-[#77C65E] focus:outline-none"
+                    className="fc-select w-full px-3.5 py-2.5 bg-[#00162e] border border-[#1e4066] rounded-xl text-white focus:border-[#77C65E] focus:outline-none"
                   >
                     <option value="CR">Costa Rica (CR)</option>
                     <option value="CN">China (CN)</option>

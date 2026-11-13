@@ -336,7 +336,7 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
                       targetId: '',
                     })
                   }
-                  className={inputClass}
+                  className={`${inputClass} fc-select`}
                 >
                   <option value="content">{t.targetContent}</option>
                   <option value="project">{t.targetProject}</option>
@@ -353,7 +353,7 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
                   onChange={(e) =>
                     setSubida({ ...subida, targetId: e.target.value })
                   }
-                  className={inputClass}
+                  className={`${inputClass} fc-select`}
                 >
                   <option value="">{t.selectTarget}</option>
                   {opciones.map((o) => (

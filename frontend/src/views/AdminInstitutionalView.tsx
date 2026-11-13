@@ -281,7 +281,7 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
                   onChange={(e) =>
                     setFormulario({ ...formulario, page_slug: e.target.value })
                   }
-                  className={inputClass}
+                  className={`${inputClass} fc-select`}
                 >
                   {SCOPES_BY_SECTION[seccion].map((slug) => (
                     <option key={slug} value={slug}>
@@ -304,7 +304,7 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
                       language: e.target.value as Language,
                     })
                   }
-                  className={inputClass}
+                  className={`${inputClass} fc-select`}
                 >
                   <option value="es">{t.languageEs}</option>
                   <option value="en">{t.languageEn}</option>

@@ -167,7 +167,7 @@ export const AdminTicketingView: React.FC = () => {
         <select
           value={selectedEventId}
           onChange={(e) => setSelectedEventId(e.target.value)}
-          className="w-full px-4 py-2.5 bg-[#002244] border border-[#1e4066] rounded-xl text-white text-sm focus:border-[#77C65E] focus:outline-none"
+          className="fc-select w-full px-4 py-2.5 bg-[#002244] border border-[#1e4066] rounded-xl text-white text-sm focus:border-[#77C65E] focus:outline-none"
         >
           {showsData.map(s => (
             <option key={s.id} value={s.id}>

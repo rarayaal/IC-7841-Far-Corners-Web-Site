@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, RefreshCw, Filter, AlertCircle, FileText, ChevronDown } from 'lucide-react';
+import { Shield, RefreshCw, Filter, AlertCircle, FileText } from 'lucide-react';
 import { apiAdminJson } from '../services/apiAdmin';
 import { adminTexts } from '../lib/adminI18n';
 import type { Language } from '../types';
@@ -91,14 +91,13 @@ export const AdminAuditView: React.FC<AdminAuditViewProps> = ({ language = 'es' 
           <select
             value={actionFilter}
             onChange={(e) => setActionFilter(e.target.value)}
-            className="appearance-none bg-[#000d1a] border border-white/10 hover:border-white/20 focus:border-[#77C65E] rounded-xl text-white text-xs pl-3.5 pr-9 py-2 outline-none cursor-pointer transition-all shadow-inner"
+            className="fc-select bg-[#000d1a] border border-white/10 hover:border-white/20 focus:border-[#77C65E] rounded-xl text-white text-xs pl-3.5 py-2 outline-none cursor-pointer transition-all shadow-inner"
           >
             <option value="">{txt.allActions}</option>
             <option value="create">{txt.actions.create}</option>
             <option value="update">{txt.actions.update}</option>
             <option value="delete">{txt.actions.delete}</option>
           </select>
-          <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
 
         {/* Filtro Entidades */}
@@ -106,7 +105,7 @@ export const AdminAuditView: React.FC<AdminAuditViewProps> = ({ language = 'es' 
           <select
             value={entityFilter}
             onChange={(e) => setEntityFilter(e.target.value)}
-            className="appearance-none bg-[#000d1a] border border-white/10 hover:border-white/20 focus:border-[#77C65E] rounded-xl text-white text-xs pl-3.5 pr-9 py-2 outline-none cursor-pointer transition-all shadow-inner"
+            className="fc-select bg-[#000d1a] border border-white/10 hover:border-white/20 focus:border-[#77C65E] rounded-xl text-white text-xs pl-3.5 py-2 outline-none cursor-pointer transition-all shadow-inner"
           >
             <option value="">{txt.allEntities}</option>
             <option value="users">{txt.entities.users}</option>
@@ -117,7 +116,6 @@ export const AdminAuditView: React.FC<AdminAuditViewProps> = ({ language = 'es' 
             <option value="donations">{txt.entities.donations}</option>
             <option value="institutional_content">{txt.entities.institutionalContent}</option>
           </select>
-          <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
       </div>
 

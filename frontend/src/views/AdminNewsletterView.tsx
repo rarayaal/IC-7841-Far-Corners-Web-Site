@@ -192,7 +192,7 @@ export const AdminNewsletterView = ({ language = 'es' }: AdminNewsletterViewProp
               setEstado(event.target.value);
               setPagina(1);
             }}
-            className="rounded-xl border border-brand-border
+            className="fc-select rounded-xl border border-brand-border
                        bg-brand-navyDark px-3 py-2 text-white"
           >
             <option value="">{txt.filterAll}</option>

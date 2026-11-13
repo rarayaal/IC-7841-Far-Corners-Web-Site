@@ -264,7 +264,7 @@ export const AdminStudentsView = ({ language }: { language: Language }) => {
                   onChange={(e) =>
                     setFormulario({ ...formulario, user_id: e.target.value })
                   }
-                  className={inputClass}
+                  className={`${inputClass} fc-select`}
                 >
                   <option value="">
                     {cargandoCandidatos
@@ -355,7 +355,7 @@ export const AdminStudentsView = ({ language }: { language: Language }) => {
                   onChange={(e) =>
                     setFormulario({ ...formulario, status: e.target.value })
                   }
-                  className={inputClass}
+                  className={`${inputClass} fc-select`}
                 >
                   <option value="active">{statusLabel('active', language)}</option>
                   <option value="inactive">

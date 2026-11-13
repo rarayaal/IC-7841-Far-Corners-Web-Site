@@ -113,7 +113,7 @@ export const ReplyDraftForm = ({ mensajeId, language = 'es' }: ReplyDraftFormPro
 
               setConfirmacion('');
             }}
-            className="w-full rounded-xl border border-brand-border
+            className="fc-select w-full rounded-xl border border-brand-border
                        bg-brand-navyDark p-3 text-sm text-white"
           >
             <option value="">{txt.selectLanguage}</option>
