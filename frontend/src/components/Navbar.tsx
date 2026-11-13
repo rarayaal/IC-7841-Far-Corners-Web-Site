@@ -137,6 +137,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="hidden md:inline text-xs text-slate-600 dark:text-slate-300 max-w-40 truncate" title={usuario.full_name}>
                   {usuario.full_name}
                 </span>
+                <button type="button" onClick={() => {
+                  setMobileMenuOpen(false);
+                  setIsAdminMode(false);
+                  setCurrentPage('profile');
+                }} className="min-h-10 px-3 py-1 rounded bg-white hover:bg-slate-200/70 text-brand-navy border border-slate-200 shadow-sm dark:border-transparent dark:shadow-none dark:bg-white/10 dark:hover:bg-white/20 text-xs dark:text-brand-cream transition-colors">
+                  {t.profile}
+                </button>
                 {accesoAdmin && (
                   <button type="button" onClick={() => {
                     setMobileMenuOpen(false);

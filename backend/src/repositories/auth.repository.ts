@@ -6,7 +6,7 @@ export interface UserEntity {
     email: string;
     password_hash: string | null;
     role: "admin" | "manager" | "user";
-    participant_type: "international_student" | "volunteer" | "intern" | null;
+    participant_type: "internship" | "volunteer" | "camp" | null;
     status: "active" | "inactive";
     google_id: string | null;
     created_at: Date;

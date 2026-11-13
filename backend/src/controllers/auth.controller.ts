@@ -1,6 +1,12 @@
 import { Request, Response } from "express";
+import bcrypt from "bcrypt";
+import * as argon2 from "argon2";
 import { authenticateLocal, authenticateGoogle, getCurrentUserProfile } from "../services/auth.service.js";
-import { actualizarUsuarioPorId } from "../repositories/users.repository.js";
+import {
+  actualizarUsuarioPorId,
+  obtenerUsuarioPorIdConPassword,
+  actualizarPasswordUsuario,
+} from "../repositories/users.repository.js";
 
 /**
  * PUT /api/v1/me - Actualización del perfil del usuario autenticado
@@ -8,7 +14,7 @@ import { actualizarUsuarioPorId } from "../repositories/users.repository.js";
 export async function updateMyProfileController(req: Request, res: Response): Promise<void> {
   try {
     const userId = req.user?.userId;
-    const { full_name } = req.body;
+    const { full_name, current_password, new_password } = req.body ?? {};
 
     if (!userId) {
       res.status(401).json({ message: "No autorizado" });
@@ -21,6 +27,41 @@ export async function updateMyProfileController(req: Request, res: Response): Pr
     }
 
     const updatedUser = await actualizarUsuarioPorId(userId, full_name.trim());
+
+    // Cambio de contrasena opcional en la misma solicitud de autoservicio
+    if (new_password !== undefined) {
+      if (typeof new_password !== "string" || new_password.length < 10 || new_password.length > 128) {
+        res.status(400).json({ message: "La contraseña debe tener entre 10 y 128 caracteres" });
+        return;
+      }
+
+      const userWithPassword = await obtenerUsuarioPorIdConPassword(userId);
+
+      if (!userWithPassword) {
+        res.status(404).json({ message: "Usuario no encontrado" });
+        return;
+      }
+
+      // Si ya tiene una contrasena local, se exige verificar la actual antes de cambiarla
+      if (userWithPassword.password_hash) {
+        if (typeof current_password !== "string" || current_password === "") {
+          res.status(400).json({ message: "La contraseña actual es obligatoria para cambiarla" });
+          return;
+        }
+
+        const isMatch = userWithPassword.password_hash.startsWith("$argon2")
+          ? await argon2.verify(userWithPassword.password_hash, current_password)
+          : await bcrypt.compare(current_password, userWithPassword.password_hash);
+
+        if (!isMatch) {
+          res.status(400).json({ message: "La contraseña actual es incorrecta" });
+          return;
+        }
+      }
+
+      const passwordHash = await argon2.hash(new_password, { type: argon2.argon2id });
+      await actualizarPasswordUsuario(userId, passwordHash);
+    }
 
     res.status(200).json({
       message: "Perfil actualizado correctamente",

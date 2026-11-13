@@ -73,3 +73,27 @@ export async function actualizarUsuarioPorId(id: string, fullName: string) {
 
   return result.rows[0];
 }
+
+export async function obtenerUsuarioPorIdConPassword(id: string) {
+  const result = await pool.query(
+    `
+      SELECT id, full_name, email, password_hash, role, status
+      FROM users
+      WHERE id = $1
+    `,
+    [id]
+  );
+
+  return result.rows[0];
+}
+
+export async function actualizarPasswordUsuario(id: string, passwordHash: string) {
+  await pool.query(
+    `
+      UPDATE users
+      SET password_hash = $1, updated_at = NOW()
+      WHERE id = $2
+    `,
+    [passwordHash, id]
+  );
+}

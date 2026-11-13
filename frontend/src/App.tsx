@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { PageView, Language, Show, Opportunity } from './types';
+import { PageView, Language, Show, PublicForm } from './types';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { SearchModal } from './components/SearchModal';
@@ -17,9 +17,10 @@ import { ContactView } from './views/ContactView';
 import { AdminView } from './views/AdminView';
 import { RegisterView } from './views/RegisterView';
 import { LoginView } from './views/LoginView';
+import { ProfileView } from './views/ProfileView';
 import { useSesion } from './hooks/useSesion';
 import { cerrarSesion, puedeAccederAlPanel } from './services/sesion';
-import { showsData, opportunitiesData } from './data/mockData';
+import { showsData } from './data/mockData';
 
 export function App() {
   const { theme, toggleTheme } = useTheme();
@@ -34,6 +35,9 @@ export function App() {
     if (!verificandoSesion && !accesoAdmin) {
       setIsAdminMode(false);
       if (currentPage === 'admin') setCurrentPage('home');
+    }
+    if (!verificandoSesion && !usuario && currentPage === 'profile') {
+      setCurrentPage('login');
     }
     if (usuario && currentPage === 'login') setCurrentPage('home');
   }, [verificandoSesion, accesoAdmin, currentPage, usuario]);
@@ -70,8 +74,8 @@ export function App() {
   const [isDonateOpen, setIsDonateOpen] = useState(false);
 
   const [isVolunteerOpen, setIsVolunteerOpen] = useState(false);
-  const [volunteerOpp, setVolunteerOpp] = useState<Opportunity | null>(null);
-  const [postulacionSolicitada, setPostulacionSolicitada] = useState<Opportunity | null>(null);
+  const [volunteerOpp, setVolunteerOpp] = useState<PublicForm | null>(null);
+  const [postulacionSolicitada, setPostulacionSolicitada] = useState<PublicForm | null>(null);
 
   // Trigger Ticket Purchase Modal
   const handleOpenTickets = (show?: Show) => {
@@ -80,8 +84,9 @@ export function App() {
   };
 
   // Trigger Volunteer/Internship Modal
-  const handleOpenVolunteer = (opp?: Opportunity) => {
-    setPostulacionSolicitada(opp || opportunitiesData[0]);
+  const handleOpenVolunteer = (form?: PublicForm) => {
+    if (!form) return;
+    setPostulacionSolicitada(form);
   };
 
   useEffect(() => {
@@ -154,7 +159,7 @@ export function App() {
             {currentPage === 'participate' && (
               <ParticipateView
                 language={language}
-                onSelectOpportunity={(opp) => handleOpenVolunteer(opp)}
+                onSelectForm={(form) => handleOpenVolunteer(form)}
               />
             )}
             {currentPage === 'donate' && (
@@ -175,6 +180,9 @@ export function App() {
             )}
             {currentPage === 'login' && !usuario && (
               <LoginView language={language} onLoginCorrecto={sesionIniciada} />
+            )}
+            {currentPage === 'profile' && usuario && (
+              <ProfileView language={language} />
             )}
           </>
         )}
@@ -212,7 +220,7 @@ export function App() {
       <ApplicationFormModal
         isOpen={isVolunteerOpen && !!usuario && !verificandoSesion}
         onClose={() => setIsVolunteerOpen(false)}
-        opportunity={volunteerOpp}
+        form={volunteerOpp}
         language={language}
         usuario={usuario}
       />
