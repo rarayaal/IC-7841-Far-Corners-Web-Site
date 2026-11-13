@@ -34,9 +34,9 @@ CREATE TABLE users (
     email VARCHAR(254) NOT NULL UNIQUE,
     password_hash VARCHAR(255),
     role VARCHAR(30) NOT NULL DEFAULT 'user'
-        CHECK (role IN ('admin', 'manager', 'visitor', 'user')),
+        CHECK (role IN ('admin', 'manager', 'user')),
     participant_type VARCHAR(40)
-        CHECK (participant_type IN ('international_student', 'volunteer', 'intern')),
+        CHECK (participant_type IN ('internship', 'volunteer', 'camp')),
     status VARCHAR(30) NOT NULL DEFAULT 'active'
         CHECK (status IN ('active', 'inactive')),
     google_id VARCHAR(255) UNIQUE,
@@ -560,6 +560,22 @@ CREATE TABLE volunteer_profiles (
 CREATE TRIGGER update_volunteer_profiles_modtime BEFORE UPDATE ON volunteer_profiles
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+CREATE TABLE camp_profiles (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    school VARCHAR(255),
+    grade VARCHAR(100),
+    session VARCHAR(255),
+    status VARCHAR(30) NOT NULL DEFAULT 'active'
+        CHECK (status IN ('active', 'inactive')),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_camp_profile UNIQUE (user_id)
+);
+
+CREATE TRIGGER update_camp_profiles_modtime BEFORE UPDATE ON camp_profiles
+FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 CREATE TRIGGER update_opportunities_modtime BEFORE UPDATE ON opportunities
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_communities_modtime BEFORE UPDATE ON communities
@@ -703,12 +719,83 @@ CREATE TABLE IF NOT EXISTS forms (
 
 ALTER TABLE forms ADD COLUMN IF NOT EXISTS sections JSONB;
 
-INSERT INTO forms (slug, title) VALUES
-    ('internship', 'Internship Application'),
-    ('volunteer', 'Cyber Volunteer Application'),
-    ('camp', 'Costa Rica Theatre Camp Application')
+-- Ficha pública del formulario: es lo que ve cualquier visitante en la página
+-- "Programas y Comunidad". Un formulario publicado aparece como una tarjeta
+-- con su propia convocatoria y su botón "Postular a este puesto".
+ALTER TABLE forms ADD COLUMN IF NOT EXISTS title_en VARCHAR(255);
+ALTER TABLE forms ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE forms ADD COLUMN IF NOT EXISTS description_en TEXT;
+ALTER TABLE forms ADD COLUMN IF NOT EXISTS category VARCHAR(20)
+    CHECK (category IN ('internship', 'volunteer', 'camp'));
+ALTER TABLE forms ADD COLUMN IF NOT EXISTS period VARCHAR(255);
+ALTER TABLE forms ADD COLUMN IF NOT EXISTS period_en VARCHAR(255);
+ALTER TABLE forms ADD COLUMN IF NOT EXISTS requirements JSONB;
+ALTER TABLE forms ADD COLUMN IF NOT EXISTS is_published BOOLEAN NOT NULL DEFAULT FALSE;
+-- Solo un formulario puede ser el destacado: aparece en la tarjeta grande de
+-- "Programas y Comunidad". El endpoint de publicación desmarca los demás.
+ALTER TABLE forms ADD COLUMN IF NOT EXISTS is_featured BOOLEAN NOT NULL DEFAULT FALSE;
+-- Foto opcional de la tarjeta grande. Puede ser una URL de la galería
+-- multimedia o una ruta local (p. ej. /recursos/IMG_2916.PNG).
+ALTER TABLE forms ADD COLUMN IF NOT EXISTS image_url TEXT;
+
+INSERT INTO forms (
+    slug, title, title_en, description, description_en,
+    category, period, period_en, requirements, is_published, is_featured, image_url
+) VALUES
+    (
+        'internship',
+        'Pasantía Internacional: Stage Manager / Dirección',
+        'International Internship: Stage Management & Directing',
+        'Buscamos estudiantes universitarios y jóvenes profesionales internacionales apasionados por la gestión escénica, dirección de escena y logística de producción teatral.',
+        'We are seeking international university students and young professionals for stage management and production.',
+        'internship',
+        'Temporada Verano 2026 (7 semanas)',
+        'Summer 2026 Season (7 weeks)',
+        '{"es":["Estudiante o graduado en Teatro, Gestión Cultural o áreas afines","Nivel de inglés intermedio/avanzado","Capacidad de trabajo colaborativo multicultural"],"en":["Theatre or Cultural Management background","Intermediate/Advanced English proficiency","Cross-cultural teamwork skills"]}'::jsonb,
+        TRUE,
+        FALSE,
+        NULL
+    ),
+    (
+        'volunteer',
+        'Voluntariado Cyber: Redes y Medios Digitales',
+        'Cyber Volunteer: Social Media & Digital Content',
+        'Apoya a nuestra organización desde cualquier lugar del mundo diseñando afiches, editando videos, creando piezas de comunicación y gestionando redes sociales.',
+        'Support our organization remotely by creating social graphics, editing video footage, and writing newsletter updates.',
+        'volunteer',
+        'Continuo / Flexibilidad de horarios',
+        'Ongoing / Flexible schedule',
+        '{"es":["Conocimientos de diseño gráfico (Canva, Photoshop) o edición de video","Disponibilidad de 3-5 horas semanales","Compromiso con la misión social del teatro"],"en":["Graphic design or video editing skills","Availability of 3-5 hours per week","Commitment to social theatre mission"]}'::jsonb,
+        TRUE,
+        FALSE,
+        NULL
+    ),
+    (
+        'camp',
+        'Costa Rica Theatre Camp (Estudiantes)',
+        'Costa Rica Theatre Camp (Students)',
+        'Campamento intensivo de teatro musical para jóvenes de 8 a 18 años. Clases diarias de canto, actuación, danza y montaje de la obra principal con profesores internacionales.',
+        'Intensive summer musical theatre camp for youth ages 8 to 18. Daily classes in singing, acting, and dance.',
+        'camp',
+        'Junio - Agosto 2026',
+        'June - August 2026',
+        '{"es":["Edades entre 8 y 18 años","Interés en artes escénicas (no se requiere experiencia previa)","Compromiso de asistencia a todos los ensayos"],"en":["Ages 8 to 18","Interest in performing arts","Commitment to all rehearsals"]}'::jsonb,
+        TRUE,
+        TRUE,
+        '/recursos/IMG_2916.PNG'
+    )
 ON CONFLICT (slug) DO UPDATE SET
     title = EXCLUDED.title,
+    title_en = EXCLUDED.title_en,
+    description = EXCLUDED.description,
+    description_en = EXCLUDED.description_en,
+    category = EXCLUDED.category,
+    period = EXCLUDED.period,
+    period_en = EXCLUDED.period_en,
+    requirements = EXCLUDED.requirements,
+    is_published = EXCLUDED.is_published,
+    is_featured = EXCLUDED.is_featured,
+    image_url = EXCLUDED.image_url,
     updated_at = CURRENT_TIMESTAMP;
 
 CREATE TABLE IF NOT EXISTS form_fields (
@@ -732,6 +819,10 @@ CREATE TABLE IF NOT EXISTS form_submissions (
     opportunity_id VARCHAR(100),
     user_id UUID NOT NULL REFERENCES users(id),
     data JSONB NOT NULL,
+    -- Copia de la estructura del formulario al momento del envío (título, secciones
+    -- y campos). Permite mostrar cada envío con el formato con el que fue completado
+    -- aunque después se edite o elimine la estructura actual.
+    form_snapshot JSONB,
     status VARCHAR(30) NOT NULL DEFAULT 'pending'
         CHECK (status IN ('pending', 'reviewed', 'approved', 'rejected')),
     reviewed_by UUID REFERENCES users(id),
@@ -740,6 +831,8 @@ CREATE TABLE IF NOT EXISTS form_submissions (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE form_submissions ADD COLUMN IF NOT EXISTS form_snapshot JSONB;
 
 -- Borrador de un formulario por usuario: permite guardar respuestas automáticamente
 -- mientras se rellena un formulario extenso, sin llegar a enviarlo oficialmente.
@@ -894,3 +987,56 @@ ON CONFLICT (form_type, field_key) DO UPDATE SET
     display_order = EXCLUDED.display_order,
     updated_at = CURRENT_TIMESTAMP;
 
+-- Segunda pasantía internacional: la página pública muestra dos convocatorias
+-- de pasantía (Stage Manager y Coach Vocal). Cada una necesita su propio
+-- formulario para que su tarjeta tenga un "Postular a este puesto" propio.
+-- Nace como copia del formulario de pasantía; el admin puede editarla después.
+INSERT INTO forms (
+    slug, title, title_en, description, description_en,
+    category, period, period_en, requirements, sections, is_published
+)
+SELECT
+    'internship-vocal',
+    'Pasantía: Coach Vocal y Dirección Musical',
+    'Internship: Vocal Coach & Musical Direction',
+    'Liderar el entrenamiento vocal de niños y jóvenes del campamento, ensayar coros y preparar los solos para el musical principal.',
+    'Lead vocal training for youth campers, rehearse choruses, and prepare solo numbers.',
+    'internship',
+    'Verano 2026',
+    'Summer 2026',
+    '{"es":["Formación en música, canto o piano","Experiencia previa en dirección de coros o paridad vocal","Deseo de enseñar a jóvenes en entorno bilingüe"],"en":["Background in music, singing, or piano","Experience directing choirs or vocal ensembles","Desire to teach youth in a bilingual setting"]}'::jsonb,
+    sections,
+    TRUE
+FROM forms
+WHERE slug = 'internship'
+ON CONFLICT (slug) DO NOTHING;
+
+INSERT INTO form_fields (form_type, section, field_key, label, field_type, options, required, display_order)
+SELECT 'internship-vocal', section, field_key, label, field_type, options, required, display_order
+FROM form_fields
+WHERE form_type = 'internship'
+ON CONFLICT (form_type, field_key) DO NOTHING;
+
+
+-- Completar la instantanea de los envios existentes con la estructura vigente.
+-- Los envios nuevos ya la guardan al crearse; esto solo cubre filas anteriores.
+UPDATE form_submissions fs
+SET form_snapshot = jsonb_build_object(
+    'title', f.title,
+    'sections', COALESCE(f.sections, '[]'::jsonb),
+    'fields', COALESCE(
+        (SELECT jsonb_agg(jsonb_build_object(
+                    'field_key', ff.field_key,
+                    'label', ff.label,
+                    'field_type', ff.field_type,
+                    'section', ff.section,
+                    'options', ff.options,
+                    'required', ff.required
+                ) ORDER BY ff.display_order ASC, ff.field_key ASC)
+           FROM form_fields ff
+          WHERE ff.form_type = fs.form_type),
+        '[]'::jsonb)
+)
+FROM forms f
+WHERE fs.form_type = f.slug
+  AND fs.form_snapshot IS NULL;
