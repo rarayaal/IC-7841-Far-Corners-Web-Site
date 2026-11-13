@@ -37,7 +37,9 @@ export function useSesion() {
 
         // El perfil viene de la API; el contenido guardado en el navegador no autoriza el panel.
         localStorage.setItem('auth_user', JSON.stringify(cuenta));
-        setUsuario(cuenta);
+        setUsuario((prev) =>
+          prev && JSON.stringify(prev) === JSON.stringify(cuenta) ? prev : cuenta
+        );
 
         // El JWT ya fue validado por la API. Su fecha solo controla la salida visual al vencer.
         const segmento = token.split('.')[1];

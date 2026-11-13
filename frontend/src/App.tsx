@@ -5,7 +5,7 @@ import { Footer } from './components/Footer';
 import { SearchModal } from './components/SearchModal';
 import { TicketModal } from './components/TicketModal';
 import { DonationModal } from './components/DonationModal';
-import { VolunteerModal } from './components/VolunteerModal';
+import { ApplicationFormModal } from './components/ApplicationFormModal';
 
 import { HomeView } from './views/HomeView';
 import { AboutView } from './views/AboutView';
@@ -201,7 +201,7 @@ export function App() {
         language={language}
       />
 
-      <VolunteerModal
+      <ApplicationFormModal
         isOpen={isVolunteerOpen && !!usuario && !verificandoSesion}
         onClose={() => setIsVolunteerOpen(false)}
         opportunity={volunteerOpp}

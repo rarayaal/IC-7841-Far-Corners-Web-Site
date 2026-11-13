@@ -686,3 +686,214 @@ CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at DE
 
 COMMIT;
 
+
+-- Formularios dinamicos y editables (CU-05/06/07). Un formulario es una fila
+-- en `forms` (titulo + slug); su estructura editable vive en form_fields y se
+-- administra desde el panel (crear, renombrar y eliminar formularios; agregar,
+-- editar, reordenar y quitar campos; marcar obligatorio), imitando Google
+-- Forms. Las respuestas se guardan como JSONB en form_submissions, ligadas al
+-- usuario autenticado que las envia.
+CREATE TABLE IF NOT EXISTS forms (
+    slug VARCHAR(100) PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    sections JSONB,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE forms ADD COLUMN IF NOT EXISTS sections JSONB;
+
+INSERT INTO forms (slug, title, description) VALUES
+    ('internship', 'Internship Application', 'International internship program'),
+    ('volunteer', 'Cyber Volunteer Application', 'Volunteer and intern positions'),
+    ('camp', 'Costa Rica Theatre Camp Application', 'Summer theatre camp')
+ON CONFLICT (slug) DO UPDATE SET
+    title = EXCLUDED.title,
+    description = EXCLUDED.description,
+    updated_at = CURRENT_TIMESTAMP;
+
+CREATE TABLE IF NOT EXISTS form_fields (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    form_type VARCHAR(100) NOT NULL REFERENCES forms(slug) ON DELETE CASCADE,
+    section VARCHAR(100) NOT NULL,
+    field_key VARCHAR(100) NOT NULL,
+    label VARCHAR(500) NOT NULL,
+    label_en VARCHAR(500),
+    field_type VARCHAR(20) NOT NULL CHECK (field_type IN ('text', 'email', 'date', 'datetime', 'textarea', 'select', 'radio', 'checkbox')),
+    options JSONB,
+    required BOOLEAN NOT NULL DEFAULT FALSE,
+    display_order INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (form_type, field_key)
+);
+
+CREATE TABLE IF NOT EXISTS form_submissions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    form_type VARCHAR(100) NOT NULL REFERENCES forms(slug) ON DELETE CASCADE,
+    opportunity_id VARCHAR(100),
+    user_id UUID NOT NULL REFERENCES users(id),
+    data JSONB NOT NULL,
+    status VARCHAR(30) NOT NULL DEFAULT 'pending'
+        CHECK (status IN ('pending', 'reviewed', 'approved', 'rejected')),
+    reviewed_by UUID REFERENCES users(id),
+    reviewed_at TIMESTAMPTZ,
+    review_notes TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Borrador de un formulario por usuario: permite guardar respuestas automáticamente
+-- mientras se rellena un formulario extenso, sin llegar a enviarlo oficialmente.
+CREATE TABLE IF NOT EXISTS form_drafts (
+    form_type VARCHAR(100) NOT NULL REFERENCES forms(slug) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    data JSONB NOT NULL,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (form_type, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_form_drafts_user ON form_drafts(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_form_fields_type ON form_fields(form_type);
+CREATE INDEX IF NOT EXISTS idx_form_submissions_type ON form_submissions(form_type);
+CREATE INDEX IF NOT EXISTS idx_form_submissions_user ON form_submissions(user_id);
+
+
+INSERT INTO form_fields (form_type, section, field_key, label, field_type, options, required, display_order)
+VALUES
+('internship', 'Internship Selection', 'which_internship', 'Which internship are you interested in applying for?', 'radio', '["Full Internship: June 6th - August 5th, 2026 (8 weeks)","Flexible Internship: Dates for the flexible internship can be negotiated, but interns must be available between June 6th/June 15th - August 5th, 2026 for a minimum 4 week commitment."]'::jsonb, TRUE, 1),
+('internship', 'Personal Information', 'full_legal_name', 'Full Legal Name (as it appears in your passport)', 'text', NULL, TRUE, 2),
+('internship', 'Personal Information', 'preferred_name', 'Name we should call you', 'text', NULL, TRUE, 3),
+('internship', 'Personal Information', 'date_of_birth', 'Date of Birth', 'date', NULL, TRUE, 4),
+('internship', 'Personal Information', 'pronouns', 'Preferred Gender Pronouns', 'text', NULL, TRUE, 5),
+('internship', 'Personal Information', 'school_or_employer', 'Current college/university, high school (if not yet in college/university) OR employer and position', 'text', NULL, TRUE, 6),
+('internship', 'Personal Information', 'current_year', 'Current year in college/university', 'select', '["First Year","Sophomore","Junior","Senior"]'::jsonb, TRUE, 7),
+('internship', 'Personal Information', 'major_minor', 'Major(s) & Minor(s) / Specialization', 'text', NULL, TRUE, 8),
+('internship', 'Personal Information', 'mailing_address', 'Current mailing address', 'text', NULL, TRUE, 9),
+('internship', 'Personal Information', 'permanent_address', 'Permanent mailing address', 'text', NULL, TRUE, 10),
+('internship', 'Personal Information', 'primary_phone', 'Primary phone number (add country ID)', 'text', NULL, TRUE, 11),
+('internship', 'Personal Information', 'primary_phone_type', 'Primary phone number type', 'select', '["Home phone","Mobile phone","Work phone","Other"]'::jsonb, TRUE, 12),
+('internship', 'Personal Information', 'additional_phone', 'Additional phone number', 'text', NULL, FALSE, 13),
+('internship', 'Personal Information', 'additional_phone_type', 'Additional phone number type', 'select', '["Home phone","Mobile phone","Work phone","Other"]'::jsonb, FALSE, 14),
+('internship', 'Personal Information', 'school_email', 'School Email Address', 'email', NULL, TRUE, 15),
+('internship', 'Personal Information', 'personal_email', 'Personal Email Address', 'email', NULL, TRUE, 16),
+('internship', 'Personal Information', 'citizenship', 'Country of citizenship', 'text', NULL, TRUE, 17),
+('internship', 'Personal Information', 'has_passport', 'Do you have a passport?', 'radio', '["Yes","No"]'::jsonb, TRUE, 18),
+('internship', 'Personal Information', 'passport_expiration', 'Expiration date of passport', 'date', NULL, FALSE, 19),
+('internship', 'Personal Information', 'other_citizenships', 'Other countries in which you have citizenship or permanent residency', 'text', NULL, FALSE, 20),
+('internship', 'Personal Information', 'health_insurance_provider', 'Health insurance provider', 'text', NULL, TRUE, 21),
+('internship', 'Personal Information', 'health_insurance_policy_number', 'Health insurance policy number', 'text', NULL, TRUE, 22),
+('internship', 'Personal Information', 'health_insurance_policy_name', 'Name on health insurance policy', 'text', NULL, TRUE, 23),
+('internship', 'Internship Program Questions', 'availability_arrival', 'Please tell us about your availability (when you would be able to arrive)', 'text', NULL, TRUE, 24),
+('internship', 'Internship Program Questions', 'first_choice_position', 'What is your first choice position?', 'text', NULL, TRUE, 25),
+('internship', 'Internship Program Questions', 'first_choice_qualifications', 'Please describe your qualifications for and interest in your first choice position.', 'textarea', NULL, TRUE, 26),
+('internship', 'Internship Program Questions', 'second_choice_position', 'What is your second choice position?', 'text', NULL, TRUE, 27),
+('internship', 'Internship Program Questions', 'second_choice_qualifications', 'Please describe your qualifications for and interest in your second choice position.', 'textarea', NULL, FALSE, 28),
+('internship', 'Internship Program Questions', 'third_choice_position', 'What is your third choice position?', 'text', NULL, FALSE, 29),
+('internship', 'Internship Program Questions', 'third_choice_qualifications', 'Please describe your qualifications for and interest in your third choice position.', 'textarea', NULL, FALSE, 30),
+('internship', 'Spanish Language Proficiency', 'spanish_spoken', 'Spanish Language Ability - Spoken', 'radio', '["None","Beginner","Advanced Beginner","Intermediate","Advanced","Fluent","Native Speaker"]'::jsonb, TRUE, 31),
+('internship', 'Spanish Language Proficiency', 'spanish_written', 'Spanish Language Ability - Written', 'radio', '["None","Beginner","Advanced Beginner","Intermediate","Advanced","Fluent, excellent writer in Spanish"]'::jsonb, TRUE, 32),
+('internship', 'Spanish Language Proficiency', 'spanish_classroom_experience', 'Describe your experience studying Spanish formally in a classroom setting (if any).', 'textarea', NULL, TRUE, 33),
+('internship', 'Spanish Language Proficiency', 'spanish_real_life_experience', 'Describe your experience using Spanish in real life situations, with native speakers (if any).', 'textarea', NULL, TRUE, 34),
+('internship', 'Spanish Language Proficiency', 'other_languages', 'Do you speak any languages other than English or Spanish?', 'text', NULL, FALSE, 35),
+('internship', 'Spanish Language Proficiency', 'intensive_spanish_interest', 'Would you be interested in taking an intensive Spanish class?', 'radio', '["Yes","No","Maybe"]'::jsonb, FALSE, 36),
+('internship', 'Costs and Financial Aid', 'will_apply_funding', 'I will apply for funding from my college/university', 'radio', '["Yes","Maybe","No"]'::jsonb, TRUE, 37),
+('internship', 'Costs and Financial Aid', 'funding_deadline', 'If yes, what is the deadline to apply for this funding?', 'date', NULL, FALSE, 38),
+('internship', 'Costs and Financial Aid', 'need_based_aid', 'Are you requesting need-based financial aid from our organization?', 'radio', '["No","Yes; funding is not available from my college/university","Yes; I am applying for funding from my college/university but it will not cover all of my costs (fee + airfare)","Maybe; if I do not receive funding from my college/university I will require financial aid to participate"]'::jsonb, FALSE, 39),
+('internship', 'References', 'ref1_name', 'Reference #1 Name', 'text', NULL, TRUE, 40),
+('internship', 'References', 'ref1_position', 'Reference #1 Position & Institution', 'text', NULL, TRUE, 41),
+('internship', 'References', 'ref1_relationship', 'Reference #1 Relationship to You', 'text', NULL, TRUE, 42),
+('internship', 'References', 'ref1_phone', 'Reference #1 Phone Number', 'text', NULL, TRUE, 43),
+('internship', 'References', 'ref1_email', 'Reference #1 Email Address', 'email', NULL, TRUE, 44),
+('internship', 'References', 'ref1_timezone', 'Reference #1 Time Zone', 'text', NULL, TRUE, 45),
+('internship', 'References', 'ref2_name', 'Reference #2 Name', 'text', NULL, TRUE, 46),
+('internship', 'References', 'ref2_position', 'Reference #2 Position & Institution', 'text', NULL, TRUE, 47),
+('internship', 'References', 'ref2_relationship', 'Reference #2 Relationship to You', 'text', NULL, TRUE, 48),
+('internship', 'References', 'ref2_phone', 'Reference #2 Phone Number', 'text', NULL, TRUE, 49),
+('internship', 'References', 'ref2_email', 'Reference #2 Email Address', 'email', NULL, TRUE, 50),
+('internship', 'References', 'ref2_timezone', 'Reference #2 Time Zone', 'text', NULL, TRUE, 51),
+('internship', 'Applicant Acknowledgement', 'declaration', 'I hereby declare that the information provided is true and correct. I also understand that any willful dishonesty may render for refusal of this application.', 'radio', '["YES","No"]'::jsonb, TRUE, 52),
+('internship', 'Applicant Acknowledgement', 'signed_digitally', 'Signed Digitally (enter full legal name)', 'text', NULL, TRUE, 53),
+('internship', 'Applicant Acknowledgement', 'date_signed', 'Date Signed', 'datetime', NULL, TRUE, 54),
+('internship', 'Applicant Acknowledgement', 'send_copy', 'Send me a copy of my responses.', 'checkbox', NULL, FALSE, 55),
+('volunteer', 'Basic Information', 'name', 'Name', 'text', NULL, TRUE, 56),
+('volunteer', 'Basic Information', 'pronouns', 'PGPs (Preferred Gendered Pronouns)', 'text', NULL, TRUE, 57),
+('volunteer', 'Basic Information', 'mailing_address', 'Mailing Address', 'text', NULL, TRUE, 58),
+('volunteer', 'Basic Information', 'mobile_phone', 'Mobile Phone Number', 'text', NULL, TRUE, 59),
+('volunteer', 'Basic Information', 'home_phone', 'Home Phone Number', 'text', NULL, TRUE, 60),
+('volunteer', 'Volunteer Positions/Areas of Expertise', 'posted_position', 'Are you responding to a specific posted volunteer position? Which?', 'text', NULL, TRUE, 61),
+('volunteer', 'Volunteer Positions/Areas of Expertise', 'other_areas_interest', 'Are you interested in cyber-volunteer projects in other areas?', 'radio', '["Yes","No"]'::jsonb, TRUE, 62),
+('volunteer', 'Volunteer Positions/Areas of Expertise', 'areas_interested', 'Which areas are you interested in?', 'checkbox', '["Video editing/Production","Translation - general","Translation - dramatic writing","Writing","Foreign language transcription (from video footage)","Editing/Proofreading","Internet research","Graphic design/layout","Simple web design","Advanced web design","Curriculum development (arts education)","Music (especially transposition and/or keyboard skills, and ability to use music notation software)","Other"]'::jsonb, TRUE, 63),
+('volunteer', 'Volunteer Positions/Areas of Expertise', 'onsite_interest', 'Are you interested in on-site (usually international) volunteering in addition to cyber-volunteering?', 'radio', '["Yes","No"]'::jsonb, TRUE, 64),
+('volunteer', 'Availability', 'time_commitment', 'Approximately how much time would you like to spend volunteering? (Please specify how many hours per week or month)', 'text', NULL, TRUE, 65),
+('volunteer', 'Availability', 'begin_date', 'When are you available to begin volunteering?', 'date', NULL, TRUE, 66),
+('volunteer', 'Availability', 'duration', 'For how long are you available to volunteer?', 'radio', '["3 months","6 months","9 months","1 year","Indefinite/Flexible","Other"]'::jsonb, TRUE, 67),
+('volunteer', 'Skills and Interests', 'skills', 'Please describe your skills, experience and training related to your position(s) of interest (not necessary if your resume covers it).', 'textarea', NULL, FALSE, 68),
+('volunteer', 'Language Information', 'spoken_languages', 'Please list ALL languages that you speak, and at what level (indicate if you are a native speaker).', 'text', NULL, TRUE, 69),
+('volunteer', 'Language Information', 'written_languages', 'Please list ALL languages in which you can write, and at what level.', 'text', NULL, TRUE, 70),
+('camp', 'Participant Information', 'name', 'Name', 'text', NULL, TRUE, 71),
+('camp', 'Participant Information', 'pronouns', 'PGPs (Preferred Gendered Pronouns)', 'text', NULL, TRUE, 72),
+('camp', 'Participant Information', 'age', 'Age', 'text', NULL, TRUE, 73),
+('camp', 'Participant Information', 'date_of_birth', 'Date of Birth', 'date', NULL, TRUE, 74),
+('camp', 'Participant Information', 'street_address', 'Street Address', 'text', NULL, TRUE, 75),
+('camp', 'Participant Information', 'city', 'City', 'text', NULL, TRUE, 76),
+('camp', 'Participant Information', 'state_province', 'State/Province', 'text', NULL, TRUE, 77),
+('camp', 'Participant Information', 'country', 'Country', 'text', NULL, TRUE, 78),
+('camp', 'Participant Information', 'zip', 'Zip code/Postal code', 'text', NULL, TRUE, 79),
+('camp', 'Participant Information', 'primary_phone', 'Primary phone number', 'text', NULL, TRUE, 80),
+('camp', 'Participant Information', 'primary_phone_type', 'Primary phone type', 'radio', '["Home phone","Mobile phone","Other"]'::jsonb, TRUE, 81),
+('camp', 'Participant Information', 'additional_phone', 'Additional phone number', 'text', NULL, TRUE, 82),
+('camp', 'Participant Information', 'additional_phone_type', 'Additional phone type', 'radio', '["Home phone","Mobile phone","Other"]'::jsonb, TRUE, 83),
+('camp', 'Participant Information', 'school', 'School', 'text', NULL, TRUE, 84),
+('camp', 'Participant Information', 'grade', 'Year/Grade in school are you in during the current Academic School Year?', 'select', '["7th","8th","9th","10th","11th","12th"]'::jsonb, TRUE, 85),
+('camp', 'Participant Information', 'citizenship', 'Country or countries of citizenship', 'text', NULL, TRUE, 86),
+('camp', 'Participant Information', 'has_passport', 'Do you have a passport?', 'radio', '["Yes","No"]'::jsonb, TRUE, 87),
+('camp', 'Participant Information', 'passport_expiration', 'Expiration date of passport', 'date', NULL, FALSE, 88),
+('camp', 'Participant Information', 'passport_number', 'Passport number', 'text', NULL, FALSE, 89),
+('camp', 'Participant Information', 'health_insurance_carrier', 'Health insurance carrier', 'text', NULL, TRUE, 90),
+('camp', 'Participant Information', 'policy_number', 'Policy number', 'text', NULL, TRUE, 91),
+('camp', 'Participant Information', 'policy_name', 'Name on policy', 'text', NULL, TRUE, 92),
+('camp', 'Parent/Guardian Information (#1)', 'guardian1_name', 'Parent/Guardian #1 Name', 'text', NULL, TRUE, 93),
+('camp', 'Parent/Guardian Information (#1)', 'guardian1_phone', 'Parent/Guardian #1 Primary phone number', 'text', NULL, TRUE, 94),
+('camp', 'Parent/Guardian Information (#1)', 'guardian1_phone_type', 'Parent/Guardian #1 Primary phone number type', 'radio', '["Home phone","Mobile phone","Work phone","Other"]'::jsonb, TRUE, 95),
+('camp', 'Parent/Guardian Information (#1)', 'guardian1_add_phone1', 'Parent/Guardian #1 Additional phone number #1', 'text', NULL, FALSE, 96),
+('camp', 'Parent/Guardian Information (#1)', 'guardian1_add_phone1_type', 'Parent/Guardian #1 Additional phone number #1 type', 'radio', '["Home phone","Mobile phone","Work phone","Other"]'::jsonb, FALSE, 97),
+('camp', 'Parent/Guardian Information (#1)', 'guardian1_add_phone2', 'Parent/Guardian #1 Additional phone number #2', 'text', NULL, FALSE, 98),
+('camp', 'Parent/Guardian Information (#1)', 'guardian1_add_phone2_type', 'Parent/Guardian #1 Additional phone number #2 type', 'radio', '["Home phone","Mobile phone","Work phone","Other"]'::jsonb, FALSE, 99),
+('camp', 'Parent/Guardian Information (#1)', 'guardian1_email', 'Parent/Guardian #1 Email address', 'email', NULL, TRUE, 100),
+('camp', 'Parent/Guardian Information (#1)', 'guardian1_address', 'Parent/Guardian #1 Home address (if different than participant''s)', 'text', NULL, FALSE, 101),
+('camp', 'Parent/Guardian Information (#2)', 'guardian2_name', 'Parent/Guardian #2 Name', 'text', NULL, FALSE, 102),
+('camp', 'Parent/Guardian Information (#2)', 'guardian2_phone', 'Parent/Guardian #2 Primary phone number', 'text', NULL, FALSE, 103),
+('camp', 'Parent/Guardian Information (#2)', 'guardian2_phone_type', 'Parent/Guardian #2 Primary phone number type', 'radio', '["Home phone","Mobile phone","Work phone","Other"]'::jsonb, FALSE, 104),
+('camp', 'Parent/Guardian Information (#2)', 'guardian2_add_phone1', 'Parent/Guardian #2 Additional phone number #1', 'text', NULL, FALSE, 105),
+('camp', 'Parent/Guardian Information (#2)', 'guardian2_add_phone1_type', 'Parent/Guardian #2 Additional phone number #1 type', 'radio', '["Home phone","Mobile phone","Work phone","Other"]'::jsonb, FALSE, 106),
+('camp', 'Parent/Guardian Information (#2)', 'guardian2_add_phone2', 'Parent/Guardian #2 Additional phone number #2', 'text', NULL, FALSE, 107),
+('camp', 'Parent/Guardian Information (#2)', 'guardian2_add_phone2_type', 'Parent/Guardian #2 Additional phone number #2 type', 'radio', '["Home phone","Mobile phone","Work phone","Other"]'::jsonb, FALSE, 108),
+('camp', 'Parent/Guardian Information (#2)', 'guardian2_email', 'Parent/Guardian #2 Email address', 'email', NULL, FALSE, 109),
+('camp', 'Program Options', 'program_length', '2026 Program Length/Dates', 'radio', '["CRTC1: June 29 - August 5 (6 weeks)","Other"]'::jsonb, TRUE, 110),
+('camp', 'Program Options', 'program_focus', 'Program Focus', 'radio', '["Performance","Technical Theatre & Production"]'::jsonb, FALSE, 111),
+('camp', 'Language information', 'spanish_level', 'How would you describe your Spanish level?', 'radio', '["No knowledge of Spanish","Beginner (0-1 years Spanish class)","Advanced beginner (1-2 years Spanish class)","Intermediate (2-4 years Spanish class)","Advanced (4+ years of Spanish class)","Fluent","Native speaker"]'::jsonb, TRUE, 112),
+('camp', 'Language information', 'spanish_learning', 'Briefly describe any previous Spanish learning experiences (in or outside of school)', 'text', NULL, FALSE, 113),
+('camp', 'Language information', 'spanish_outside', 'Have you ever used Spanish outside of the classroom?', 'text', NULL, FALSE, 114),
+('camp', 'Language information', 'other_languages', 'Have you studied any languages other than English or Spanish? If yes, describe your ability level.', 'text', NULL, FALSE, 115),
+('camp', 'Additional Questions', 'q_why_participate', '1. Why do you want to participate in this program? What do you hope to gain from the experience?', 'textarea', NULL, TRUE, 116),
+('camp', 'Additional Questions', 'q_interests', '2. What are your major interests, favorite activities, and hobbies?', 'textarea', NULL, TRUE, 117),
+('camp', 'Additional Questions', 'q_experience', '3. Describe any experience you have in music, theatre (including technical theatre), and dance.', 'textarea', NULL, TRUE, 118),
+('camp', 'Additional Questions', 'q_group_living', '4. Have you ever lived and worked closely with a group of people (other than your family) for an extended period of time? Briefly describe the experience.', 'textarea', NULL, TRUE, 119),
+('camp', 'Additional Questions', 'q_away_from_home', '5. What do you think will be most difficult about spending several weeks away from your family, friends and home? What will be most exciting or rewarding?', 'textarea', NULL, TRUE, 120),
+('camp', 'Additional Questions', 'q_diverse_backgrounds', '6. What do you enjoy (or look forward to) about working with people from backgrounds different from your own? What do you find most difficult?', 'textarea', NULL, TRUE, 121),
+('camp', 'Participant and Parent/Guardian Agreement', 'participant_signature', 'Participant signature (typed)', 'text', NULL, TRUE, 122),
+('camp', 'Participant and Parent/Guardian Agreement', 'guardian_signature', 'Parent/Guardian signature (typed)', 'text', NULL, TRUE, 123),
+('camp', 'Participant and Parent/Guardian Agreement', 'date_signed', 'Date', 'datetime', NULL, TRUE, 124),
+('camp', 'Participant and Parent/Guardian Agreement', 'send_copy', 'Send me a copy of my responses.', 'checkbox', NULL, FALSE, 125)
+ON CONFLICT (form_type, field_key) DO UPDATE SET
+    section = EXCLUDED.section,
+    label = EXCLUDED.label,
+    field_type = EXCLUDED.field_type,
+    options = EXCLUDED.options,
+    required = EXCLUDED.required,
+    display_order = EXCLUDED.display_order,
+    updated_at = CURRENT_TIMESTAMP;
+
