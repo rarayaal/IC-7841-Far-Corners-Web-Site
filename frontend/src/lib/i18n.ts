@@ -11,6 +11,7 @@ const es = {
     adminAccess: 'Acceso admin',
     signOut: 'Cerrar sesión',
     signIn: 'Iniciar sesión',
+    profile: 'Mi perfil',
     goToHome: 'Far Corners, ir al inicio',
     searchContent: 'Buscar contenido',
     search: 'Buscar',
@@ -253,20 +254,17 @@ const es = {
       title: 'Únete al Programa Far Corners',
       desc:
         'Descubre oportunidades para estudiantes locales, pasantías universitarias internacionales y voluntariado cyber o presencial.',
-      campBadge: 'CAMPAMENTO DE VERANO BILINGÜE',
-      campTitle: 'Costa Rica Theatre Camp (CRTC)',
-      campDesc:
-        'Un programa de inmersión total en Monteverde, Puntarenas. Los participantes reciben formación en canto, danza y actuación mientras ensayan el musical de la temporada para presentarlo ante el público costarricense.',
-      campBullets: {
-        ages: 'Edades: 8 a 18 años',
-        scholarships: '100% Becas locales disponibles',
-        faculty: 'Instructorado bilingüe de nivel internacional',
-        shows: 'Funciones estelares abiertas al público',
-      },
-      applyCampBtn: 'Postular al Campamento 2026',
       openCallsBadge: 'Convocatorias Abiertas Verano 2026',
       openCallsTitle: 'Pasantías Internacionales y Voluntariado',
       applyRoleBtn: 'Postular a este Puesto',
+      requirementsLabel: 'Requisitos:',
+      loadingCalls: 'Cargando convocatorias…',
+      noOpenCalls: 'No hay convocatorias abiertas por el momento.',
+      categories: {
+        internship: 'Pasantía Internacional',
+        volunteer: 'Voluntariado',
+        camp: 'Campamento',
+      },
     },
     contact: {
       title: 'Contacto Directo',
@@ -336,6 +334,7 @@ const en: AppTranslations = {
     adminAccess: 'Admin access',
     signOut: 'Sign out',
     signIn: 'Sign in',
+    profile: 'My profile',
     goToHome: 'Far Corners, go to home',
     searchContent: 'Search content',
     search: 'Search',
@@ -578,20 +577,17 @@ const en: AppTranslations = {
       title: 'Join the Far Corners Family',
       desc:
         'Explore opportunities for local students, international university internships, and cyber/onsite volunteering.',
-      campBadge: 'BILINGUAL SUMMER THEATRE CAMP',
-      campTitle: 'Costa Rica Theatre Camp (CRTC)',
-      campDesc:
-        'A full immersion musical theatre camp in Monteverde, Costa Rica. Campers receive vocal, dance, and acting training culminating in a full musical.',
-      campBullets: {
-        ages: 'Ages: 8 to 18 years old',
-        scholarships: '100% Local scholarships available',
-        faculty: 'International bilingual faculty',
-        shows: 'Mainstage public performances',
-      },
-      applyCampBtn: 'Apply for Theatre Camp 2026',
       openCallsBadge: 'Open Calls Summer 2026',
       openCallsTitle: 'Internships & Volunteering',
       applyRoleBtn: 'Apply for this Role',
+      requirementsLabel: 'Requirements:',
+      loadingCalls: 'Loading open calls…',
+      noOpenCalls: 'There are no open calls at the moment.',
+      categories: {
+        internship: 'International Internship',
+        volunteer: 'Volunteer',
+        camp: 'Camp',
+      },
     },
     contact: {
       title: 'Direct Contact',
