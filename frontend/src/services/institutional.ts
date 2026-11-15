@@ -1,6 +1,15 @@
 import type { Language } from '../types';
 
-export type InstitutionalSection = 'history' | 'impact' | 'future';
+export type InstitutionalSection =
+  | 'history'
+  | 'impact'
+  | 'future'
+  | 'footer'
+  | 'board'
+  | 'production';
+
+/** Secciones donde cada fila es una persona (nombre, cargo, biografía y foto). */
+export const PEOPLE_SECTIONS: InstitutionalSection[] = ['board', 'production'];
 
 export interface InstitutionalContent {
   id: string;
@@ -24,6 +33,10 @@ export const SCOPES_BY_SECTION: Record<InstitutionalSection, string[]> = {
   history: ['about'],
   impact: ['about', 'impact-cr', 'impact-cn', 'impact-mz'],
   future: ['about'],
+  footer: ['footer'],
+  // Una fila por persona: el identificador (page_slug) lo escribe el administrador.
+  board: [],
+  production: [],
 };
 
 /** Lee el contenido publicado de una sección (sin sesión). */
