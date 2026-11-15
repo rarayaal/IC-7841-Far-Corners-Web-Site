@@ -1,50 +1,49 @@
 import { Show, ImpactProject, Opportunity, DonorTier, AuditLogItem } from '../types';
 
+// Las fotos de `gallery` son marcadores con los recursos disponibles; se
+// reemplazan por las fotos reales de cada producción cuando estén listas.
+// `cast` vacío muestra «Elenco por anunciar»: no se inventan nombres.
 export const showsData: Show[] = [
   {
-    id: 'merlina-2026',
-    title: 'Merlina (Wednesday Addams)',
+    id: 'addams-family-2026',
+    title: 'THE ADDAMS FAMILY MUSICAL',
     year: 2026,
     status: 'current',
     poster: '/recursos/IMG_2905.PNG',
     banner: '/recursos/IMG_2903.PNG',
-    dates: '1 al 20 de Octubre, 2026',
+    dates: '1 al 20 de octubre, 2026',
     location: 'Teatro Comunitario Monteverde, Costa Rica',
     priceGeneral: 10000,
     priceVIP: 10000,
     priceStudent: 10000,
     availableTickets: 95,
     director: 'Equipo Far Corners Teatro Comunitario',
-    synopsis: 'La oscura y fascinante comedia musical que sigue las aventuras de Merlina en la Academia Nunca Más, llena de misterio, humor y números musicales inolvidables.',
-    synopsisEn: 'The dark and fascinating musical comedy following Wednesday Addams at Nevermore Academy, filled with mystery, humor, and catchy songs.',
-    cast: [
-      { name: 'Valentina Zeas', role: 'Merlina Addams' },
-      { name: 'Sofia Rodríguez', role: 'Morticia Addams' },
-      { name: 'Mateo Hernández', role: 'Homero Addams' }
-    ]
+    synopsis: 'En este divertido y macabro musical, la famosa y espeluznante Familia Addams se enfrenta a una nueva pesadilla. Miércoles, convertida ya en una joven, se ha enamorado de un chico dulce y "normal" de Ohio. Ambas familias se reúnen para una cena fatídica, poniendo a prueba los lazos del amor y la herencia frente a sus mundos radicalmente diferentes.',
+    synopsisEn: 'In this hilarious and macabre musical, the famously spooky Addams Family faces a new nightmare. Daughter Wednesday, now a young woman, has fallen in love with a sweet, "normal" young man from Ohio. The two families meet for a fateful dinner party, testing the bonds of love and heritage against their drastically different worlds.',
+    cast: [],
+    gallery: ['/recursos/IMG_2905.PNG', '/recursos/IMG_2903.PNG']
   },
   {
-    id: 'mamma-mia-2026',
+    id: 'mamma-mia-2024',
     title: 'MAMMA MIA!',
-    year: 2026,
-    status: 'current',
+    year: 2024,
+    status: 'past',
     poster: '/recursos/IMG_2905.PNG',
     banner: '/recursos/IMG_2904.PNG',
-    dates: '15 de Julio - 10 de Agosto, 2026',
+    dates: '2024',
     location: 'Teatro Comunitario Monteverde, Costa Rica',
     priceGeneral: 10000,
     priceVIP: 10000,
     priceStudent: 10000,
-    availableTickets: 68,
+    availableTickets: 0,
     director: 'Equipo Far Corners Teatro Comunitario',
     synopsis: 'Una contagiosa comedia musical ambientada en una idílica isla griega, contada a través de las emblemáticas canciones de ABBA. Una historia sobre el amor, la amistad y la búsqueda de identidad.',
-    synopsisEn: 'A funny and touching musical comedy set on a Greek island, told through ABBA iconic hits. A story about love, family, and identity.',
+    synopsisEn: "A contagious musical comedy set on an idyllic Greek island, told through ABBA's iconic songs. A story about love, friendship, and the search for identity.",
     cast: [
-      { name: 'Sofía Rodríguez', role: 'Donna Sheridan' },
-      { name: 'Mateo Hernández', role: 'Sam Carmichael' },
-      { name: 'Valentina Zeas', role: 'Sophie Sheridan' },
-      { name: 'Carlos Gómez', role: 'Bill Austin' }
-    ]
+      { name: 'Noelyn Santamaría', role: 'Donna' },
+      { name: 'Jackie Vargas', role: 'Sophie' }
+    ],
+    gallery: ['/recursos/IMG_2904.PNG', '/recursos/IMG_2905.PNG']
   },
   {
     id: 'jesus-christ-superstar-2019',
@@ -54,81 +53,16 @@ export const showsData: Show[] = [
     poster: '/recursos/IMG_2906.PNG',
     banner: '/recursos/IMG_2904.PNG',
     dates: 'Julio 2019',
-    location: 'Teatro Monteverde, Puntarenas',
+    location: 'Teatro Comunitario Monteverde, Costa Rica',
     priceGeneral: 8000,
     priceVIP: 8000,
     priceStudent: 8000,
     availableTickets: 0,
-    director: 'Dirección Artística Far Corners',
+    director: 'Equipo Far Corners Teatro Comunitario',
     synopsis: 'Ópera rock legendaria que narra los últimos días de la vida de Jesús desde la perspectiva de Judas Iscariote, con impactantes arreglos vocales e instrumentales comunitarios.',
-    synopsisEn: 'Legendary rock opera detailing the final days of Jesus Christ seen through Judas eyes, featuring striking community vocal arrangements.',
-    cast: [
-      { name: 'Daniel Zeas', role: 'Jesús de Nazaret' },
-      { name: 'Ana Isabel Hernández', role: 'María Magdalena' }
-    ]
-  },
-  {
-    id: 'into-the-woods-2018',
-    title: 'Into the Woods',
-    year: 2018,
-    status: 'past',
-    poster: '/recursos/IMG_2908.PNG',
-    banner: '/recursos/IMG_2907.PNG',
-    dates: 'Julio 2018',
-    location: 'Anfiteatro Monteverde, Costa Rica',
-    priceGeneral: 8000,
-    priceVIP: 8000,
-    priceStudent: 8000,
-    availableTickets: 0,
-    director: 'Equipo Far Corners & Pasantes Internacionales',
-    synopsis: 'La aclamada obra de Stephen Sondheim que entrelaza los cuentos de hadas clásicos de los Hermanos Grimm, explorando las consecuencias de nuestros deseos más profundos.',
-    synopsisEn: 'Stephen Sondheim acclaimed musical intertwining Brothers Grimm fairy tales, exploring the consequences of our deepest wishes.',
-    cast: [
-      { name: 'Marcelo Gómez', role: 'El Panadero' },
-      { name: 'Elena Ruiz', role: 'La Bruja' }
-    ]
-  },
-  {
-    id: 'fiddler-on-the-roof-2017',
-    title: 'Fiddler on the Roof',
-    year: 2017,
-    status: 'past',
-    poster: '/recursos/IMG_2910.PNG',
-    banner: '/recursos/IMG_2909.PNG',
-    dates: 'Julio 2017',
-    location: 'Teatro Comunitario Monteverde',
-    priceGeneral: 8000,
-    priceVIP: 8000,
-    priceStudent: 8000,
-    availableTickets: 0,
-    director: 'Far Corners International Crew',
-    synopsis: 'Una emotiva historia sobre la tradición, la familia y el cambio en el pequeño pueblo de Anatevka a principios del siglo XX.',
-    synopsisEn: 'A heartwarming story about tradition, family, and resilience in the village of Anatevka.',
-    cast: [
-      { name: 'Otto Segura', role: 'Tevye' },
-      { name: 'Mariana Cordero', role: 'Golde' }
-    ]
-  },
-  {
-    id: 'les-miserables-2016',
-    title: 'Les Misérables',
-    year: 2016,
-    status: 'past',
-    poster: '/recursos/IMG_2912.PNG',
-    banner: '/recursos/IMG_2911.PNG',
-    dates: 'Julio 2016',
-    location: 'Teatro Monteverde',
-    priceGeneral: 8000,
-    priceVIP: 8000,
-    priceStudent: 8000,
-    availableTickets: 0,
-    director: 'Equipo Comunitario Far Corners',
-    synopsis: 'La grandiosa épica de pasión y redención ambientada en la Francia del siglo XIX. Un hito en la historia del teatro comunitario de Monteverde.',
-    synopsisEn: 'The epic musical of passion and redemption in 19th-century France. A milestone in Monteverde theatre history.',
-    cast: [
-      { name: 'Rafael Araya', role: 'Jean Valjean' },
-      { name: 'Ana Hernández', role: 'Fantine' }
-    ]
+    synopsisEn: "A legendary rock opera narrating the final days of Jesus' life from the perspective of Judas Iscariot, featuring impactful community vocal and instrumental arrangements.",
+    cast: [],
+    gallery: ['/recursos/IMG_2906.PNG', '/recursos/IMG_2904.PNG']
   }
 ];
 
@@ -138,48 +72,17 @@ export const projectsData: ImpactProject[] = [
     title: 'Teatro Comunitario Monteverde',
     titleEn: 'Monteverde Community Theatre',
     country: 'Costa Rica',
-    year: '2013 - Presente',
-    summary: 'Sede principal de Far Corners. Campamento de verano bilingüe de artes escénicas donde jóvenes locales colaboran con pasantes de todo el mundo para montar un musical completo de nivel profesional.',
-    summaryEn: 'Main hub of Far Corners. A bilingual summer performing arts camp where local youth collaborate with international interns to produce a full musical.',
+    year: '2005 - Presente',
+    summary: 'Actividad extracurricular bienal de artes escénicas en Monteverde, donde jóvenes y adultos de la comunidad colaboran con voluntarios y pasantes de todo el mundo para montar un musical comunitario. La coordinación de programas se encuentra en Monteverde.',
+    summaryEn: 'A biennial extracurricular performing arts activity in Monteverde where young people and adults from the community work with volunteers and interns from around the world to stage a community musical. Program coordination is based in Monteverde.',
     image: '/recursos/IMG_2915.PNG',
     participants: 1200,
     impactMetrics: [
-      'Más de 15 musicales de gran escala producidos',
-      'Becas del 100% para estudiantes locales de escasos recursos',
+      'Más de 15 producciones de teatro musical comunitario',
+      'Acceso comunitario 100% libre para participantes locales',
       'Más de 150 pasantes internacionales capacitados'
-    ]
-  },
-  {
-    id: 'proj-china',
-    title: 'Iniciativa Teatral Educativa China',
-    titleEn: 'China Educational Theatre Initiative',
-    country: 'China',
-    year: '2016 - 2019',
-    summary: 'Talleres itinerantes de drama en inglés y teatro musical para estudiantes en zonas rurales de China, fomentando el desarrollo de la expresión oral, confianza y trabajo en equipo.',
-    summaryEn: 'Traveling English drama and musical theatre workshops for students in rural China, building confidence and teamwork.',
-    image: '/recursos/IMG_2918.PNG',
-    participants: 850,
-    impactMetrics: [
-      'Talleres en 5 provincias rurales de China',
-      'Intercambio cultural bilingüe en artes escénicas',
-      'Capacitación pedagógica a profesores locales'
-    ]
-  },
-  {
-    id: 'proj-mozambique',
-    title: 'Taller de Artes Escénicas Mozambique',
-    titleEn: 'Mozambique Performing Arts Workshop',
-    country: 'Mozambique',
-    year: '2018 - Presente',
-    summary: 'Programa de desarrollo artístico e intercambio cultural en Maputo y comunidades costeras, integrando danza tradicional, narración oral y música en vivo.',
-    summaryEn: 'Artistic development and cultural exchange program in Maputo and coastal communities integrating dance, storytelling, and music.',
-    image: '/recursos/IMG_2920.PNG',
-    participants: 600,
-    impactMetrics: [
-      'Integración de ritmos tradicionales y teatro comunitario',
-      'Construcción de instrumentos y utilería con materiales reciclados',
-      'Red de jóvenes líderes culturales'
-    ]
+    ],
+    gallery: ['/recursos/IMG_2915.PNG', '/recursos/IMG_2916.PNG', '/recursos/IMG_2917.PNG']
   }
 ];
 
@@ -274,7 +177,7 @@ export const auditLogsMock: AuditLogItem[] = [
     user: 'Alicia Salazar (Admin General)',
     action: 'UPDATE',
     module: 'Boletería',
-    details: 'Actualizado inventario de boletos para Merlina 2026 (95 disponibles)',
+    details: 'Actualizado inventario de boletos para The Addams Family Musical 2026 (95 disponibles)',
     timestamp: '2026-10-09 14:32:05'
   },
   {

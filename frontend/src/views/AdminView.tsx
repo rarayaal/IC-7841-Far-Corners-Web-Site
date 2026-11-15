@@ -290,8 +290,8 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
             {/* SVG Custom Bar Chart */}
             <div className="pt-4 space-y-4">
               {[
-                { name: 'Merlina (2026)', count: 95, max: 250, color: 'from-brand-green to-brand-forest' },
-                { name: 'MAMMA MIA! (2026)', count: 182, max: 250, color: 'from-brand-blue to-brand-navy' },
+                { name: 'The Addams Family (2026)', count: 95, max: 250, color: 'from-brand-green to-brand-forest' },
+                { name: 'MAMMA MIA! (2024)', count: 182, max: 250, color: 'from-brand-blue to-brand-navy' },
                 { name: 'Jesus Christ Superstar (2019)', count: 240, max: 250, color: 'from-brand-lime to-brand-green' },
               ].map((bar, i) => {
                 const percentage = Math.round((bar.count / bar.max) * 100);
