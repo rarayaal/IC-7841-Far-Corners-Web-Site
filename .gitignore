@@ -6,4 +6,4 @@ dist/
 .env.*
 !.env.example
 *.log
-CLAUDE.md
+CLAUDE.mdfarcorners_dump.sql
