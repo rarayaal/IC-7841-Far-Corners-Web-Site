@@ -133,7 +133,7 @@ export const AboutView: React.FC<AboutViewProps> = ({
 
   // Respaldo mientras la sección «Junta directiva» del panel no tenga filas publicadas.
   const defaultBoard: PersonCardData[] = [
-    { key: 'presidente', name: 'José Pablo Arias', role: es ? 'Presidente' : 'President' },
+    { key: 'presidente', name: 'José Pablo Arias Mora', role: es ? 'Presidente' : 'President' },
     { key: 'vicepresidente', name: 'Isaac Matamoros Trejos', role: es ? 'Vicepresidente' : 'Vice President' },
     { key: 'tesorero', name: 'Luis Dario Villalobos Castro', role: es ? 'Tesorero' : 'Treasurer' },
     { key: 'vocal-1', name: 'Stacy Ohrt-Billingslea', role: es ? 'Vocal' : 'Board member' },
@@ -142,7 +142,14 @@ export const AboutView: React.FC<AboutViewProps> = ({
   ];
 
   const boardPeople = boardItems.length > 0 ? toPeople(boardItems) : defaultBoard;
-  const productionPeople = toPeople(productionItems);
+  // Datos de relleno hasta que la sección «Producción» del panel tenga filas publicadas.
+  const defaultProduction: PersonCardData[] = [
+    { key: 'direccion', name: 'Persona Ejemplo', role: es ? 'Dirección general' : 'General direction' },
+    { key: 'musica', name: 'Persona Ejemplo', role: es ? 'Dirección musical' : 'Music direction' },
+    { key: 'coreografia', name: 'Persona Ejemplo', role: es ? 'Coreografía' : 'Choreography' },
+    { key: 'tecnica', name: 'Persona Ejemplo', role: es ? 'Producción técnica' : 'Technical production' },
+  ];
+  const productionPeople = productionItems.length > 0 ? toPeople(productionItems) : defaultProduction;
 
   const openGallery = (title: string, images: GalleryImage[]) => setGallery({ title, images });
 

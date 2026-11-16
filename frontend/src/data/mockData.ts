@@ -2,7 +2,8 @@ import { Show, ImpactProject, Opportunity, DonorTier, AuditLogItem } from '../ty
 
 // Las fotos de `gallery` son copias optimizadas de public/obras. Cuando el bucket
 // de R2 esté configurado pueden reemplazarse por las URLs públicas del bucket.
-// `cast` vacío muestra «Elenco por anunciar»: no se inventan nombres.
+// Los elencos con «Persona Ejemplo» son datos de relleno: reemplazar por los
+// nombres reales cuando la organización los entregue.
 export const showsData: Show[] = [
   {
     id: 'addams-family-2026',
@@ -20,7 +21,12 @@ export const showsData: Show[] = [
     director: 'Equipo Far Corners Teatro Comunitario',
     synopsis: "En este divertido y macabro musical, la famosa y espeluznante Familia Addams se enfrenta a una nueva pesadilla. Miércoles, convertida ya en una joven, se ha enamorado de un chico dulce y \"normal\" de Ohio. Ambas familias se reúnen para una cena fatídica, poniendo a prueba los lazos del amor y la herencia frente a sus mundos radicalmente diferentes.",
     synopsisEn: "In this hilarious and macabre musical, the famously spooky Addams Family faces a new nightmare. Daughter Wednesday, now a young woman, has fallen in love with a sweet, \"normal\" young man from Ohio. The two families meet for a fateful dinner party, testing the bonds of love and heritage against their drastically different worlds.",
-    cast: [],
+    cast: [
+      { name: 'Persona Ejemplo A', role: 'Gómez Addams' },
+      { name: 'Persona Ejemplo B', role: 'Morticia Addams' },
+      { name: 'Persona Ejemplo C', role: 'Merlina Addams' },
+      { name: 'Persona Ejemplo D', role: 'Pugsley Addams' }
+    ],
     gallery: ['/obras/addams-2026/addams-2026-01.jpg', '/obras/addams-2026/addams-2026-02.jpg', '/obras/addams-2026/addams-2026-03.jpg', '/obras/addams-2026/addams-2026-04.jpg', '/obras/addams-2026/addams-2026-05.jpg', '/obras/addams-2026/addams-2026-06.jpg', '/obras/addams-2026/addams-2026-07.jpg', '/obras/addams-2026/addams-2026-08.jpg']
   },
   {
@@ -61,7 +67,11 @@ export const showsData: Show[] = [
     director: 'Equipo Far Corners Teatro Comunitario',
     synopsis: "Ópera rock legendaria que narra los últimos días de la vida de Jesús desde la perspectiva de Judas Iscariote, con impactantes arreglos vocales e instrumentales comunitarios.",
     synopsisEn: "A legendary rock opera narrating the final days of Jesus' life from the perspective of Judas Iscariot, featuring impactful community vocal and instrumental arrangements.",
-    cast: [],
+    cast: [
+      { name: 'Persona Ejemplo A', role: 'Jesús' },
+      { name: 'Persona Ejemplo B', role: 'Judas' },
+      { name: 'Persona Ejemplo C', role: 'María Magdalena' }
+    ],
     gallery: ['/obras/jcs-2022/jcs-2022-01.jpg', '/obras/jcs-2022/jcs-2022-02.jpg', '/obras/jcs-2022/jcs-2022-03.jpg', '/obras/jcs-2022/jcs-2022-04.jpg', '/obras/jcs-2022/jcs-2022-05.jpg', '/obras/jcs-2022/jcs-2022-06.jpg', '/obras/jcs-2022/jcs-2022-07.jpg', '/obras/jcs-2022/jcs-2022-08.jpg']
   },
   {
@@ -80,7 +90,11 @@ export const showsData: Show[] = [
     director: 'Equipo Far Corners Teatro Comunitario',
     synopsis: "El musical de Stephen Sondheim que entrelaza cuentos de hadas clásicos y explora las consecuencias de nuestros deseos más profundos.",
     synopsisEn: "Stephen Sondheim's musical interweaving classic fairy tales and exploring the consequences of our deepest wishes.",
-    cast: [],
+    cast: [
+      { name: 'Persona Ejemplo A', role: 'El Panadero' },
+      { name: 'Persona Ejemplo B', role: 'La Esposa del Panadero' },
+      { name: 'Persona Ejemplo C', role: 'La Bruja' }
+    ],
     gallery: ['/obras/into-the-woods/into-the-woods-01.jpg', '/obras/into-the-woods/into-the-woods-02.jpg', '/obras/into-the-woods/into-the-woods-03.jpg', '/obras/into-the-woods/into-the-woods-04.jpg', '/obras/into-the-woods/into-the-woods-05.jpg', '/obras/into-the-woods/into-the-woods-06.jpg', '/obras/into-the-woods/into-the-woods-07.jpg', '/obras/into-the-woods/into-the-woods-08.jpg']
   },
   {
@@ -99,7 +113,11 @@ export const showsData: Show[] = [
     director: 'Equipo Far Corners Teatro Comunitario',
     synopsis: "Una emotiva historia sobre la tradición, la familia y el cambio en el pequeño pueblo de Anatevka a principios del siglo XX.",
     synopsisEn: "A heartwarming story about tradition, family, and change in the village of Anatevka.",
-    cast: [],
+    cast: [
+      { name: 'Persona Ejemplo A', role: 'Tevye' },
+      { name: 'Persona Ejemplo B', role: 'Golde' },
+      { name: 'Persona Ejemplo C', role: 'Tzeitel' }
+    ],
     gallery: ['/obras/fiddler-2017/fiddler-2017-01.jpg', '/obras/fiddler-2017/fiddler-2017-02.jpg', '/obras/fiddler-2017/fiddler-2017-03.jpg', '/obras/fiddler-2017/fiddler-2017-04.jpg', '/obras/fiddler-2017/fiddler-2017-05.jpg', '/obras/fiddler-2017/fiddler-2017-06.jpg', '/obras/fiddler-2017/fiddler-2017-07.jpg', '/obras/fiddler-2017/fiddler-2017-08.jpg']
   },
   {
@@ -118,7 +136,11 @@ export const showsData: Show[] = [
     director: 'Equipo Far Corners Teatro Comunitario',
     synopsis: "Un musical sobre la vida, los sueños y la comunidad de un barrio latino de Nueva York.",
     synopsisEn: "A musical about the life, dreams and community of a Latino neighborhood in New York.",
-    cast: [],
+    cast: [
+      { name: 'Persona Ejemplo A', role: 'Usnavi' },
+      { name: 'Persona Ejemplo B', role: 'Nina' },
+      { name: 'Persona Ejemplo C', role: 'Vanessa' }
+    ],
     gallery: ['/obras/in-the-heights-2013/in-the-heights-2013-01.jpg', '/obras/in-the-heights-2013/in-the-heights-2013-02.jpg', '/obras/in-the-heights-2013/in-the-heights-2013-03.jpg', '/obras/in-the-heights-2013/in-the-heights-2013-04.jpg', '/obras/in-the-heights-2013/in-the-heights-2013-05.jpg', '/obras/in-the-heights-2013/in-the-heights-2013-06.jpg', '/obras/in-the-heights-2013/in-the-heights-2013-07.jpg', '/obras/in-the-heights-2013/in-the-heights-2013-08.jpg']
   },
   {
@@ -137,7 +159,11 @@ export const showsData: Show[] = [
     director: 'Equipo Far Corners Teatro Comunitario',
     synopsis: "Una sátira musical sobre la escasez de agua, la codicia y la rebelión de un pueblo.",
     synopsisEn: "A musical satire about water scarcity, greed and a town's rebellion.",
-    cast: [],
+    cast: [
+      { name: 'Persona Ejemplo A', role: 'Bobby Strong' },
+      { name: 'Persona Ejemplo B', role: 'Hope Cladwell' },
+      { name: 'Persona Ejemplo C', role: 'Officer Lockstock' }
+    ],
     gallery: ['/obras/urinetown-2009/urinetown-2009-01.jpg', '/obras/urinetown-2009/urinetown-2009-02.jpg', '/obras/urinetown-2009/urinetown-2009-03.jpg', '/obras/urinetown-2009/urinetown-2009-04.jpg', '/obras/urinetown-2009/urinetown-2009-05.jpg', '/obras/urinetown-2009/urinetown-2009-06.jpg', '/obras/urinetown-2009/urinetown-2009-07.jpg']
   },
   {
@@ -156,7 +182,11 @@ export const showsData: Show[] = [
     director: 'Equipo Far Corners Teatro Comunitario',
     synopsis: "La comedia musical clásica de apuestas, enredos y romance en Nueva York.",
     synopsisEn: "The classic musical comedy of gamblers, mix-ups and romance in New York.",
-    cast: [],
+    cast: [
+      { name: 'Persona Ejemplo A', role: 'Sky Masterson' },
+      { name: 'Persona Ejemplo B', role: 'Sarah Brown' },
+      { name: 'Persona Ejemplo C', role: 'Nathan Detroit' }
+    ],
     gallery: ['/obras/guys-and-dolls-2005/guys-and-dolls-2005-01.jpg', '/obras/guys-and-dolls-2005/guys-and-dolls-2005-02.jpg', '/obras/guys-and-dolls-2005/guys-and-dolls-2005-03.jpg', '/obras/guys-and-dolls-2005/guys-and-dolls-2005-04.jpg']
   }
 ];
