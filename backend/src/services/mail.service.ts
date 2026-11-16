@@ -119,3 +119,116 @@ export async function enviarRespuestaPorCorreo({
     messageId: resultado.messageId,
   };
 }
+
+interface DatosBoletosCorreo {
+  destinatario: string;
+  nombre: string;
+  tituloObra: string;
+  cantidadBoletos: number;
+  pdfBuffer: Buffer;
+  qrCodes?: string[];
+  idioma?: IdiomaCorreo;
+}
+
+export async function enviarBoletosPorCorreo({
+  destinatario,
+  nombre,
+  tituloObra,
+  cantidadBoletos,
+  pdfBuffer,
+  qrCodes,
+  idioma = 'es',
+}: DatosBoletosCorreo) {
+  // Si no hay configuración SMTP en el entorno, registramos el envío simulado
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER) {
+    console.log(
+      `[SIMULACIÓN CORREO] Boleto(s) (${cantidadBoletos}) para "${tituloObra}" con QR(s) generados y listos para enviar a ${destinatario} (${nombre}):`,
+      qrCodes || []
+    );
+    return {
+      messageId: `simulated-${Date.now()}`,
+      simulated: true,
+    };
+  }
+
+  try {
+    const sufijo = idioma === 'es' ? 'ES' : 'EN';
+    const nombreRemitente =
+      process.env[`MAIL_FROM_NAME_${sufijo}`]?.trim() || 'Far Corners Community Theatre';
+    const direccionRemitente =
+      process.env[`MAIL_FROM_ADDRESS_${sufijo}`]?.trim() ||
+      process.env.SMTP_USER?.trim() ||
+      'tickets@farcorners.org';
+    const direccionRespuesta =
+      process.env[`MAIL_REPLY_TO_${sufijo}`]?.trim() || direccionRemitente;
+
+    const transportador = crearTransportador();
+    const asunto =
+      idioma === 'es'
+        ? `Tus Boletos y Códigos QR para "${tituloObra}" - Far Corners Community Theatre`
+        : `Your Tickets & QR Codes for "${tituloObra}" - Far Corners Community Theatre`;
+
+    const saludo = idioma === 'es' ? `¡Hola, ${nombre}!` : `Hello, ${nombre}!`;
+    const listaQr = qrCodes && qrCodes.length > 0
+      ? (idioma === 'es'
+          ? `Tus códigos de acceso oficiales:\n${qrCodes.map((c, i) => `  • Asiento #${i + 1}: ${c}`).join('\n')}`
+          : `Your official entrance codes:\n${qrCodes.map((c, i) => `  • Seat #${i + 1}: ${c}`).join('\n')}`)
+      : '';
+
+    const cuerpoTexto =
+      idioma === 'es'
+        ? [
+            saludo,
+            `¡Tu pago ha sido validado exitosamente en la taquilla de Far Corners Community Theatre!`,
+            `Adjunto a este correo encontrarás tus ${cantidadBoletos} boleto(s) oficial(es) en PDF con su respectivo código QR para la obra "${tituloObra}".`,
+            listaQr,
+            `Presenta el código QR desde tu teléfono o impreso directamente en la entrada de la sala.`,
+            `¡Esperamos que disfrutes la función!`,
+            nombreRemitente,
+          ].filter(Boolean).join('\n\n')
+        : [
+            saludo,
+            `Your payment has been successfully validated at Far Corners Community Theatre box office!`,
+            `Attached you will find your ${cantidadBoletos} official ticket(s) in PDF format with individual QR codes for "${tituloObra}".`,
+            listaQr,
+            `Present your QR code from your phone or printed at the entrance.`,
+            `We look forward to seeing you at the show!`,
+            nombreRemitente,
+          ].filter(Boolean).join('\n\n');
+
+    const sanitizedFilename = `Boletos_${tituloObra.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+
+    const resultado = await transportador.sendMail({
+      from: {
+        name: nombreRemitente,
+        address: direccionRemitente,
+      },
+      to: {
+        name: nombre,
+        address: destinatario,
+      },
+      replyTo: direccionRespuesta,
+      subject: asunto,
+      text: cuerpoTexto,
+      attachments: [
+        {
+          filename: sanitizedFilename,
+          content: pdfBuffer,
+          contentType: 'application/pdf',
+        },
+      ],
+    });
+
+    return {
+      messageId: resultado.messageId,
+      simulated: false,
+    };
+  } catch (error) {
+    console.error('Error al enviar correo con boletos PDF:', error);
+    // Devolvemos el error pero no bloqueamos la experiencia del usuario
+    return {
+      messageId: null,
+      error: (error as Error).message,
+    };
+  }
+}

@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Language, Show, PageView, ImpactProject } from '../types';
 import { showsData, projectsData } from '../data/mockData';
 import { Ticket, Users, Sparkles, ChevronRight, Star, FileText } from 'lucide-react';
 import { CountUp } from '../components/CountUp';
 import { ShowsCarousel } from '../components/ShowsCarousel';
-import { hasTickets, openProgram } from '../lib/shows';
+import { hasTickets, openProgram, mapearEventoAShow } from '../lib/shows';
 import { getTranslations } from '../lib/i18n';
 import { useGalleries } from '../hooks/useGalleries';
 import { GalleryButton, GalleryLightbox, toGalleryImages } from '../components/GalleryLightbox';
@@ -27,8 +27,29 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const t = getTranslations(language).views.home;
   const { galleryFor } = useGalleries();
   const [galleryProject, setGalleryProject] = useState<ImpactProject | null>(null);
-  const currentShow = showsData.find(s => s.status === 'current') || showsData[0];
-  const upcomingShows = showsData.slice(0, 3);
+  const fallbackShow = showsData.find(s => s.status === 'current') || showsData[0];
+  const [currentShow, setCurrentShow] = useState<Show>(fallbackShow);
+  const [upcomingShows, setUpcomingShows] = useState<Show[]>(showsData.slice(0, 3));
+
+  useEffect(() => {
+    async function cargarObras() {
+      try {
+        const res = await fetch('/api/v1/events');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            const showsMapeados = data.map(mapearEventoAShow);
+            const destacado = showsMapeados.find(s => s.status === 'current') || showsMapeados[0];
+            setCurrentShow(destacado);
+            setUpcomingShows(showsMapeados);
+          }
+        }
+      } catch {
+        // En caso de error o sin conexión, se conserva el estado inicial
+      }
+    }
+    void cargarObras();
+  }, []);
 
   return (
     <div className="space-y-12 sm:space-y-16 pb-12 sm:pb-16">

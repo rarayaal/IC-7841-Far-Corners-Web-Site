@@ -5,7 +5,7 @@ import {
   Shield, Ticket, Users, Heart, Plus, Edit2, Trash2,
   LayoutDashboard, FolderKanban, GraduationCap, HandHeart, Building2,
   ClipboardList, FileText, PenLine, Image, Archive, Phone, MessageSquare,
-  Mail, ScrollText, Tent,
+  Mail, ScrollText, Tent, Sparkles,
 } from 'lucide-react';
 import { AdminMessagesView } from './AdminMessagesView';
 import { AdminContactChannelsView } from './AdminContactChannelsView';
@@ -21,6 +21,7 @@ import { AdminAuditView } from './AdminAuditView';
 import { AdminProjectsView } from './AdminProjectsView';
 import { AdminDonationsView } from './AdminDonationsView';
 import { AdminTicketingView } from './AdminTicketingView';
+import { AdminShowsManagementView } from './AdminShowsManagementView';
 import { adminTexts, statusLabel } from '../lib/adminI18n';
 import { tienePermiso } from '../services/permisos';
 import { AdminNewsletterView } from './AdminNewsletterView';
@@ -28,7 +29,7 @@ import { AdminFormsView } from './AdminFormsView';
 import { AdminApplicantsView } from './AdminApplicantsView';
 
 type AdminTab =
-  | 'kpi' | 'donations' | 'projects' | 'ticketing' | 'content' | 'media'
+  | 'kpi' | 'shows' | 'donations' | 'projects' | 'ticketing' | 'content' | 'media'
   | 'retirement' | 'applicants' | 'audit' | 'messages' | 'contacts'
   | 'communities' | 'students' | 'volunteers' | 'camps' | 'users' | 'newsletter' | 'forms';
 
@@ -110,9 +111,9 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
       label: txt.sidebar.general,
       items: [
         { key: 'kpi', label: txt.tabs.kpi, icon: LayoutDashboard },
+        { key: 'shows', label: language === 'es' ? 'Proyectos' : 'Projects', icon: Sparkles },
         { key: 'ticketing', label: txt.tabs.ticketing, icon: Ticket },
         { key: 'donations', label: txt.tabs.donations, icon: Heart },
-        { key: 'projects', label: txt.tabs.projects, icon: FolderKanban },
       ],
     },
     {
@@ -219,8 +220,9 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
 
         <div className="flex-1 min-w-0 w-full space-y-8">
       {/* Renderizado de vistas */}
+      {activeTab === 'shows' && <AdminShowsManagementView language={language} />}
+      {activeTab === 'ticketing' && <AdminTicketingView />}
       {activeTab === 'donations' && <AdminDonationsView language={language} />}
-      {activeTab === 'projects' && <AdminProjectsView language={language} />}
       {activeTab === 'newsletter' && puedeVerBoletin && (
         <AdminNewsletterView language={language} />
       )}
@@ -315,111 +317,6 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
                 );
               })}
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 2: TICKETING MANAGEMENT */}
-      {activeTab === 'ticketing' && (
-        <div className="space-y-6 animate-fadeIn">
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="font-serif text-xl font-bold text-brand-navy dark:text-white">{txt.ticketing.title}</h3>
-              <p className="text-xs text-slate-600 dark:text-slate-300">{txt.ticketing.subtitle}</p>
-            </div>
-            <button
-              onClick={() => setShowFormOpen(!showFormOpen)}
-              className="px-4 py-2 bg-brand-green hover:bg-brand-forest text-brand-navy hover:text-brand-navy dark:text-white text-xs font-extrabold rounded-xl shadow-glow-green flex items-center space-x-1.5 uppercase tracking-wider"
-            >
-              <Plus className="w-4 h-4" />
-              <span>{showFormOpen ? txt.ticketing.cancel : txt.ticketing.addShow}</span>
-            </button>
-          </div>
-
-          {/* New Show Form */}
-          {showFormOpen && (
-            <form onSubmit={handleCreateShow} className="bg-[#F8F8F2] dark:bg-brand-navyDark p-5 rounded-2xl border border-brand-green/40 space-y-4 text-xs">
-              <h4 className="font-serif text-sm font-bold text-brand-forest dark:text-brand-lime">{txt.ticketing.newShowTitle}</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-slate-600 dark:text-slate-300 mb-1">{txt.ticketing.form.titleLabel}</label>
-                  <input
-                    type="text"
-                    required
-                    value={newShowTitle}
-                    onChange={(e) => setNewShowTitle(e.target.value)}
-                    placeholder={txt.ticketing.form.titlePlaceholder}
-                    className="w-full px-3 py-2 bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border rounded text-brand-navy dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-600 dark:text-slate-300 mb-1">{txt.ticketing.form.yearLabel}</label>
-                  <input
-                    type="number"
-                    required
-                    value={newShowYear}
-                    onChange={(e) => setNewShowYear(e.target.value)}
-                    className="w-full px-3 py-2 bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border rounded text-brand-navy dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-600 dark:text-slate-300 mb-1">{txt.ticketing.form.capacityLabel}</label>
-                  <input
-                    type="number"
-                    required
-                    value={newShowCapacity}
-                    onChange={(e) => setNewShowCapacity(e.target.value)}
-                    className="w-full px-3 py-2 bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border rounded text-brand-navy dark:text-white"
-                  />
-                </div>
-              </div>
-              <button type="submit" className="px-5 py-2 bg-brand-green text-brand-navy font-extrabold rounded-lg">
-                {txt.ticketing.form.saveShow}
-              </button>
-            </form>
-          )}
-
-          {/* Shows Inventory Table */}
-          <div className="bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border rounded-2xl overflow-hidden">
-            <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300">
-              <thead className="bg-[#F8F8F2] dark:bg-brand-navyDark text-slate-600 dark:text-slate-300 font-mono text-[11px] uppercase border-b border-slate-200 dark:border-white/10">
-                <tr>
-                  <th className="p-4">{txt.ticketing.table.show}</th>
-                  <th className="p-4">{txt.ticketing.table.year}</th>
-                  <th className="p-4">{txt.ticketing.table.price}</th>
-                  <th className="p-4">{txt.ticketing.table.available}</th>
-                  <th className="p-4">{txt.ticketing.table.status}</th>
-                  <th className="p-4 text-right">{txt.ticketing.table.actions}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5 font-sans">
-                {shows.map((s) => (
-                  <tr key={s.id} className="hover:bg-slate-100 dark:bg-white/5 transition-colors">
-                    <td className="p-4 font-bold text-brand-navy dark:text-white">{s.title}</td>
-                    <td className="p-4 font-mono text-brand-forest dark:text-brand-lime">{s.year}</td>
-                    <td className="p-4 font-mono">₡{s.priceGeneral.toLocaleString()}</td>
-                    <td className="p-4 font-mono font-bold text-brand-green">
-                      {txt.ticketing.ticketsCount.replace('{count}', String(s.availableTickets))}
-                    </td>
-                    <td className="p-4">
-                      <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${
-                        s.status === 'current' ? 'bg-brand-green/20 text-brand-forest dark:text-brand-lime' : 'bg-[#F8F8F2] dark:bg-brand-navyDark text-slate-500 dark:text-slate-400'
-                      }`}>
-                        {statusLabel(s.status, language)}
-                      </span>
-                    </td>
-                    <td className="p-4 text-right space-x-2">
-                      <button className="p-1.5 rounded bg-slate-100 dark:bg-white/10 hover:bg-white/20 text-slate-700 dark:text-slate-200">
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button className="p-1.5 rounded bg-red-500/20 hover:bg-red-500/30 text-red-300">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
         </div>
       )}
