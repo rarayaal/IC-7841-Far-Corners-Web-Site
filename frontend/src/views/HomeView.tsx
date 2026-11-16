@@ -6,6 +6,7 @@ import { CountUp } from '../components/CountUp';
 import { ShowsCarousel } from '../components/ShowsCarousel';
 import { hasTickets, openProgram } from '../lib/shows';
 import { getTranslations } from '../lib/i18n';
+import { useGalleries } from '../hooks/useGalleries';
 import { GalleryButton, GalleryLightbox, toGalleryImages } from '../components/GalleryLightbox';
 
 interface HomeViewProps {
@@ -24,6 +25,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onOpenVolunteer,
 }) => {
   const t = getTranslations(language).views.home;
+  const { galleryFor } = useGalleries();
   const [galleryProject, setGalleryProject] = useState<ImpactProject | null>(null);
   const currentShow = showsData.find(s => s.status === 'current') || showsData[0];
   const upcomingShows = showsData.slice(0, 3);
@@ -244,7 +246,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     {proj.country}
                   </span>
                   <GalleryButton
-                    count={proj.gallery?.length ?? 0}
+                    count={galleryFor(proj.id, proj.gallery).length}
                     language={language}
                     onClick={() => setGalleryProject(proj)}
                     className="absolute bottom-3 right-3"
@@ -275,7 +277,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
       {galleryProject && (
         <GalleryLightbox
           title={language === 'es' ? galleryProject.title : galleryProject.titleEn}
-          images={toGalleryImages(galleryProject.gallery, galleryProject.title)}
+          images={toGalleryImages(galleryFor(galleryProject.id, galleryProject.gallery), galleryProject.title)}
           language={language}
           onClose={() => setGalleryProject(null)}
         />

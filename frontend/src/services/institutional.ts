@@ -6,10 +6,14 @@ export type InstitutionalSection =
   | 'future'
   | 'footer'
   | 'board'
-  | 'production';
+  | 'production'
+  | 'gallery';
 
 /** Secciones donde cada fila es una persona (nombre, cargo, biografía y foto). */
 export const PEOPLE_SECTIONS: InstitutionalSection[] = ['board', 'production'];
+
+/** Secciones cuyo identificador (page_slug) lo escribe el administrador. */
+export const SLUG_LIBRE_SECTIONS: InstitutionalSection[] = ['board', 'production', 'gallery'];
 
 export interface InstitutionalContent {
   id: string;
@@ -37,6 +41,8 @@ export const SCOPES_BY_SECTION: Record<InstitutionalSection, string[]> = {
   // Una fila por persona: el identificador (page_slug) lo escribe el administrador.
   board: [],
   production: [],
+  // Una fila por obra o proyecto: page_slug = id (p. ej. addams-family-2026, proj-cr).
+  gallery: [],
 };
 
 /** Lee el contenido publicado de una sección (sin sesión). */

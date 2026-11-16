@@ -5,6 +5,7 @@ import { Ticket, Calendar, Users, Info, X, FileText } from 'lucide-react';
 import { GalleryButton, GalleryLightbox, toGalleryImages } from '../components/GalleryLightbox';
 import { hasTickets, openProgram } from '../lib/shows';
 import { getTranslations } from '../lib/i18n';
+import { useGalleries } from '../hooks/useGalleries';
 
 interface ShowsViewProps {
   language: Language;
@@ -17,6 +18,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
   const [selectedShow, setSelectedShow] = useState<Show | null>(null);
   const [galleryShow, setGalleryShow] = useState<Show | null>(null);
   const es = language === 'es';
+  const { galleryFor } = useGalleries();
 
   // Put 2026 shows first
   const currentShows = showsData.filter(s => s.status === 'current');
@@ -112,7 +114,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
                 </span>
 
                 <GalleryButton
-                  count={show.gallery?.length ?? 0}
+                  count={galleryFor(show.id, show.gallery).length}
                   language={language}
                   onClick={() => setGalleryShow(show)}
                   className="absolute bottom-3 left-3"
@@ -188,7 +190,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
       {galleryShow && (
         <GalleryLightbox
           title={`${galleryShow.title} (${galleryShow.year})`}
-          images={toGalleryImages(galleryShow.gallery, galleryShow.title)}
+          images={toGalleryImages(galleryFor(galleryShow.id, galleryShow.gallery), galleryShow.title)}
           language={language}
           onClose={() => setGalleryShow(null)}
         />
@@ -251,13 +253,13 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
               </div>
 
               {/* Galería de la obra */}
-              {(selectedShow.gallery?.length ?? 0) > 0 && (
+              {galleryFor(selectedShow.id, selectedShow.gallery).length > 0 && (
                 <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-white/10">
                   <h5 className="font-serif text-base font-bold text-brand-navy dark:text-white">
                     {es ? 'Galería' : 'Gallery'}
                   </h5>
                   <div className="grid grid-cols-3 gap-2">
-                    {selectedShow.gallery!.map((url, i) => (
+                    {toGalleryImages(galleryFor(selectedShow.id, selectedShow.gallery), selectedShow.title).map(({ url }, i) => (
                       <button
                         key={`${url}-${i}`}
                         type="button"

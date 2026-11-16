@@ -13,6 +13,7 @@ export const SECCIONES_INSTITUCIONALES = [
   'footer',
   'board',
   'production',
+  'gallery',
 ] as const;
 
 export type SeccionInstitucional = (typeof SECCIONES_INSTITUCIONALES)[number];

@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Plus, Pencil, Trash2, X } from 'lucide-react';
 import { apiAdminJson as api } from '../services/apiAdmin';
 import {
-  PEOPLE_SECTIONS,
+  SLUG_LIBRE_SECTIONS,
   SCOPES_BY_SECTION,
   type InstitutionalContent,
   type InstitutionalSection,
@@ -32,6 +32,7 @@ const SECCIONES: InstitutionalSection[] = [
   'footer',
   'board',
   'production',
+  'gallery',
 ];
 
 const FORMATO_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -206,9 +207,9 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
   const inputClass =
     'w-full rounded-lg border border-[#1e4066] bg-[#00162e] p-3 text-sm text-white focus:border-[#77C65E] focus:outline-none';
   const labelClass = 'mb-1 block text-sm text-slate-300';
-  const esPersona = PEOPLE_SECTIONS.includes(seccion);
+  const esPersona = SLUG_LIBRE_SECTIONS.includes(seccion);
   const etiquetas =
-    seccion === 'footer' || seccion === 'board' || seccion === 'production'
+    seccion === 'footer' || seccion === 'board' || seccion === 'production' || seccion === 'gallery'
       ? t.fieldLabels[seccion]
       : null;
   const scopeLabel = (slug: string) =>
