@@ -89,13 +89,13 @@ export const ReplyDraftForm = ({ mensajeId, language = 'es' }: ReplyDraftFormPro
   return (
     <form
       onSubmit={enviarRespuesta}
-      className="mt-5 space-y-4 border-t border-brand-border pt-5"
+      className="mt-5 space-y-4 border-t border-slate-200 dark:border-brand-border pt-5"
     >
       <fieldset disabled={enviando} className="space-y-4">
         <div>
           <label
             htmlFor={`idioma-${mensajeId}`}
-            className="mb-2 block text-sm font-bold text-white"
+            className="mb-2 block text-sm font-bold text-brand-navy dark:text-white"
           >
             {txt.languageLabel}
           </label>
@@ -113,8 +113,8 @@ export const ReplyDraftForm = ({ mensajeId, language = 'es' }: ReplyDraftFormPro
 
               setConfirmacion('');
             }}
-            className="fc-select w-full rounded-xl border border-brand-border
-                       bg-brand-navyDark p-3 text-sm text-white"
+            className="fc-select w-full rounded-xl border border-slate-200 dark:border-brand-border
+                       bg-[#F8F8F2] dark:bg-brand-navyDark p-3 text-sm text-brand-navy dark:text-white"
           >
             <option value="">{txt.selectLanguage}</option>
             <option value="es">
@@ -129,7 +129,7 @@ export const ReplyDraftForm = ({ mensajeId, language = 'es' }: ReplyDraftFormPro
         <div>
           <label
             htmlFor={`respuesta-${mensajeId}`}
-            className="mb-2 block text-sm font-bold text-white"
+            className="mb-2 block text-sm font-bold text-brand-navy dark:text-white"
           >
             {txt.composeLabel}
           </label>
@@ -145,13 +145,13 @@ export const ReplyDraftForm = ({ mensajeId, language = 'es' }: ReplyDraftFormPro
               setConfirmacion('');
             }}
             placeholder={txt.placeholder}
-            className="w-full rounded-xl border border-brand-border
-                       bg-brand-navyDark p-3 text-sm text-white
+            className="w-full rounded-xl border border-slate-200 dark:border-brand-border
+                       bg-[#F8F8F2] dark:bg-brand-navyDark p-3 text-sm text-brand-navy dark:text-white
                        focus:border-brand-green focus:outline-none"
           />
         </div>
 
-        <p className="text-xs text-slate-300">
+        <p className="text-xs text-slate-600 dark:text-slate-300">
           {txt.warningNotice}
         </p>
 
@@ -160,7 +160,7 @@ export const ReplyDraftForm = ({ mensajeId, language = 'es' }: ReplyDraftFormPro
           disabled={enviando || !texto.trim() || !idioma}
           className="rounded-xl bg-brand-green px-4 py-2 text-sm
                      font-bold text-brand-navy hover:bg-brand-forest
-                     hover:text-white disabled:cursor-not-allowed
+                     hover:text-brand-navy dark:text-white disabled:cursor-not-allowed
                      disabled:opacity-50"
         >
           {enviando ? txt.sendingBtn : txt.sendBtn}

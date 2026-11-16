@@ -4,6 +4,7 @@ import { Mail, CheckCircle2 } from 'lucide-react';
 import { useContactChannels } from '../hooks/useContactChannels';
 import { ContactChannelsList } from './ContactChannelsList';
 import { getTranslations } from '../lib/i18n';
+import { useInstitutionalContent } from '../hooks/useInstitutionalContent';
 
 interface FooterProps {
   language: Language;
@@ -18,8 +19,16 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
     error: errorContactos,
   } = useContactChannels();
 
+  // Textos editables desde el panel de administración (sección «Pie de página»).
+  // Si aún no hay contenido publicado se usan los textos por defecto.
+  const { items: footerItems } = useInstitutionalContent('footer', language);
+  const footerContent = footerItems[0];
+  const aboutDesc = footerContent?.content ?? t.aboutDesc;
+  const taglineBadge = footerContent?.subtitle ?? t.taglineBadge;
+  const slogan = footerContent?.title ?? 'People • Stories • Community Through Art';
+
   const contactosDeFooter = contactos.filter((contacto) =>
-    ['email', 'phone', 'whatsapp', 'social'].includes(
+    ['email', 'phone', 'whatsapp', 'sinpe', 'social'].includes(
       contacto.channel_type
     )
   );
@@ -27,6 +36,8 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
   const ubicaciones = contactos.filter(
     (contacto) => contacto.channel_type === 'international_location'
   );
+  const mostrarUbicaciones =
+    !cargandoContactos && !errorContactos && ubicaciones.length > 0;
   const [email, setEmail] = useState('');
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
@@ -221,7 +232,7 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
       </div>
 
       {/* Main Footer Content */}
-      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className={`max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 ${mostrarUbicaciones ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-8`}>
         {/* About Far Corners */}
         <div className="space-y-4">
           <div className="flex items-center space-x-3">
@@ -235,11 +246,11 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
             </div>
           </div>
           <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-            {t.aboutDesc}
+            {aboutDesc}
           </p>
           <div className="pt-2 flex flex-col items-start gap-3">
             <span className="inline-block text-[11px] px-2.5 py-1 rounded bg-white dark:bg-brand-navy text-brand-forest dark:text-brand-lime font-semibold border border-slate-200 dark:border-brand-border shadow-sm dark:shadow-none">
-              {t.taglineBadge}
+              {taglineBadge}
             </span>
 
             <button
@@ -290,18 +301,18 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
           </ul>
         </div>
 
-        {/* Global Footprint */}
+        {/* Dónde estamos (oculto si no hay ubicaciones publicadas) */}
+        {mostrarUbicaciones && (
         <div>
           <h4 className="font-serif text-base font-bold text-brand-navy dark:text-white uppercase tracking-wider mb-4 border-b border-brand-green/40 pb-2">
             {t.globalFootprint}
           </h4>
-          {!cargandoContactos && !errorContactos && (
-            <ContactChannelsList
-              contactos={ubicaciones}
-              language={language}
-            />
-          )}
+          <ContactChannelsList
+            contactos={ubicaciones}
+            language={language}
+          />
         </div>
+        )}
 
         {/* Contact & Info */}
         <div>
@@ -341,7 +352,7 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <p>{t.copyright}</p>
           <p className="text-[11px] text-slate-600 dark:text-slate-300">
-            People • Stories • Community Through Art
+            {slogan}
           </p>
         </div>
       </div>
