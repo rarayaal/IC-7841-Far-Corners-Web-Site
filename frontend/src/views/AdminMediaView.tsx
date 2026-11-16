@@ -86,9 +86,11 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
       try {
         const [galeria, ...contenido] = await Promise.all([
           api<MediaItem[]>('/api/v1/media'),
-          api<InstitutionalContent[]>('/api/v1/institutional/history/admin'),
-          api<InstitutionalContent[]>('/api/v1/institutional/impact/admin'),
-          api<InstitutionalContent[]>('/api/v1/institutional/future/admin'),
+          ...(
+            ['history', 'impact', 'future', 'footer', 'board', 'production', 'gallery'] as const
+          ).map((seccion) =>
+            api<InstitutionalContent[]>(`/api/v1/institutional/${seccion}/admin`)
+          ),
         ]);
         // Los proyectos publicados son públicos: no requieren sesión.
         const proyectos = await api<{ id: string; title: string }[]>(
