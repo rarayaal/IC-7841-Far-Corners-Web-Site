@@ -7,3 +7,4 @@ dist/
 !.env.example
 *.log
 CLAUDE.mdfarcorners_dump.sql
+farcorners_contenido.sql
