@@ -82,16 +82,16 @@ export const AdminMessagesView = ({ language = 'es' }: AdminMessagesViewProps) =
   return (
     <section className="space-y-5">
       <div>
-        <h2 className="font-serif text-xl font-bold text-white">
+        <h2 className="font-serif text-xl font-bold text-brand-navy dark:text-white">
           {txt.title}
         </h2>
-        <p className="text-sm text-slate-300">
+        <p className="text-sm text-slate-600 dark:text-slate-300">
           {txt.subtitle}
         </p>
       </div>
 
       {cargando && (
-        <p role="status" className="text-slate-300">
+        <p role="status" className="text-slate-600 dark:text-slate-300">
           {txt.loading}
         </p>
       )}
@@ -103,7 +103,7 @@ export const AdminMessagesView = ({ language = 'es' }: AdminMessagesViewProps) =
       )}
 
       {!cargando && !error && mensajes.length === 0 && (
-        <p className="text-slate-300">
+        <p className="text-slate-600 dark:text-slate-300">
           {txt.empty}
         </p>
       )}
@@ -111,14 +111,14 @@ export const AdminMessagesView = ({ language = 'es' }: AdminMessagesViewProps) =
       {!cargando && !error && mensajes.map((mensaje) => (
         <details
           key={mensaje.id}
-          className="rounded-2xl border border-brand-border bg-brand-navy"
+          className="rounded-2xl border border-slate-200 dark:border-brand-border bg-white dark:bg-brand-navy"
         >
-          <summary className="cursor-pointer p-5 text-white">
+          <summary className="cursor-pointer p-5 text-brand-navy dark:text-white">
             <span className="font-bold break-words">
               {mensaje.subject}
             </span>
 
-            <span className="mt-2 block text-sm text-slate-300 break-words">
+            <span className="mt-2 block text-sm text-slate-600 dark:text-slate-300 break-words">
               {mensaje.name} · {mensaje.email}
             </span>
 
@@ -129,8 +129,8 @@ export const AdminMessagesView = ({ language = 'es' }: AdminMessagesViewProps) =
             </span>
           </summary>
 
-          <div className="border-t border-brand-border p-5">
-            <p className="whitespace-pre-wrap break-words text-sm text-slate-200">
+          <div className="border-t border-slate-200 dark:border-brand-border p-5">
+            <p className="whitespace-pre-wrap break-words text-sm text-slate-700 dark:text-slate-200">
               {mensaje.message}
             </p>
 

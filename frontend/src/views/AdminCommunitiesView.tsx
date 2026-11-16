@@ -145,22 +145,22 @@ export const AdminCommunitiesView = ({ language }: { language: Language }) => {
   }
 
   const inputClass =
-    'w-full rounded-lg border border-brand-border bg-brand-navyDark p-3 text-sm text-white focus:border-brand-green focus:outline-none';
+    'w-full rounded-lg border border-slate-200 dark:border-brand-border bg-[#F8F8F2] dark:bg-brand-navyDark p-3 text-sm text-brand-navy dark:text-white focus:border-brand-green focus:outline-none';
 
   return (
     <section className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="font-serif text-xl font-bold text-white">
+          <h2 className="font-serif text-xl font-bold text-brand-navy dark:text-white">
             {txt.communities.title}
           </h2>
-          <p className="text-sm text-slate-300">{txt.communities.subtitle}</p>
+          <p className="text-sm text-slate-600 dark:text-slate-300">{txt.communities.subtitle}</p>
         </div>
 
         <button
           type="button"
           onClick={abrirNueva}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-green px-4 py-2 text-sm font-bold text-brand-navy transition-colors hover:bg-brand-forest hover:text-white sm:w-auto"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-green px-4 py-2 text-sm font-bold text-brand-navy transition-colors hover:bg-brand-forest hover:text-brand-navy dark:text-white sm:w-auto"
         >
           <Plus className="w-4 h-4" />
           {txt.communities.newItem}
@@ -168,7 +168,7 @@ export const AdminCommunitiesView = ({ language }: { language: Language }) => {
       </div>
 
       {cargando && (
-        <p role="status" className="text-slate-300">
+        <p role="status" className="text-slate-600 dark:text-slate-300">
           {txt.communities.loading}
         </p>
       )}
@@ -179,16 +179,16 @@ export const AdminCommunitiesView = ({ language }: { language: Language }) => {
       )}
 
       {!cargando && comunidades.length === 0 && !error && (
-        <p className="text-slate-300">{txt.communities.empty}</p>
+        <p className="text-slate-600 dark:text-slate-300">{txt.communities.empty}</p>
       )}
 
       {formulario && (
         <form
           onSubmit={guardar}
-          className="space-y-4 rounded-2xl border border-brand-border bg-brand-navy p-5"
+          className="space-y-4 rounded-2xl border border-slate-200 dark:border-brand-border bg-white dark:bg-brand-navy p-5"
         >
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-white">
+            <h3 className="font-bold text-brand-navy dark:text-white">
               {formulario.id
                 ? txt.communities.editTitle
                 : txt.communities.createTitle}
@@ -196,7 +196,7 @@ export const AdminCommunitiesView = ({ language }: { language: Language }) => {
             <button
               type="button"
               onClick={() => setFormulario(null)}
-              className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+              className="p-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-brand-navy dark:text-white hover:bg-slate-100 dark:bg-white/10 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -206,7 +206,7 @@ export const AdminCommunitiesView = ({ language }: { language: Language }) => {
             <div>
               <label
                 htmlFor="comunidad-nombre"
-                className="mb-1 block text-sm text-slate-300"
+                className="mb-1 block text-sm text-slate-600 dark:text-slate-300"
               >
                 {txt.communities.name}
               </label>
@@ -226,7 +226,7 @@ export const AdminCommunitiesView = ({ language }: { language: Language }) => {
             <div>
               <label
                 htmlFor="comunidad-descripcion"
-                className="mb-1 block text-sm text-slate-300"
+                className="mb-1 block text-sm text-slate-600 dark:text-slate-300"
               >
                 {txt.communities.description}
               </label>
@@ -241,7 +241,7 @@ export const AdminCommunitiesView = ({ language }: { language: Language }) => {
               />
             </div>
 
-            <label className="flex items-center gap-2 text-sm text-white">
+            <label className="flex items-center gap-2 text-sm text-brand-navy dark:text-white">
               <input
                 type="checkbox"
                 checked={formulario.is_published}
@@ -265,7 +265,7 @@ export const AdminCommunitiesView = ({ language }: { language: Language }) => {
               <button
                 type="button"
                 onClick={() => setFormulario(null)}
-                className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold text-white hover:bg-white/20"
+                className="rounded-xl bg-slate-100 dark:bg-white/10 px-4 py-2 text-sm font-bold text-brand-navy dark:text-white hover:bg-white/20"
               >
                 {txt.common.cancel}
               </button>
@@ -275,9 +275,9 @@ export const AdminCommunitiesView = ({ language }: { language: Language }) => {
       )}
 
       {comunidades.length > 0 && (
-        <div className="overflow-x-auto rounded-2xl border border-brand-border bg-brand-navy">
-          <table className="w-full text-left text-xs text-slate-300">
-            <thead className="bg-brand-navyDark text-slate-300 font-mono text-[11px] uppercase border-b border-white/10">
+        <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-brand-border bg-white dark:bg-brand-navy">
+          <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+            <thead className="bg-[#F8F8F2] dark:bg-brand-navyDark text-slate-600 dark:text-slate-300 font-mono text-[11px] uppercase border-b border-slate-200 dark:border-white/10">
               <tr>
                 <th className="p-3 sm:p-4">{txt.communities.columnName}</th>
                 <th className="hidden p-4 md:table-cell">
@@ -291,15 +291,15 @@ export const AdminCommunitiesView = ({ language }: { language: Language }) => {
               {comunidades.map((comunidad) => (
                 <tr
                   key={comunidad.id}
-                  className="hover:bg-white/5 transition-colors"
+                  className="hover:bg-slate-100 dark:bg-white/5 transition-colors"
                 >
                   <td className="p-3 sm:p-4">
-                    <span className="font-bold text-white">{comunidad.name}</span>
-                    <span className="mt-1 block line-clamp-2 text-[11px] text-slate-400 md:hidden">
+                    <span className="font-bold text-brand-navy dark:text-white">{comunidad.name}</span>
+                    <span className="mt-1 block line-clamp-2 text-[11px] text-slate-500 dark:text-slate-400 md:hidden">
                       {comunidad.description ?? '—'}
                     </span>
                   </td>
-                  <td className="hidden p-4 text-slate-300 max-w-xs truncate md:table-cell">
+                  <td className="hidden p-4 text-slate-600 dark:text-slate-300 max-w-xs truncate md:table-cell">
                     {comunidad.description ?? '—'}
                   </td>
                   <td className="p-3 sm:p-4">
@@ -307,7 +307,7 @@ export const AdminCommunitiesView = ({ language }: { language: Language }) => {
                       className={`px-2.5 py-1 rounded text-[10px] uppercase font-bold ${
                         comunidad.is_published
                           ? 'bg-brand-green/20 text-brand-green'
-                          : 'bg-white/10 text-slate-300'
+                          : 'bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300'
                       }`}
                     >
                       {statusLabel(
@@ -322,7 +322,7 @@ export const AdminCommunitiesView = ({ language }: { language: Language }) => {
                         type="button"
                         onClick={() => abrirEdicion(comunidad)}
                         aria-label={txt.common.edit}
-                        className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-white/20"
+                        className="inline-flex items-center gap-1 rounded-lg bg-slate-100 dark:bg-white/10 px-2.5 py-1.5 text-[10px] font-bold text-brand-navy dark:text-white hover:bg-white/20"
                       >
                         <Pencil className="w-3 h-3" />
                         <span className="hidden sm:inline">{txt.common.edit}</span>
