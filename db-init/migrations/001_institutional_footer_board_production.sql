@@ -12,13 +12,13 @@ ALTER TABLE institutional_content
         'history', 'impact', 'future', 'students', 'volunteers',
         'internships', 'communities', 'donations', 'contact',
         'hero', 'intro', 'cta', 'camp', 'values', 'team', 'schedule',
-        'payment_instructions', 'footer', 'board', 'production'
+        'payment_instructions', 'footer', 'board', 'production', 'gallery'
     ));
 
 -- Contactos: único teléfono 7131-7013, sin dirección de sede ni WhatsApp.
 UPDATE contact_channels
    SET label = 'Coordinación de programas', value = 'Monteverde, Costa Rica'
- WHERE channel_type = 'address' AND value = 'Monteverde, Puntarenas, Costa Rica';
+ WHERE channel_type = 'address' AND value LIKE 'Monteverde, Puntarenas%';
 
 UPDATE contact_channels
    SET value = '+506 7131-7013', link_url = 'tel:+50671317013'
