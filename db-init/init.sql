@@ -199,7 +199,7 @@ CREATE TABLE institutional_content (
         'history', 'impact', 'future', 'students', 'volunteers',
         'internships', 'communities', 'donations', 'contact',
         'hero', 'intro', 'cta', 'camp', 'values', 'team', 'schedule',
-        'payment_instructions'
+        'payment_instructions', 'gallery'
     )),
     language VARCHAR(20) NOT NULL DEFAULT 'es',
     title VARCHAR(255) NOT NULL,
