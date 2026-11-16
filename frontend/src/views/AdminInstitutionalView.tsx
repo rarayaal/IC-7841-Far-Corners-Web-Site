@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Plus, Pencil, Trash2, X } from 'lucide-react';
 import { apiAdminJson as api } from '../services/apiAdmin';
 import {
+  SLUG_LIBRE_SECTIONS,
   SCOPES_BY_SECTION,
   type InstitutionalContent,
   type InstitutionalSection,
@@ -24,10 +25,20 @@ interface ContentForm {
   is_published: boolean;
 }
 
-const SECCIONES: InstitutionalSection[] = ['history', 'impact', 'future'];
+const SECCIONES: InstitutionalSection[] = [
+  'history',
+  'impact',
+  'future',
+  'footer',
+  'board',
+  'production',
+  'gallery',
+];
+
+const FORMATO_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 const formVacio = (section: InstitutionalSection): ContentForm => ({
-  page_slug: SCOPES_BY_SECTION[section][0],
+  page_slug: SCOPES_BY_SECTION[section][0] ?? '',
   language: 'es',
   title: '',
   subtitle: '',
@@ -120,6 +131,11 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
       return;
     }
 
+    if (!FORMATO_SLUG.test(formulario.page_slug)) {
+      setError(t.slugInvalid);
+      return;
+    }
+
     setGuardando(true);
     setError('');
     setAviso('');
@@ -191,6 +207,11 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
   const inputClass =
     'w-full rounded-lg border border-slate-200 dark:border-[#1e4066] bg-[#F8F8F2] dark:bg-[#00162e] p-3 text-sm text-brand-navy dark:text-white focus:border-[#77C65E] focus:outline-none';
   const labelClass = 'mb-1 block text-sm text-slate-600 dark:text-slate-300';
+  const esPersona = SLUG_LIBRE_SECTIONS.includes(seccion);
+  const etiquetas =
+    seccion === 'footer' || seccion === 'board' || seccion === 'production' || seccion === 'gallery'
+      ? t.fieldLabels[seccion]
+      : null;
   const scopeLabel = (slug: string) =>
     (t.scopes as Record<string, string>)[slug] ?? slug;
 
@@ -273,22 +294,45 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div>
                 <label htmlFor="inst-alcance" className={labelClass}>
-                  {t.scope}
+                  {esPersona ? t.personSlug : t.scope}
                 </label>
-                <select
-                  id="inst-alcance"
-                  value={formulario.page_slug}
-                  onChange={(e) =>
-                    setFormulario({ ...formulario, page_slug: e.target.value })
-                  }
-                  className={`${inputClass} fc-select`}
-                >
-                  {SCOPES_BY_SECTION[seccion].map((slug) => (
-                    <option key={slug} value={slug}>
-                      {scopeLabel(slug)}
-                    </option>
-                  ))}
-                </select>
+                {esPersona ? (
+                  <>
+                    <input
+                      id="inst-alcance"
+                      type="text"
+                      required
+                      maxLength={191}
+                      pattern="[a-z0-9]+(-[a-z0-9]+)*"
+                      value={formulario.page_slug}
+                      onChange={(e) =>
+                        setFormulario({
+                          ...formulario,
+                          page_slug: e.target.value.toLowerCase(),
+                        })
+                      }
+                      className={inputClass}
+                    />
+                    <p className="mt-1 text-xs text-slate-400">
+                      {t.personSlugHint}
+                    </p>
+                  </>
+                ) : (
+                  <select
+                    id="inst-alcance"
+                    value={formulario.page_slug}
+                    onChange={(e) =>
+                      setFormulario({ ...formulario, page_slug: e.target.value })
+                    }
+                    className={`${inputClass} fc-select`}
+                  >
+                    {SCOPES_BY_SECTION[seccion].map((slug) => (
+                      <option key={slug} value={slug}>
+                        {scopeLabel(slug)}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               <div>
@@ -337,7 +381,7 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
 
             <div>
               <label htmlFor="inst-titulo" className={labelClass}>
-                {t.titleField}
+                {etiquetas?.title ?? t.titleField}
               </label>
               <input
                 id="inst-titulo"
@@ -354,7 +398,7 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
 
             <div>
               <label htmlFor="inst-subtitulo" className={labelClass}>
-                {t.subtitleField}
+                {etiquetas?.subtitle ?? t.subtitleField}
               </label>
               <input
                 id="inst-subtitulo"
@@ -370,7 +414,7 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
 
             <div>
               <label htmlFor="inst-contenido" className={labelClass}>
-                {t.contentField}
+                {etiquetas?.content ?? t.contentField}
               </label>
               <textarea
                 id="inst-contenido"
@@ -383,9 +427,12 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
                 }
                 className={inputClass}
               />
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t.contentHint}</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                {etiquetas?.hint ?? t.contentHint}
+              </p>
             </div>
 
+            {!esPersona && seccion !== 'footer' && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="inst-cta-texto" className={labelClass}>
@@ -425,6 +472,7 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
                 </p>
               </div>
             </div>
+            )}
 
             <label className="flex items-center gap-2 text-sm text-brand-navy dark:text-white">
               <input
