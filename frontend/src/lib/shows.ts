@@ -32,11 +32,7 @@ export function mapearEventoAShow(e: any): Show {
       photo: c.photo_url,
       biography: c.biography,
     })),
-    gallery: (e.media || []).map((m: any) => ({
-      id: m.id,
-      url: m.url,
-      alt_text: m.alt_text,
-    })),
+    gallery: (e.media || []).map((m: any) => (typeof m === 'string' ? m : m.url)).filter(Boolean),
     performances: e.performances || [],
   };
 }

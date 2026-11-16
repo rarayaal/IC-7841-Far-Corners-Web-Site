@@ -20,8 +20,10 @@ export interface Show {
   synopsisEn: string;
   /** PDF del programa de mano; se usa cuando la obra no tiene boletería. */
   programUrl?: string;
+  /** Actores y personajes que participan en la obra. Vacío = elenco por anunciar. */
   cast: { name: string; role: string; photo?: string; biography?: string }[];
-  gallery?: { id: string; url: string; alt_text?: string }[];
+  /** Fotos de la obra para la galería (URLs). */
+  gallery?: string[];
   performances?: {
     id: string;
     starts_at: string;
@@ -44,6 +46,8 @@ export interface ImpactProject {
   image: string;
   participants: number;
   impactMetrics: string[];
+  /** Fotos del proyecto para la galería (URLs). */
+  gallery?: string[];
 }
 
 export interface Opportunity {

@@ -198,12 +198,12 @@ export const AdminDonationsView = ({ language }: { language: Language }) => {
 
       {/* Header & KPI Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-[#002244] border border-[#1e4066] p-5 rounded-2xl flex items-center space-x-4">
+        <div className="bg-white dark:bg-[#002244] border border-slate-200 dark:border-[#1e4066] p-5 rounded-2xl flex items-center space-x-4">
           <div className="p-3 bg-[#77C65E]/20 text-[#77C65E] border border-[#77C65E]/40 rounded-xl">
             <Coins className="w-6 h-6" />
           </div>
           <div>
-            <span className="text-slate-400 text-xs block">
+            <span className="text-slate-500 dark:text-slate-400 text-xs block">
               {isEs ? 'Recaudado (Validadas)' : 'Total Raised (Validated)'}
             </span>
             <div className="space-y-0.5">
@@ -217,29 +217,29 @@ export const AdminDonationsView = ({ language }: { language: Language }) => {
           </div>
         </div>
 
-        <div className="bg-[#002244] border border-[#1e4066] p-5 rounded-2xl flex items-center space-x-4">
+        <div className="bg-white dark:bg-[#002244] border border-slate-200 dark:border-[#1e4066] p-5 rounded-2xl flex items-center space-x-4">
           <div className="p-3 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-xl">
             <AlertCircle className="w-6 h-6" />
           </div>
           <div>
-            <span className="text-slate-400 text-xs block">
+            <span className="text-slate-500 dark:text-slate-400 text-xs block">
               {isEs ? 'En Revisión (Por Validar)' : 'Pending Review'}
             </span>
-            <span className="text-xl font-bold font-mono text-white">
+            <span className="text-xl font-bold font-mono text-brand-navy dark:text-white">
               {donacionesPendientes} {isEs ? 'aportes' : 'records'}
             </span>
           </div>
         </div>
 
-        <div className="bg-[#002244] border border-[#1e4066] p-5 rounded-2xl flex items-center space-x-4">
+        <div className="bg-white dark:bg-[#002244] border border-slate-200 dark:border-[#1e4066] p-5 rounded-2xl flex items-center space-x-4">
           <div className="p-3 bg-[#4A90D6]/20 text-[#4A90D6] border border-[#4A90D6]/40 rounded-xl">
             <Heart className="w-6 h-6" />
           </div>
           <div>
-            <span className="text-slate-400 text-xs block">
+            <span className="text-slate-500 dark:text-slate-400 text-xs block">
               {isEs ? 'Total de Donaciones' : 'Total Donations'}
             </span>
-            <span className="text-xl font-bold font-mono text-white">
+            <span className="text-xl font-bold font-mono text-brand-navy dark:text-white">
               {donaciones.length}
             </span>
           </div>
@@ -414,20 +414,20 @@ export const AdminDonationsView = ({ language }: { language: Language }) => {
         )}
       </div>
 
-      {/* Tabla de Donaciones */}
-      <div className="bg-[#002244] border border-[#1e4066] rounded-2xl overflow-hidden shadow-card-dark">
+      {/* Table */}
+      <div className="bg-white dark:bg-[#002244] border border-slate-200 dark:border-[#1e4066] rounded-2xl overflow-hidden shadow-card-dark">
         {cargando ? (
-          <div className="p-8 text-center text-slate-400 text-xs">
+          <div className="p-8 text-center text-slate-500 dark:text-slate-400 text-xs">
             {isEs ? 'Cargando registros de donaciones...' : 'Loading donations...'}
           </div>
         ) : donacionesFiltradas.length === 0 ? (
-          <div className="p-8 text-center text-slate-400 text-xs">
+          <div className="p-8 text-center text-slate-500 dark:text-slate-400 text-xs">
             {isEs ? 'No se encontraron donaciones con los filtros seleccionados.' : 'No donations found with selected filters.'}
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="bg-[#00162e] text-slate-400 uppercase text-[10px] tracking-wider border-b border-white/10">
+            <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+              <thead className="bg-[#F8F8F2] dark:bg-[#00162e] text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-200 dark:border-white/10">
                 <tr>
                   <th className="px-5 py-3.5">{isEs ? 'Donante' : 'Donor'}</th>
                   <th className="px-5 py-3.5">{isEs ? 'Monto' : 'Amount'}</th>
@@ -440,18 +440,18 @@ export const AdminDonationsView = ({ language }: { language: Language }) => {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {donacionesFiltradas.map((donacion) => (
-                  <tr key={donacion.id} className="hover:bg-white/5 transition-colors">
+                  <tr key={donacion.id} className="hover:bg-slate-100 dark:bg-white/5 transition-colors">
                     <td className="px-5 py-3.5">
                       <div className="space-y-0.5">
-                        <span className="font-bold text-white block">
+                        <span className="font-bold text-brand-navy dark:text-white block">
                           {donacion.donor_name || (isEs ? 'Donante Anónimo' : 'Anonymous')}
                         </span>
-                        <span className="text-[11px] text-slate-400 font-mono">
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
                           {donacion.donor_email || '—'}
                         </span>
                       </div>
                     </td>
-                    <td className="px-5 py-3.5 font-mono text-sm font-bold text-[#DCEB4F]">
+                    <td className="px-5 py-3.5 font-mono text-sm font-bold text-brand-forest dark:text-[#DCEB4F]">
                       {donacion.currency === 'CRC' ? '₡' : '$'}
                       {Number(donacion.amount).toLocaleString()} {donacion.currency || 'CRC'}
                     </td>
@@ -460,10 +460,10 @@ export const AdminDonationsView = ({ language }: { language: Language }) => {
                         {donacion.payment_method || donacion.payment_provider}
                       </span>
                     </td>
-                    <td className="px-5 py-3.5 font-mono text-xs text-white font-semibold">
+                    <td className="px-5 py-3.5 font-mono text-xs text-brand-navy dark:text-white font-semibold">
                       {donacion.payment_reference || donacion.transaction_id || '—'}
                     </td>
-                    <td className="px-5 py-3.5 text-slate-400 text-[11px]">
+                    <td className="px-5 py-3.5 text-slate-500 dark:text-slate-400 text-[11px]">
                       {new Date(donacion.created_at).toLocaleDateString(language === 'es' ? 'es-CR' : 'en-US', {
                         year: 'numeric',
                         month: 'short',
@@ -505,7 +505,7 @@ export const AdminDonationsView = ({ language }: { language: Language }) => {
                           <button
                             onClick={() => cambiarEstado(donacion.id, 'failed')}
                             disabled={actualizandoId === donacion.id}
-                            className="px-2.5 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-lg text-xs font-semibold transition-all"
+                            className="px-2.5 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-600 dark:text-red-300 rounded-lg text-xs font-semibold transition-all"
                           >
                             {isEs ? 'Rechazar' : 'Reject'}
                           </button>
@@ -514,7 +514,7 @@ export const AdminDonationsView = ({ language }: { language: Language }) => {
                         <button
                           onClick={() => cambiarEstado(donacion.id, 'pending')}
                           disabled={actualizandoId === donacion.id}
-                          className="px-2.5 py-1 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-lg text-[11px] transition-all"
+                          className="px-2.5 py-1 bg-slate-100 dark:bg-white/5 hover:bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 hover:text-brand-navy dark:text-white rounded-lg text-[11px] transition-all"
                         >
                           {isEs ? 'Reabrir Revisión' : 'Reopen'}
                         </button>

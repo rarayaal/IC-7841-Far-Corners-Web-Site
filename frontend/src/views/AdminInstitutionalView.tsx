@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Plus, Pencil, Trash2, X } from 'lucide-react';
 import { apiAdminJson as api } from '../services/apiAdmin';
 import {
+  SLUG_LIBRE_SECTIONS,
   SCOPES_BY_SECTION,
   type InstitutionalContent,
   type InstitutionalSection,
@@ -24,10 +25,20 @@ interface ContentForm {
   is_published: boolean;
 }
 
-const SECCIONES: InstitutionalSection[] = ['history', 'impact', 'future'];
+const SECCIONES: InstitutionalSection[] = [
+  'history',
+  'impact',
+  'future',
+  'footer',
+  'board',
+  'production',
+  'gallery',
+];
+
+const FORMATO_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 const formVacio = (section: InstitutionalSection): ContentForm => ({
-  page_slug: SCOPES_BY_SECTION[section][0],
+  page_slug: SCOPES_BY_SECTION[section][0] ?? '',
   language: 'es',
   title: '',
   subtitle: '',
@@ -120,6 +131,11 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
       return;
     }
 
+    if (!FORMATO_SLUG.test(formulario.page_slug)) {
+      setError(t.slugInvalid);
+      return;
+    }
+
     setGuardando(true);
     setError('');
     setAviso('');
@@ -189,8 +205,13 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
   }
 
   const inputClass =
-    'w-full rounded-lg border border-[#1e4066] bg-[#00162e] p-3 text-sm text-white focus:border-[#77C65E] focus:outline-none';
-  const labelClass = 'mb-1 block text-sm text-slate-300';
+    'w-full rounded-lg border border-slate-200 dark:border-[#1e4066] bg-[#F8F8F2] dark:bg-[#00162e] p-3 text-sm text-brand-navy dark:text-white focus:border-[#77C65E] focus:outline-none';
+  const labelClass = 'mb-1 block text-sm text-slate-600 dark:text-slate-300';
+  const esPersona = SLUG_LIBRE_SECTIONS.includes(seccion);
+  const etiquetas =
+    seccion === 'footer' || seccion === 'board' || seccion === 'production' || seccion === 'gallery'
+      ? t.fieldLabels[seccion]
+      : null;
   const scopeLabel = (slug: string) =>
     (t.scopes as Record<string, string>)[slug] ?? slug;
 
@@ -198,14 +219,14 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
     <section className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="font-serif text-xl font-bold text-white">{t.title}</h2>
-          <p className="text-sm text-slate-300">{t.subtitle}</p>
+          <h2 className="font-serif text-xl font-bold text-brand-navy dark:text-white">{t.title}</h2>
+          <p className="text-sm text-slate-600 dark:text-slate-300">{t.subtitle}</p>
         </div>
 
         <button
           type="button"
           onClick={abrirNuevo}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#77C65E] px-4 py-2 text-sm font-bold text-[#002244] transition-colors hover:bg-[#008047] hover:text-white sm:w-auto"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#77C65E] px-4 py-2 text-sm font-bold text-[#002244] transition-colors hover:bg-[#008047] hover:text-brand-navy dark:text-white sm:w-auto"
         >
           <Plus className="w-4 h-4" />
           {t.newItem}
@@ -214,7 +235,7 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
 
       <div
         role="tablist"
-        className="flex gap-2 overflow-x-auto border-b border-white/10 pb-2"
+        className="flex gap-2 overflow-x-auto border-b border-slate-200 dark:border-white/10 pb-2"
       >
         {SECCIONES.map((s) => (
           <button
@@ -226,7 +247,7 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
             className={`whitespace-nowrap rounded-xl px-4 py-2 text-xs font-bold transition-all ${
               seccion === s
                 ? 'bg-[#77C65E] text-[#002244]'
-                : 'bg-[#002244] text-slate-300 hover:text-white'
+                : 'bg-white dark:bg-[#002244] text-slate-600 dark:text-slate-300 hover:text-brand-navy dark:text-white'
             }`}
           >
             {t.sections[s]}
@@ -235,7 +256,7 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
       </div>
 
       {cargando && (
-        <p role="status" className="text-slate-300">
+        <p role="status" className="text-slate-600 dark:text-slate-300">
           {t.loading}
         </p>
       )}
@@ -246,16 +267,16 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
       )}
 
       {!cargando && items.length === 0 && !error && (
-        <p className="text-slate-300">{t.empty}</p>
+        <p className="text-slate-600 dark:text-slate-300">{t.empty}</p>
       )}
 
       {formulario && (
         <form
           onSubmit={guardar}
-          className="space-y-4 rounded-2xl border border-[#1e4066] bg-[#002244] p-4 sm:p-5"
+          className="space-y-4 rounded-2xl border border-slate-200 dark:border-[#1e4066] bg-white dark:bg-[#002244] p-4 sm:p-5"
         >
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-white">
+            <h3 className="font-bold text-brand-navy dark:text-white">
               {formulario.id ? t.editTitle : t.createTitle} ·{' '}
               {t.sections[seccion]}
             </h3>
@@ -263,7 +284,7 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
               type="button"
               onClick={() => setFormulario(null)}
               aria-label={txt.common.cancel}
-              className="rounded-lg p-1 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
+              className="rounded-lg p-1 text-slate-500 dark:text-slate-400 transition-colors hover:bg-slate-100 dark:bg-white/10 hover:text-brand-navy dark:text-white"
             >
               <X className="w-4 h-4" />
             </button>
@@ -273,22 +294,45 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div>
                 <label htmlFor="inst-alcance" className={labelClass}>
-                  {t.scope}
+                  {esPersona ? t.personSlug : t.scope}
                 </label>
-                <select
-                  id="inst-alcance"
-                  value={formulario.page_slug}
-                  onChange={(e) =>
-                    setFormulario({ ...formulario, page_slug: e.target.value })
-                  }
-                  className={`${inputClass} fc-select`}
-                >
-                  {SCOPES_BY_SECTION[seccion].map((slug) => (
-                    <option key={slug} value={slug}>
-                      {scopeLabel(slug)}
-                    </option>
-                  ))}
-                </select>
+                {esPersona ? (
+                  <>
+                    <input
+                      id="inst-alcance"
+                      type="text"
+                      required
+                      maxLength={191}
+                      pattern="[a-z0-9]+(-[a-z0-9]+)*"
+                      value={formulario.page_slug}
+                      onChange={(e) =>
+                        setFormulario({
+                          ...formulario,
+                          page_slug: e.target.value.toLowerCase(),
+                        })
+                      }
+                      className={inputClass}
+                    />
+                    <p className="mt-1 text-xs text-slate-400">
+                      {t.personSlugHint}
+                    </p>
+                  </>
+                ) : (
+                  <select
+                    id="inst-alcance"
+                    value={formulario.page_slug}
+                    onChange={(e) =>
+                      setFormulario({ ...formulario, page_slug: e.target.value })
+                    }
+                    className={`${inputClass} fc-select`}
+                  >
+                    {SCOPES_BY_SECTION[seccion].map((slug) => (
+                      <option key={slug} value={slug}>
+                        {scopeLabel(slug)}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               <div>
@@ -337,7 +381,7 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
 
             <div>
               <label htmlFor="inst-titulo" className={labelClass}>
-                {t.titleField}
+                {etiquetas?.title ?? t.titleField}
               </label>
               <input
                 id="inst-titulo"
@@ -354,7 +398,7 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
 
             <div>
               <label htmlFor="inst-subtitulo" className={labelClass}>
-                {t.subtitleField}
+                {etiquetas?.subtitle ?? t.subtitleField}
               </label>
               <input
                 id="inst-subtitulo"
@@ -370,7 +414,7 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
 
             <div>
               <label htmlFor="inst-contenido" className={labelClass}>
-                {t.contentField}
+                {etiquetas?.content ?? t.contentField}
               </label>
               <textarea
                 id="inst-contenido"
@@ -383,9 +427,12 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
                 }
                 className={inputClass}
               />
-              <p className="mt-1 text-xs text-slate-400">{t.contentHint}</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                {etiquetas?.hint ?? t.contentHint}
+              </p>
             </div>
 
+            {!esPersona && seccion !== 'footer' && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="inst-cta-texto" className={labelClass}>
@@ -420,13 +467,14 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
                   }
                   className={inputClass}
                 />
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   {t.ctaTargetHint}
                 </p>
               </div>
             </div>
+            )}
 
-            <label className="flex items-center gap-2 text-sm text-white">
+            <label className="flex items-center gap-2 text-sm text-brand-navy dark:text-white">
               <input
                 type="checkbox"
                 checked={formulario.is_published}
@@ -450,7 +498,7 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
               <button
                 type="button"
                 onClick={() => setFormulario(null)}
-                className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold text-white hover:bg-white/20"
+                className="rounded-xl bg-slate-100 dark:bg-white/10 px-4 py-2 text-sm font-bold text-brand-navy dark:text-white hover:bg-white/20"
               >
                 {txt.common.cancel}
               </button>
@@ -460,9 +508,9 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
       )}
 
       {items.length > 0 && (
-        <div className="overflow-x-auto rounded-2xl border border-[#1e4066] bg-[#002244]">
-          <table className="w-full text-left text-xs text-slate-300">
-            <thead className="border-b border-white/10 bg-[#00162e] font-mono text-[11px] uppercase text-slate-300">
+        <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-[#1e4066] bg-white dark:bg-[#002244]">
+          <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+            <thead className="border-b border-slate-200 dark:border-white/10 bg-[#F8F8F2] dark:bg-[#00162e] font-mono text-[11px] uppercase text-slate-600 dark:text-slate-300">
               <tr>
                 <th className="p-3 sm:p-4">{t.columnTitle}</th>
                 <th className="hidden p-4 md:table-cell">{t.columnScope}</th>
@@ -473,10 +521,10 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
             </thead>
             <tbody className="divide-y divide-white/5">
               {items.map((item) => (
-                <tr key={item.id} className="transition-colors hover:bg-white/5">
+                <tr key={item.id} className="transition-colors hover:bg-slate-100 dark:bg-white/5">
                   <td className="p-3 sm:p-4">
-                    <span className="font-bold text-white">{item.title}</span>
-                    <span className="mt-1 block text-[11px] text-slate-400 md:hidden">
+                    <span className="font-bold text-brand-navy dark:text-white">{item.title}</span>
+                    <span className="mt-1 block text-[11px] text-slate-500 dark:text-slate-400 md:hidden">
                       {scopeLabel(item.page_slug)} ·{' '}
                       {item.language.toUpperCase()}
                     </span>
@@ -492,7 +540,7 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
                       className={`rounded px-2.5 py-1 text-[10px] font-bold uppercase ${
                         item.is_published
                           ? 'bg-[#77C65E]/20 text-[#77C65E]'
-                          : 'bg-white/10 text-slate-300'
+                          : 'bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300'
                       }`}
                     >
                       {statusLabel(
@@ -507,7 +555,7 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
                         type="button"
                         onClick={() => abrirEdicion(item)}
                         aria-label={txt.common.edit}
-                        className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-white/20"
+                        className="inline-flex items-center gap-1 rounded-lg bg-slate-100 dark:bg-white/10 px-2.5 py-1.5 text-[10px] font-bold text-brand-navy dark:text-white hover:bg-white/20"
                       >
                         <Pencil className="w-3 h-3" />
                         <span className="hidden sm:inline">

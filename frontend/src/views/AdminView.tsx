@@ -150,24 +150,24 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 animate-fadeIn">
       {/* Admin Panel Header */}
-      <div className="bg-brand-navy border border-brand-green/40 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-glow-green">
+      <div className="bg-white dark:bg-brand-navy border border-brand-green/40 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-glow-green">
         <div className="flex items-center space-x-4">
           <div className="p-3 rounded-2xl bg-brand-green text-brand-navy border border-brand-lime">
             <Shield className="w-8 h-8" />
           </div>
           <div>
-            <span className="text-xs font-mono text-brand-lime font-bold uppercase tracking-wider block">
+            <span className="text-xs font-mono text-brand-forest dark:text-brand-lime font-bold uppercase tracking-wider block">
               Panel Administrativo Central • Far Corners
             </span>
-            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-white">
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-brand-navy dark:text-white">
               Gestión y Control de Sistema
             </h1>
           </div>
         </div>
 
-        <div className="flex items-center space-x-2 bg-[#00162e] px-3.5 py-2 rounded-xl border border-[#1e4066] text-xs">
+        <div className="flex items-center space-x-2 bg-[#F8F8F2] dark:bg-[#00162e] px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#1e4066] text-xs">
           <span className="w-2.5 h-2.5 rounded-full bg-[#77C65E] animate-pulse"></span>
-          <span className="text-slate-200 font-mono">
+          <span className="text-slate-700 dark:text-slate-200 font-mono">
             {(() => {
               try {
                 const u = JSON.parse(localStorage.getItem('auth_user') || '{}');
@@ -189,7 +189,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
               if (items.length === 0) return null;
               return (
                 <div key={group.label}>
-                  <p className="text-[11px] uppercase tracking-widest text-slate-400 dark:text-slate-500 font-mono font-bold mb-2 px-1">
+                  <p className="text-[11px] uppercase tracking-widest text-slate-500 dark:text-slate-400 dark:text-slate-500 font-mono font-bold mb-2 px-1">
                     {group.label}
                   </p>
                   <div className="space-y-1">
@@ -203,7 +203,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
                           className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-semibold transition-all ${
                             isActive
                               ? 'bg-brand-green text-brand-navy shadow-glow-green font-extrabold'
-                              : 'bg-brand-navy text-slate-300 hover:text-white hover:bg-brand-navyCard'
+                              : 'bg-white dark:bg-brand-navy text-slate-600 dark:text-slate-300 hover:text-brand-navy dark:text-white hover:bg-slate-50 dark:bg-brand-navyCard'
                           }`}
                         >
                           <Icon className="w-4 h-4 shrink-0" />
@@ -242,72 +242,72 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
         <div className="space-y-8 animate-fadeIn">
           {/* Top KPI Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-brand-navy p-5 rounded-2xl border border-brand-border space-y-2">
-              <div className="flex justify-between items-center text-xs text-slate-300">
+            <div className="bg-white dark:bg-brand-navy p-5 rounded-2xl border border-slate-200 dark:border-brand-border space-y-2">
+              <div className="flex justify-between items-center text-xs text-slate-600 dark:text-slate-300">
                 <span>{txt.kpi.donationsTitle}</span>
                 <Heart className="w-4 h-4 text-brand-green fill-current" />
               </div>
-              <span className="font-mono text-3xl font-extrabold text-brand-lime block">$4,250 USD</span>
+              <span className="font-mono text-3xl font-extrabold text-brand-forest dark:text-brand-lime block">$4,250 USD</span>
               <span className="text-[11px] text-brand-green block">{txt.kpi.donationsGrowth}</span>
             </div>
 
-            <div className="bg-brand-navy p-5 rounded-2xl border border-brand-border space-y-2">
-              <div className="flex justify-between items-center text-xs text-slate-300">
+            <div className="bg-white dark:bg-brand-navy p-5 rounded-2xl border border-slate-200 dark:border-brand-border space-y-2">
+              <div className="flex justify-between items-center text-xs text-slate-600 dark:text-slate-300">
                 <span>{txt.kpi.ticketsTitle}</span>
                 <Ticket className="w-4 h-4 text-brand-blue" />
               </div>
-              <span className="font-mono text-3xl font-extrabold text-white block">182</span>
-              <span className="text-[11px] text-slate-300 block">{txt.kpi.ticketsTotal}</span>
+              <span className="font-mono text-3xl font-extrabold text-brand-navy dark:text-white block">182</span>
+              <span className="text-[11px] text-slate-600 dark:text-slate-300 block">{txt.kpi.ticketsTotal}</span>
             </div>
 
-            <div className="bg-brand-navy p-5 rounded-2xl border border-brand-border space-y-2">
-              <div className="flex justify-between items-center text-xs text-slate-300">
+            <div className="bg-white dark:bg-brand-navy p-5 rounded-2xl border border-slate-200 dark:border-brand-border space-y-2">
+              <div className="flex justify-between items-center text-xs text-slate-600 dark:text-slate-300">
                 <span>{txt.kpi.applicantsTitle}</span>
                 <Users className="w-4 h-4 text-brand-blue" />
               </div>
-              <span className="font-mono text-3xl font-extrabold text-white block">14</span>
-              <span className="text-[11px] text-slate-300 block">{txt.kpi.applicantsSub}</span>
+              <span className="font-mono text-3xl font-extrabold text-brand-navy dark:text-white block">14</span>
+              <span className="text-[11px] text-slate-600 dark:text-slate-300 block">{txt.kpi.applicantsSub}</span>
             </div>
 
-            <div className="bg-brand-navy p-5 rounded-2xl border border-brand-border space-y-2">
-              <div className="flex justify-between items-center text-xs text-slate-300">
+            <div className="bg-white dark:bg-brand-navy p-5 rounded-2xl border border-slate-200 dark:border-brand-border space-y-2">
+              <div className="flex justify-between items-center text-xs text-slate-600 dark:text-slate-300">
                 <span>{txt.kpi.concurrencyTitle}</span>
                 <Shield className="w-4 h-4 text-brand-green" />
               </div>
               <span className="font-mono text-3xl font-extrabold text-brand-green block">28</span>
-              <span className="text-[11px] text-slate-300 block">{txt.kpi.concurrencySub}</span>
+              <span className="text-[11px] text-slate-600 dark:text-slate-300 block">{txt.kpi.concurrencySub}</span>
             </div>
           </div>
 
           {/* Graphical Analytics Bar Chart */}
-          <div className="bg-brand-navy p-6 rounded-3xl border border-brand-border space-y-4">
+          <div className="bg-white dark:bg-brand-navy p-6 rounded-3xl border border-slate-200 dark:border-brand-border space-y-4">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="font-serif text-lg font-bold text-white">{txt.kpi.salesChartTitle}</h3>
-                <p className="text-xs text-slate-300">{txt.kpi.salesChartSub}</p>
+                <h3 className="font-serif text-lg font-bold text-brand-navy dark:text-white">{txt.kpi.salesChartTitle}</h3>
+                <p className="text-xs text-slate-600 dark:text-slate-300">{txt.kpi.salesChartSub}</p>
               </div>
-              <span className="text-xs text-brand-lime font-mono">{txt.kpi.updatedRealtime}</span>
+              <span className="text-xs text-brand-forest dark:text-brand-lime font-mono">{txt.kpi.updatedRealtime}</span>
             </div>
 
             {/* SVG Custom Bar Chart */}
             <div className="pt-4 space-y-4">
               {[
-                { name: 'Merlina (2026)', count: 95, max: 250, color: 'from-brand-green to-brand-forest' },
-                { name: 'MAMMA MIA! (2026)', count: 182, max: 250, color: 'from-brand-blue to-brand-navy' },
+                { name: 'The Addams Family (2026)', count: 95, max: 250, color: 'from-brand-green to-brand-forest' },
+                { name: 'MAMMA MIA! (2024)', count: 182, max: 250, color: 'from-brand-blue to-brand-navy' },
                 { name: 'Jesus Christ Superstar (2019)', count: 240, max: 250, color: 'from-brand-lime to-brand-green' },
               ].map((bar, i) => {
                 const percentage = Math.round((bar.count / bar.max) * 100);
                 return (
                   <div key={i} className="space-y-1 text-xs">
-                    <div className="flex justify-between text-slate-200 font-semibold">
+                    <div className="flex justify-between text-slate-700 dark:text-slate-200 font-semibold">
                       <span>{bar.name}</span>
-                      <span className="font-mono font-bold text-brand-lime">
+                      <span className="font-mono font-bold text-brand-forest dark:text-brand-lime">
                         {txt.kpi.ticketsSold
                           .replace('{count}', String(bar.count))
                           .replace('{percentage}', String(percentage))}
                       </span>
                     </div>
-                    <div className="w-full bg-brand-navyDark h-4 rounded-full overflow-hidden border border-white/10 p-0.5">
+                    <div className="w-full bg-[#F8F8F2] dark:bg-brand-navyDark h-4 rounded-full overflow-hidden border border-slate-200 dark:border-white/10 p-0.5">
                       <div
                         className={`h-full rounded-full bg-gradient-to-r ${bar.color} transition-all duration-1000`}
                         style={{ width: `${percentage}%` }}
@@ -346,7 +346,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
         puedeVerAuditoria ? (
           <AdminAuditView language={language} />
         ) : (
-          <div className="bg-[#00162e] border border-white/10 rounded-2xl p-8 text-center text-rose-400">
+          <div className="bg-[#F8F8F2] dark:bg-[#00162e] border border-slate-200 dark:border-white/10 rounded-2xl p-8 text-center text-rose-400">
             {txt.audit.noPermissions}
           </div>
         )
@@ -357,7 +357,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
         puedeGestionarUsuarios ? (
           <AdminUsersManagementView language={language} />
         ) : (
-          <div className="bg-[#00162e] border border-white/10 rounded-2xl p-8 text-center text-rose-400">
+          <div className="bg-[#F8F8F2] dark:bg-[#00162e] border border-slate-200 dark:border-white/10 rounded-2xl p-8 text-center text-rose-400">
             {txt.usersManagement.noPermissions}
           </div>
         )

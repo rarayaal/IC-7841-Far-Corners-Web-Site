@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Language, Show, PageView } from '../types';
+import { Language, Show, PageView, ImpactProject } from '../types';
 import { showsData, projectsData } from '../data/mockData';
 import { Ticket, Users, Sparkles, ChevronRight, Star, FileText } from 'lucide-react';
 import { CountUp } from '../components/CountUp';
 import { ShowsCarousel } from '../components/ShowsCarousel';
 import { hasTickets, openProgram, mapearEventoAShow } from '../lib/shows';
 import { getTranslations } from '../lib/i18n';
+import { useGalleries } from '../hooks/useGalleries';
+import { GalleryButton, GalleryLightbox, toGalleryImages } from '../components/GalleryLightbox';
 
 interface HomeViewProps {
   language: Language;
@@ -23,6 +25,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onOpenVolunteer,
 }) => {
   const t = getTranslations(language).views.home;
+  const { galleryFor } = useGalleries();
+  const [galleryProject, setGalleryProject] = useState<ImpactProject | null>(null);
   const fallbackShow = showsData.find(s => s.status === 'current') || showsData[0];
   const [currentShow, setCurrentShow] = useState<Show>(fallbackShow);
   const [upcomingShows, setUpcomingShows] = useState<Show[]>(showsData.slice(0, 3));
@@ -101,7 +105,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
 
           {/* Stats Bar */}
-          <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 p-6 rounded-2xl bg-white/90 border border-slate-200 dark:bg-brand-navy/90 dark:border-brand-border backdrop-blur-md max-w-4xl mx-auto shadow-xl dark:shadow-2xl">
+          <div className="mt-16 grid grid-cols-2 md:grid-cols-5 gap-4 p-6 rounded-2xl bg-white/90 border border-slate-200 dark:bg-brand-navy/90 dark:border-brand-border backdrop-blur-md max-w-5xl mx-auto shadow-xl dark:shadow-2xl">
             <div className="text-center p-2 border-r border-slate-200 dark:border-white/10 last:border-r-0">
               <CountUp value="3" className="block font-mono text-4xl sm:text-5xl font-extrabold text-brand-green" />
               <span className="text-xs text-slate-600 dark:text-slate-300 uppercase font-semibold">
@@ -120,10 +124,16 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 {t.stats.youthImpacted}
               </span>
             </div>
-            <div className="text-center p-2">
+            <div className="text-center p-2 border-r border-slate-200 dark:border-white/10 last:border-r-0">
+              <CountUp value="+9,000" className="block font-mono text-4xl sm:text-5xl font-extrabold text-brand-blue" />
+              <span className="text-xs text-slate-600 dark:text-slate-300 uppercase font-semibold">
+                {t.stats.attendance}
+              </span>
+            </div>
+            <div className="text-center p-2 col-span-2 md:col-span-1">
               <CountUp value="100%" className="block font-mono text-4xl sm:text-5xl font-extrabold text-brand-green" />
               <span className="text-xs text-slate-600 dark:text-slate-300 uppercase font-semibold">
-                {t.stats.scholarships}
+                {t.stats.freeAccess}
               </span>
             </div>
           </div>
@@ -248,7 +258,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className={`grid grid-cols-1 gap-8 ${projectsData.length === 1 ? 'max-w-lg mx-auto' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
             {projectsData.map((proj) => (
               <div key={proj.id} className="bg-white dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded-2xl p-6 space-y-4 hover:border-brand-green/50 shadow-sm dark:shadow-none transition-all">
                 <div className="h-44 rounded-xl overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 relative">
@@ -256,6 +266,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   <span className="absolute bottom-3 left-3 px-3 py-1 rounded bg-brand-green text-brand-navy text-xs font-extrabold">
                     {proj.country}
                   </span>
+                  <GalleryButton
+                    count={galleryFor(proj.id, proj.gallery).length}
+                    language={language}
+                    onClick={() => setGalleryProject(proj)}
+                    className="absolute bottom-3 right-3"
+                  />
                 </div>
 
                 <h3 className="font-serif text-xl font-bold text-brand-navy dark:text-white">
@@ -278,6 +294,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
         </div>
       </section>
+
+      {galleryProject && (
+        <GalleryLightbox
+          title={language === 'es' ? galleryProject.title : galleryProject.titleEn}
+          images={toGalleryImages(galleryFor(galleryProject.id, galleryProject.gallery), galleryProject.title)}
+          language={language}
+          onClose={() => setGalleryProject(null)}
+        />
+      )}
 
       {/* Call To Action Banner */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

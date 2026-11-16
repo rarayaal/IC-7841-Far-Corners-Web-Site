@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Language, Show } from '../types';
 import { showsData } from '../data/mockData';
 import { Ticket, Calendar, Users, Info, X, FileText, User, Image as ImageIcon, ZoomIn } from 'lucide-react';
+import { GalleryButton, GalleryLightbox, toGalleryImages } from '../components/GalleryLightbox';
 import { hasTickets, openProgram, mapearEventoAShow } from '../lib/shows';
 import { getTranslations } from '../lib/i18n';
+import { useGalleries } from '../hooks/useGalleries';
 
 interface ShowsViewProps {
   language: Language;
@@ -18,17 +20,25 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
   const [fotoAmpliada, setFotoAmpliada] = useState<{ url: string; title: string; alt?: string } | null>(null);
   const [cardImageMode, setCardImageMode] = useState<Record<string, 'poster' | 'banner'>>({});
   const [obras, setObras] = useState<Show[]>(showsData);
+  const [galleryShow, setGalleryShow] = useState<Show | null>(null);
+  const es = language === 'es';
+  const { galleryFor } = useGalleries();
 
-  const getGalleryForShow = (show: Show) => {
-    if (show.gallery && show.gallery.length > 0) {
-      return show.gallery;
+  const getGalleryForShow = (show: Show): { url: string; alt_text?: string }[] => {
+    const urls = galleryFor(show.id, show.gallery);
+    if (urls && urls.length > 0) {
+      return urls.map((item, i) => {
+        const url = typeof item === 'string' ? item : item.url;
+        const alt = typeof item === 'string' ? `${show.title} - Foto ${i + 1}` : (item.alt || `${show.title} - Foto ${i + 1}`);
+        return { url, alt_text: alt };
+      });
     }
     // Galería fotográfica de respaldo para producciones de temporada
     return [
-      { id: '1', url: show.banner || '/recursos/IMG_2903.PNG', alt_text: `${show.title} - Banner Principal` },
-      { id: '2', url: '/recursos/IMG_2906.PNG', alt_text: `${show.title} - Montaje Escénico` },
-      { id: '3', url: '/recursos/IMG_2907.PNG', alt_text: `${show.title} - Ensayo General` },
-      { id: '4', url: '/recursos/IMG_2908.PNG', alt_text: `${show.title} - Elenco Comunitario` },
+      { url: show.banner || '/recursos/IMG_2903.PNG', alt_text: `${show.title} - Banner Principal` },
+      { url: '/recursos/IMG_2906.PNG', alt_text: `${show.title} - Montaje Escénico` },
+      { url: '/recursos/IMG_2907.PNG', alt_text: `${show.title} - Ensayo General` },
+      { url: '/recursos/IMG_2908.PNG', alt_text: `${show.title} - Elenco Comunitario` },
     ];
   };
 
@@ -116,7 +126,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
 
                 {show.status === 'current' ? (
                   <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-brand-green text-brand-navy text-xs font-extrabold uppercase tracking-wider shadow-lg">
-                    CARTELERA 2026
+                    {es ? 'CARTELERA' : 'NOW SHOWING'} {show.year}
                   </span>
                 ) : (
                   <span className="absolute top-3 left-3 px-3 py-1 rounded bg-[#F8F8F2] dark:bg-brand-navyDark/80 text-slate-600 dark:text-slate-300 text-xs font-mono border border-slate-200 dark:border-white/10">
@@ -159,6 +169,13 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
                 <span className="absolute bottom-3 right-3 px-2.5 py-1 rounded bg-[#F8F8F2] dark:bg-brand-navyDark/90 text-brand-forest dark:text-brand-lime text-xs font-mono font-bold border border-slate-200 dark:border-brand-border">
                   ₡10,000 CRC
                 </span>
+
+                <GalleryButton
+                  count={galleryFor(show.id, show.gallery).length}
+                  language={language}
+                  onClick={() => setGalleryShow(show)}
+                  className="absolute bottom-3 left-3"
+                />
               </div>
 
               {/* Card info */}
@@ -178,6 +195,18 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
                 <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
                   {language === 'es' ? show.synopsis : show.synopsisEn}
                 </p>
+
+                {/* Actores que participan */}
+                <div className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-300">
+                  <Users className="w-3.5 h-3.5 mt-0.5 shrink-0 text-brand-blue" aria-hidden="true" />
+                  {show.cast && show.cast.length > 0 ? (
+                    <p className="line-clamp-2">
+                      {show.cast.map((c) => `${c.name} (${c.role})`).join(' · ')}
+                    </p>
+                  ) : (
+                    <p className="italic">{es ? 'Elenco por anunciar' : 'Cast to be announced'}</p>
+                  )}
+                </div>
 
                 {/* Galería de Fotos dentro de la Card */}
                 {(() => {
@@ -254,6 +283,15 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
         ))}
       </div>
 
+      {galleryShow && (
+        <GalleryLightbox
+          title={`${galleryShow.title} (${galleryShow.year})`}
+          images={toGalleryImages(galleryFor(galleryShow.id, galleryShow.gallery), galleryShow.title)}
+          language={language}
+          onClose={() => setGalleryShow(null)}
+        />
+      )}
+
       {/* Show Detail Modal */}
       {selectedShow && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
@@ -302,15 +340,22 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
               </div>
 
               {/* Cast List */}
-              {selectedShow.cast && selectedShow.cast.length > 0 && (
-                <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-white/10">
-                  <div className="flex items-center justify-between">
-                    <h5 className="font-serif text-base font-bold text-brand-navy dark:text-white flex items-center gap-2">
-                      <Users className="w-4 h-4 text-brand-green" />
-                      <span>Elenco y Solistas Principales</span>
-                    </h5>
-                    <span className="text-[11px] text-slate-500">Toca un actor para ver detalles</span>
-                  </div>
+              {/* Cast List */}
+              <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-white/10">
+                <div className="flex items-center justify-between">
+                  <h5 className="font-serif text-base font-bold text-brand-navy dark:text-white flex items-center gap-2">
+                    <Users className="w-4 h-4 text-brand-green" />
+                    <span>{es ? 'Elenco y Solistas Principales' : 'Cast & Main Soloists'}</span>
+                  </h5>
+                  {selectedShow.cast && selectedShow.cast.length > 0 && (
+                    <span className="text-[11px] text-slate-500">{es ? 'Toca un actor para ver detalles' : 'Tap an actor for details'}</span>
+                  )}
+                </div>
+                {!selectedShow.cast || selectedShow.cast.length === 0 ? (
+                  <p className="text-xs italic text-slate-600 dark:text-slate-300">
+                    {es ? 'Elenco por anunciar.' : 'Cast to be announced.'}
+                  </p>
+                ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {selectedShow.cast.map((c, i) => (
                       <div
@@ -336,8 +381,8 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
+                )}
+              </div>
 
               {/* Galería Completa de la Obra */}
               <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-white/10">
