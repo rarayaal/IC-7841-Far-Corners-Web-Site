@@ -20,7 +20,17 @@ export interface Show {
   synopsisEn: string;
   /** PDF del programa de mano; se usa cuando la obra no tiene boletería. */
   programUrl?: string;
-  cast: { name: string; role: string; photo?: string }[];
+  cast: { name: string; role: string; photo?: string; biography?: string }[];
+  gallery?: { id: string; url: string; alt_text?: string }[];
+  performances?: {
+    id: string;
+    starts_at: string;
+    ends_at?: string;
+    venue: string;
+    max_capacity: number;
+    status: string;
+    inventory?: any[];
+  }[];
 }
 
 export interface ImpactProject {

@@ -62,7 +62,7 @@ export async function apiAdminJson<T>(
 
   if (!respuesta.ok) {
     const mensaje =
-      (datos && (datos.message || datos.detail)) ||
+      (datos && (datos.error || datos.message || datos.detail)) ||
       `Error ${respuesta.status} al comunicarse con el servidor.`;
     throw new Error(mensaje);
   }

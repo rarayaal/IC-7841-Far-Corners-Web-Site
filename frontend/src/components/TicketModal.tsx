@@ -1,17 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Language, Show } from '../types';
-import { X, Ticket, Calendar, CheckCircle2, ShieldCheck, QrCode, CreditCard, Clock, Upload, AlertTriangle, Loader2 } from 'lucide-react';
+import {
+  X, Ticket, Calendar, CheckCircle2, ShieldCheck, QrCode,
+  Upload, AlertTriangle, Loader2, Download, MapPin, Coins, ExternalLink, Lock, ShieldAlert, Clock
+} from 'lucide-react';
 import { getTranslations } from '../lib/i18n';
+import { useSesion } from '../hooks/useSesion';
 
-// Tipos devueltos por la API
 interface TicketInventoryItem {
   id: string;
   event_id: string;
+  performance_id?: string | null;
   ticket_type: string;
+  ticket_type_en?: string | null;
   price: number;
   quantity_available: number;
   quantity_sold: number;
   currency: string;
+  starts_at?: string;
+  venue?: string;
 }
 
 interface PurchaseResult {
@@ -31,6 +38,7 @@ interface PurchaseResult {
     qr_code: string;
     status: string;
   }[];
+  pdfBase64?: string;
 }
 
 interface TicketModalProps {
@@ -46,37 +54,66 @@ export const TicketModal: React.FC<TicketModalProps> = ({
   show,
   language,
 }) => {
+  const isEs = language === 'es';
   const t = getTranslations(language).modals.ticket;
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [quantity, setQuantity] = useState(2);
-  const [selectedDate, setSelectedDate] = useState('2026-07-18');
-  const [paymentMethod, setPaymentMethod] = useState<'sinpe' | 'zeffy' | 'card'>('sinpe');
+  const { usuario } = useSesion();
 
-  // User info
+  // Estados del formulario unificado (estilo donaciones)
+  const [currency, setCurrency] = useState<'CRC' | 'USD'>('CRC');
+  const [selectedPerformanceId, setSelectedPerformanceId] = useState<string>('');
+  const [quantity, setQuantity] = useState(2);
+  const [paymentMethod, setPaymentMethod] = useState<'sinpe' | 'zeffy' | 'paypal'>('sinpe');
+  const [sinpeRef, setSinpeRef] = useState('');
+  const [sinpeFileName, setSinpeFileName] = useState('');
+
+  // Rate limit / Enfriamiento de 30 segundos
+  const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
+
+  // Datos del comprador
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
 
-  // Inventory from API
+  // Inventario
   const [inventory, setInventory] = useState<TicketInventoryItem[]>([]);
-  const [selectedInventoryId, setSelectedInventoryId] = useState<string>('');
   const [loadingInventory, setLoadingInventory] = useState(false);
 
-  // Purchase result from API
+  // Compra y resultado
   const [purchaseResult, setPurchaseResult] = useState<PurchaseResult | null>(null);
   const [purchasing, setPurchasing] = useState(false);
   const [purchaseError, setPurchaseError] = useState('');
 
-  // SINPE Confirmation
-  const [sinpeRef, setSinpeRef] = useState('');
-  const [sinpeFileName, setSinpeFileName] = useState('');
-  const [sinpeCompleted, setSinpeCompleted] = useState(false);
+  // Control de cooldown de 30s para evitar compras duplicadas
+  useEffect(() => {
+    const updateCooldown = () => {
+      const lastPurchaseStr = localStorage.getItem('fc_last_ticket_purchase');
+      if (!lastPurchaseStr) {
+        setCooldownRemaining(0);
+        return;
+      }
+      const lastTime = parseInt(lastPurchaseStr, 10);
+      const elapsed = Date.now() - lastTime;
+      if (elapsed < 30000) {
+        setCooldownRemaining(Math.ceil((30000 - elapsed) / 1000));
+      } else {
+        setCooldownRemaining(0);
+      }
+    };
 
-  // 5 Minute Timer for SINPE Payment
-  const [timeLeft, setTimeLeft] = useState<number>(300);
-  const [isTimerExpired, setIsTimerExpired] = useState(false);
+    updateCooldown();
+    const timer = setInterval(updateCooldown, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
-  // Load ticket inventory when modal opens
+  // Pre-llenar datos del usuario si tiene sesión iniciada
+  useEffect(() => {
+    if (usuario) {
+      if (!name) setName(usuario.full_name || '');
+      if (!email) setEmail(usuario.email || '');
+    }
+  }, [usuario, name, email]);
+
+  // Cargar inventario y funciones del show al abrir el modal
   useEffect(() => {
     if (!isOpen || !show) return;
 
@@ -87,10 +124,15 @@ export const TicketModal: React.FC<TicketModalProps> = ({
         if (res.ok) {
           const data: TicketInventoryItem[] = await res.json();
           setInventory(data);
-          if (data.length > 0) setSelectedInventoryId(data[0].id);
+          const firstPerf = data.find((i) => i.performance_id);
+          if (firstPerf?.performance_id) {
+            setSelectedPerformanceId(firstPerf.performance_id);
+          } else if (show?.performances && show.performances.length > 0) {
+            setSelectedPerformanceId(show.performances[0].id);
+          }
         }
-      } catch {
-        // Si falla, seguimos con precios del show
+      } catch (err) {
+        console.error('Error al cargar inventario:', err);
       } finally {
         setLoadingInventory(false);
       }
@@ -99,55 +141,68 @@ export const TicketModal: React.FC<TicketModalProps> = ({
     void fetchInventory();
   }, [isOpen, show]);
 
-  // SINPE countdown timer
-  useEffect(() => {
-    let interval: any = null;
-    if (step === 3 && paymentMethod === 'sinpe' && !sinpeCompleted && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            setIsTimerExpired(true);
-            clearInterval(interval);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [step, paymentMethod, sinpeCompleted, timeLeft]);
-
   if (!isOpen || !show) return null;
 
-  // Use real inventory price or fall back to show price
-  const selectedInventory = inventory.find(i => i.id === selectedInventoryId);
-  const pricePerTicket = selectedInventory ? selectedInventory.price : (show.priceGeneral || 10000);
+  // Lista de funciones disponibles
+  const performancesList = (show.performances && show.performances.length > 0)
+    ? show.performances
+    : inventory
+        .filter((item, index, self) =>
+          item.performance_id &&
+          self.findIndex((t) => t.performance_id === item.performance_id) === index
+        )
+        .map((i) => ({
+          id: i.performance_id!,
+          starts_at: i.starts_at || new Date().toISOString(),
+          venue: i.venue || show.location || 'Teatro Comunitario',
+          max_capacity: i.quantity_available + i.quantity_sold,
+          status: 'scheduled',
+        }));
+
+  // Inventario coincidente con función y moneda
+  const selectedInventory =
+    inventory.find(
+      (i) =>
+        (i.performance_id === selectedPerformanceId || !i.performance_id) &&
+        i.currency === currency
+    ) ||
+    inventory.find((i) => i.currency === currency) ||
+    inventory[0];
+
+  const pricePerTicket = selectedInventory
+    ? selectedInventory.price
+    : currency === 'USD'
+    ? 20
+    : 10000;
+
   const totalPrice = pricePerTicket * quantity;
   const availableQty = selectedInventory ? selectedInventory.quantity_available : show.availableTickets;
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const handleNextStep = (e: React.FormEvent) => {
+  const handleSubmitPurchase = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (step === 1) {
-      setStep(2);
-    } else if (step === 2) {
-      setStep(3);
-      setTimeLeft(300);
-      setIsTimerExpired(false);
-      // Si no es SINPE, procesar la compra al llegar al paso 3
-      if (paymentMethod !== 'sinpe') {
-        void procesarCompra();
-      }
-    }
-  };
+    if (!show || !selectedInventory) return;
 
-  async function procesarCompra(sinpeReference?: string) {
-    if (!show || !selectedInventoryId) return;
+    if (cooldownRemaining > 0) {
+      setPurchaseError(
+        isEs
+          ? `Por seguridad de la taquilla, debes esperar ${cooldownRemaining}s antes de realizar otra compra.`
+          : `For security reasons, please wait ${cooldownRemaining}s before another purchase.`
+      );
+      return;
+    }
+
+    const effectiveRef = sinpeRef.trim() || (
+      paymentMethod === 'zeffy'
+        ? `ZEFFY-${Date.now().toString().slice(-6)}`
+        : paymentMethod === 'paypal'
+        ? `PAYPAL-${Date.now().toString().slice(-6)}`
+        : ''
+    );
+
+    if (paymentMethod === 'sinpe' && !sinpeRef.trim()) {
+      setPurchaseError(isEs ? 'El número de comprobante SINPE es obligatorio.' : 'SINPE reference is required.');
+      return;
+    }
 
     setPurchasing(true);
     setPurchaseError('');
@@ -158,556 +213,567 @@ export const TicketModal: React.FC<TicketModalProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           event_id: show.id,
-          ticket_inventory_id: selectedInventoryId,
+          performance_id: selectedPerformanceId || undefined,
+          ticket_inventory_id: selectedInventory.id,
           quantity,
           buyer_name: name.trim() || null,
           buyer_email: email.trim() || null,
-          payment_intent_id: sinpeReference
-            ? `SINPE-${sinpeReference}`
-            : `TXN-${paymentMethod.toUpperCase()}-${Date.now()}`,
-          currency: selectedInventory?.currency || 'CRC',
+          payment_method: paymentMethod,
+          sinpe_reference: effectiveRef || undefined,
+          currency,
+          user_id: usuario?.id || undefined,
         }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
+        if (res.status === 429) {
+          throw new Error(data?.error || (isEs ? 'Debes esperar unos segundos antes de realizar otra compra.' : 'Please wait before another purchase.'));
+        }
         if (res.status === 409) {
-          throw new Error('No hay suficientes boletos disponibles para esta función.');
+          throw new Error(isEs ? 'No hay suficientes boletos disponibles.' : 'Not enough tickets available.');
         }
-        if (res.status === 404) {
-          throw new Error('El evento o tipo de boleto seleccionado ya no está disponible.');
-        }
-        throw new Error(data?.error || 'Error al procesar la compra.');
+        throw new Error(data?.error || data?.message || 'Error al procesar la compra.');
       }
+
+      // Guardar timestamp de compra exitosa para aplicar cooldown de 30s
+      localStorage.setItem('fc_last_ticket_purchase', Date.now().toString());
+      setCooldownRemaining(30);
 
       setPurchaseResult(data as PurchaseResult);
     } catch (err: any) {
       setPurchaseError(err.message || 'No se pudo completar la compra. Intenta de nuevo.');
-      // Si falla la compra, volvemos al paso 2
-      if (step === 3) setStep(2);
     } finally {
       setPurchasing(false);
     }
-  }
+  };
 
-  const handleFinishSinpe = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await procesarCompra(sinpeRef);
-    setSinpeCompleted(true);
+  const handleDownloadPdf = () => {
+    if (!purchaseResult?.purchase?.id) return;
+    window.open(`/api/v1/tickets/purchases/${purchaseResult.purchase.id}/pdf`, '_blank');
   };
 
   const resetAndClose = () => {
-    setStep(1);
-    setSinpeRef('');
-    setSinpeFileName('');
-    setSinpeCompleted(false);
-    setTimeLeft(300);
-    setIsTimerExpired(false);
     setPurchaseResult(null);
     setPurchaseError('');
+    setSinpeRef('');
+    setSinpeFileName('');
+    setQuantity(2);
     setPurchasing(false);
     onClose();
   };
 
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-      <div className="bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border w-full max-w-xl max-h-[92vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden text-brand-navy dark:text-brand-cream">
+      <div className="bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border w-full max-w-xl max-h-[92vh] flex flex-col rounded-3xl shadow-2xl overflow-hidden text-brand-navy dark:text-brand-cream">
         {/* Modal Header */}
         <div className="p-5 border-b border-slate-200 dark:border-white/10 bg-[#F8F8F2] dark:bg-brand-navyDark flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="p-2 rounded-xl bg-brand-green/20 border border-brand-green/40 text-brand-green">
+            <div className="p-2.5 rounded-2xl bg-brand-green/20 border border-brand-green/40 text-brand-green">
               <Ticket className="w-5 h-5" />
             </div>
             <div>
               <h3 className="font-serif text-lg font-bold text-brand-navy dark:text-white leading-tight">
-                {show.title} ({show.year})
+                {show.title}
               </h3>
               <p className="text-xs text-brand-forest dark:text-brand-lime">
-                {t.headerTitle}
+                {show.location} • Temporada {show.year}
               </p>
             </div>
           </div>
-          <button onClick={resetAndClose} className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-brand-navy dark:text-white hover:bg-white/10">
+          <button
+            onClick={resetAndClose}
+            className="p-1.5 rounded-lg text-slate-500 hover:text-brand-navy dark:hover:text-white hover:bg-white/10"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Step Progress Bar */}
-        <div className="bg-slate-100 dark:bg-brand-navyDeep px-6 py-2 border-b border-white/5 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-          <span className={step >= 1 ? 'text-brand-green font-bold' : ''}>
-            1. {t.step1}
-          </span>
-          <span className={step >= 2 ? 'text-brand-green font-bold' : ''}>
-            2. {t.step2}
-          </span>
-          <span className={step === 3 ? 'text-brand-forest dark:text-brand-lime font-bold' : ''}>
-            3. {paymentMethod === 'sinpe' ? (language === 'es' ? 'Comprobante SINPE' : 'SINPE Receipt') : (language === 'es' ? 'Confirmación' : 'Confirmation')}
-          </span>
-        </div>
-
         {/* Modal Body */}
         <div className="p-5 sm:p-6 overflow-y-auto">
-          {step === 1 && (
-            <form onSubmit={handleNextStep} className="space-y-5">
-              {/* Date Selection */}
-              <div>
-                <label className="block text-xs font-semibold uppercase text-slate-600 dark:text-slate-300 mb-2">
-                  {t.selectDate}
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { id: '2026-07-18', label: 'Sáb 18 Julio, 7:00 PM' },
-                    { id: '2026-07-19', label: 'Dom 19 Julio, 5:00 PM' },
-                    { id: '2026-07-25', label: 'Sáb 25 Julio, 7:00 PM' },
-                    { id: '2026-07-26', label: 'Dom 26 Julio, 5:00 PM' }
-                  ].map(d => (
-                    <button
-                      type="button"
-                      key={d.id}
-                      onClick={() => setSelectedDate(d.id)}
-                      className={`p-3 rounded-xl text-left border text-xs font-semibold transition-all ${
-                        selectedDate === d.id
-                          ? 'bg-brand-green border-brand-lime text-brand-navy shadow-glow-green font-bold'
-                          : 'bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:bg-white/10'
-                      }`}
-                    >
-                      <Calendar className="w-3.5 h-3.5 inline mr-2 text-brand-blue" />
-                      {d.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Single Ticket Option */}
-              <div className="p-4 rounded-xl bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border flex items-center justify-between">
-                <div>
-                  <span className="font-bold text-sm text-brand-navy dark:text-white block">
-                    {language === 'es' ? 'Entrada General' : 'General Admission'}
-                  </span>
-                  <span className="text-xs text-slate-600 dark:text-slate-300">
-                    {language === 'es' ? 'Asiento para función de teatro' : 'Seat for theater performance'}
-                  </span>
-                </div>
-                <span className="font-mono text-base font-bold text-brand-forest dark:text-brand-lime">
-                  ₡{pricePerTicket.toLocaleString()} CRC
-                </span>
-              </div>
-
-              {/* Quantity */}
-              <div className="flex items-center justify-between pt-2">
-                <span className="text-xs font-semibold uppercase text-slate-600 dark:text-slate-300">
-                  {t.quantity}
-                </span>
-                <div className="flex items-center space-x-3 bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-1">
-                  <button
-                    type="button"
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-8 h-8 rounded-lg bg-white/10 text-brand-navy dark:text-white font-bold hover:bg-white/20"
-                  >
-                    -
-                  </button>
-                  <span className="font-mono font-bold text-base px-2 text-brand-green">{quantity}</span>
-                  <button
-                    type="button"
-                    onClick={() => setQuantity(Math.min(10, quantity + 1))}
-                    className="w-8 h-8 rounded-lg bg-white/10 text-brand-navy dark:text-white font-bold hover:bg-white/20"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-
-              {/* Total Calculation */}
-              <div className="bg-[#F8F8F2] dark:bg-brand-navyDark p-4 rounded-xl border border-slate-200 dark:border-white/10 flex items-center justify-between">
-                <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">
-                  {t.total}
-                </span>
-                <span className="font-mono text-xl font-bold text-brand-forest dark:text-brand-lime">
-                  ₡{totalPrice.toLocaleString()} CRC
-                </span>
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-3.5 btn-green text-brand-navy hover:text-brand-navy dark:text-white font-extrabold rounded-xl shadow-glow-green transition-all text-sm uppercase tracking-wider"
-              >
-                {t.proceedToPatronInfo}
-              </button>
-            </form>
-          )}
-
-          {step === 2 && (
-            <form onSubmit={handleNextStep} className="space-y-4">
-              <div className="grid grid-cols-1 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                    {t.fullName} *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder={t.fullNamePlaceholder}
-                    className="w-full px-3.5 py-2.5 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded-lg text-sm text-brand-navy dark:text-white focus:border-brand-green focus:outline-none"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                      {t.email} *
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="maria@ejemplo.com"
-                      className="w-full px-3.5 py-2.5 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded-lg text-sm text-brand-navy dark:text-white focus:border-brand-green focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                      {t.phone} *
-                    </label>
-                    <input
-                      type="tel"
-                      required
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="8888-0000"
-                      className="w-full px-3.5 py-2.5 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded-lg text-sm text-brand-navy dark:text-white focus:border-brand-green focus:outline-none"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Payment Method Selector */}
-              <div>
-                <label className="block text-xs font-semibold uppercase text-slate-600 dark:text-slate-300 mb-2">
-                  {t.paymentOption}
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('sinpe')}
-                    className={`p-2.5 rounded-lg border text-xs font-semibold text-center transition-all ${
-                      paymentMethod === 'sinpe'
-                        ? 'bg-brand-green border-brand-lime text-brand-navy font-bold shadow-glow-green'
-                        : 'bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300'
-                    }`}
-                  >
-                    SINPE Móvil
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('zeffy')}
-                    className={`p-2.5 rounded-lg border text-xs font-semibold text-center transition-all ${
-                      paymentMethod === 'zeffy'
-                        ? 'bg-brand-green border-brand-lime text-brand-navy font-bold shadow-glow-green'
-                        : 'bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300'
-                    }`}
-                  >
-                    Zeffy (0% com)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('card')}
-                    className={`p-2.5 rounded-lg border text-xs font-semibold text-center transition-all ${
-                      paymentMethod === 'card'
-                        ? 'bg-brand-green border-brand-lime text-brand-navy font-bold shadow-glow-green'
-                        : 'bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300'
-                    }`}
-                  >
-                    {language === 'es' ? 'Tarjeta / Stripe' : 'Card / Stripe'}
-                  </button>
-                </div>
-              </div>
-
-              {paymentMethod === 'sinpe' && (
-                <div className="bg-[#F8F8F2] dark:bg-brand-navyDark p-3.5 rounded-xl border border-slate-200 dark:border-white/10 text-xs text-slate-600 dark:text-slate-300">
-                  <p className="font-semibold text-brand-navy dark:text-white">
-                    {language === 'es' ? 'Reserva Temporal SINPE Móvil' : 'Temporary SINPE Mobile Reservation'}
-                  </p>
-                  <p className="mt-1 text-slate-600 dark:text-slate-300">
-                    {language === 'es' ? (
-                      <>Al hacer clic en <strong>Confirmar Reserva</strong>, se reservarán tus boletos por <strong>5 minutos</strong> para que realices la transferencia e ingreses el comprobante.</>
-                    ) : (
-                      <>Clicking <strong>Confirm Reservation</strong> will hold your tickets for <strong>5 minutes</strong> while you complete the transfer and enter your receipt.</>
-                    )}
-                  </p>
-                </div>
-              )}
-
-              {paymentMethod === 'zeffy' && (
-                <div className="bg-[#F8F8F2] dark:bg-brand-navyDark p-3.5 rounded-xl border border-slate-200 dark:border-white/10 text-xs space-y-1">
-                  <p className="text-slate-700 dark:text-slate-200 font-semibold">
-                    {language === 'es' ? 'Zeffy Payments (0% Comisión)' : 'Zeffy Payments (0% Fee)'}
-                  </p>
-                  <p className="text-slate-600 dark:text-slate-300">
-                    {language === 'es'
-                      ? 'Plataforma 100% gratuita para ONG. Tu dinero llega íntegro a las producciones de Far Corners.'
-                      : '100% free platform for non-profits. 100% of your funds go directly to Far Corners productions.'}
-                  </p>
-                </div>
-              )}
-
-              {paymentMethod === 'card' && (
-                <div className="bg-[#F8F8F2] dark:bg-brand-navyDark p-3.5 rounded-xl border border-slate-200 dark:border-white/10 text-xs space-y-1">
-                  <div className="flex items-center space-x-2 text-slate-700 dark:text-slate-200">
-                    <CreditCard className="w-4 h-4 text-brand-blue" />
-                    <span>{language === 'es' ? 'Pasarela Segura SSL Stripe & PayPal' : 'Secure SSL Stripe & PayPal Gateway'}</span>
-                  </div>
-                  <p className="text-slate-600 dark:text-slate-300">
-                    {language === 'es'
-                      ? 'Procesamiento inmediato con encriptación bancaria.'
-                      : 'Instant processing with bank-grade encryption.'}
-                  </p>
-                </div>
-              )}
-
-              <div className="flex space-x-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setStep(1)}
-                  className="w-1/3 py-3 bg-white/10 hover:bg-white/20 text-brand-navy dark:text-white font-semibold rounded-xl"
-                >
-                  {language === 'es' ? 'Atrás' : 'Back'}
-                </button>
-                <button
-                  type="submit"
-                  className="w-2/3 py-3 btn-green text-brand-navy hover:text-brand-navy dark:text-white font-extrabold rounded-xl shadow-glow-green transition-all"
-                >
-                  {language === 'es' ? 'Confirmar Reserva de Boletos' : 'Confirm Ticket Reservation'}
-                </button>
-              </div>
-            </form>
-          )}
-
-          {step === 3 && paymentMethod === 'sinpe' && (
-            <div className="space-y-5">
-              {isTimerExpired ? (
-                <div className="bg-red-500/20 border border-red-500/40 p-6 rounded-2xl text-center space-y-4">
-                  <AlertTriangle className="w-12 h-12 text-red-400 mx-auto" />
-                  <h4 className="font-serif text-xl font-bold text-brand-navy dark:text-white">¡Tiempo Expirado!</h4>
-                  <p className="text-xs text-slate-700 dark:text-slate-200">
-                    Ha transcurrido el tiempo límite de 5 minutos para realizar el pago por SINPE Móvil. Los boletos han sido liberados para otros espectadores.
-                  </p>
-                  <button
-                    onClick={() => {
-                      setStep(1);
-                      setIsTimerExpired(false);
-                      setTimeLeft(300);
-                    }}
-                    className="px-6 py-2.5 bg-brand-green text-brand-navy font-extrabold text-xs rounded-xl"
-                  >
-                    Volver a Intentar Reserva
-                  </button>
-                </div>
-              ) : !sinpeCompleted ? (
-                <form onSubmit={handleFinishSinpe} className="space-y-4">
-                  {/* Countdown Banner */}
-                  <div className="bg-gradient-to-r from-brand-navyDark to-brand-navyCard border border-brand-lime/50 p-4 rounded-xl flex items-center justify-between shadow-lg">
-                    <div className="flex items-center space-x-3">
-                      <Clock className="w-6 h-6 text-brand-forest dark:text-brand-lime animate-pulse" />
-                      <div>
-                        <span className="font-bold text-brand-navy dark:text-white text-xs block">Tiempo para Realizar Pago:</span>
-                        <span className="text-[11px] text-slate-600 dark:text-slate-300">Tus boletos se liberarán al finalizar el tiempo</span>
-                      </div>
-                    </div>
-                    <span className="font-mono text-2xl font-extrabold text-brand-forest dark:text-brand-lime bg-[#F8F8F2] dark:bg-brand-navyDark px-3 py-1 rounded-lg border border-slate-200 dark:border-brand-border">
-                      {formatTime(timeLeft)}
-                    </span>
-                  </div>
-
-                  {/* SINPE Instructions */}
-                  <div className="bg-[#F8F8F2] dark:bg-brand-navyDark p-4 rounded-xl border border-slate-200 dark:border-white/10 space-y-2 text-xs">
-                    <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-white/10">
-                      <span className="text-slate-600 dark:text-slate-300 font-semibold">{t.sinpeTitle}:</span>
-                      <span className="font-mono font-bold text-brand-forest dark:text-brand-lime text-sm bg-white dark:bg-brand-navy px-2 py-0.5 rounded border border-slate-200 dark:border-brand-border">{t.sinpeNumber}</span>
-                    </div>
-                    <p className="text-slate-600 dark:text-slate-300">
-                      {t.sinpeInstructions(`₡${totalPrice.toLocaleString()} CRC`)}
-                    </p>
-                  </div>
-
-                  {/* Reference & Receipt upload */}
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                      {t.sinpeRefLabel} *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={sinpeRef}
-                      onChange={(e) => setSinpeRef(e.target.value)}
-                      placeholder={t.sinpeRefPlaceholder}
-                      className="w-full px-3.5 py-2.5 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded-lg text-sm text-brand-navy dark:text-white font-mono focus:border-brand-green focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                      {t.sinpeProofLabel} *
-                    </label>
-                    <div className="border border-dashed border-slate-200 dark:border-brand-border bg-[#F8F8F2] dark:bg-brand-navyDark p-4 rounded-xl text-center cursor-pointer hover:border-brand-green transition-colors">
-                      <Upload className="w-6 h-6 text-brand-green mx-auto mb-1" />
-                      <span className="text-xs text-slate-600 dark:text-slate-300 block">
-                        {sinpeFileName
-                          ? sinpeFileName
-                          : t.sinpeProofPlaceholder}
-                      </span>
-                      <input
-                        type="file"
-                        required
-                        className="hidden"
-                        onChange={(e) => {
-                          if (e.target.files && e.target.files[0]) {
-                            setSinpeFileName(e.target.files[0].name);
-                          }
-                        }}
-                        id="sinpe-upload"
-                      />
-                      <label htmlFor="sinpe-upload" className="cursor-pointer text-xs text-brand-blue font-bold underline mt-1 inline-block">
-                        {t.browseProof}
-                      </label>
-                    </div>
-                  </div>
-
-                  {purchaseError && (
-                    <div className="p-3 bg-red-500/20 border border-red-500/40 rounded-xl flex items-center space-x-2 text-red-300 text-xs">
-                      <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-                      <span>{purchaseError}</span>
-                    </div>
-                  )}
-
-                  <button
-                    type="submit"
-                    className="w-full py-3.5 btn-green text-brand-navy hover:text-brand-navy dark:text-white font-extrabold rounded-xl shadow-glow-green transition-all uppercase tracking-wider text-xs"
-                  >
-                    {purchasing ? (
-                      <span className="flex items-center justify-center space-x-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>{t.processingPurchase}</span>
-                      </span>
-                    ) : t.completeSinpeBtn}
-                  </button>
-                </form>
-              ) : (
-                <div className="text-center space-y-4 py-2">
-                  <div className="inline-flex p-3 rounded-full bg-brand-green/20 text-brand-green border border-brand-green/40">
-                    <CheckCircle2 className="w-10 h-10" />
-                  </div>
-                  <h4 className="font-serif text-xl font-bold text-brand-navy dark:text-white">
-                    {t.sinpeSuccessTitle}
-                  </h4>
-                  <p className="text-xs text-slate-600 dark:text-slate-300">
-                    {t.sinpeSuccessMsg(`₡${totalPrice.toLocaleString()}`, sinpeRef, email)}
-                  </p>
-                  <button
-                    onClick={resetAndClose}
-                    className="w-full py-3 bg-brand-green text-brand-navy font-extrabold rounded-xl"
-                  >
-                    {t.closeAndReturn}
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {step === 3 && paymentMethod !== 'sinpe' && (
-            <div className="text-center space-y-5 py-2">
-              <div className="inline-flex p-3 rounded-full bg-brand-green/20 text-brand-green border border-brand-green/40">
-                <CheckCircle2 className="w-10 h-10" />
+          {purchaseResult ? (
+            /* Pantalla de Confirmación de Compra */
+            <div className="text-center space-y-5 py-2 animate-fadeIn">
+              <div className={`inline-flex p-3 rounded-full border ${
+                purchaseResult.purchase.status === 'paid'
+                  ? 'bg-brand-green/20 text-brand-green border-brand-green/40'
+                  : 'bg-amber-400/20 text-amber-500 border-amber-400/40'
+              }`}>
+                {purchaseResult.purchase.status === 'paid' ? (
+                  <CheckCircle2 className="w-12 h-12" />
+                ) : (
+                  <Clock className="w-12 h-12" />
+                )}
               </div>
 
               <div>
-                <h4 className="font-serif text-xl font-bold text-brand-navy dark:text-white">
-                  {t.confirmedTitle}
+                <h4 className="font-serif text-2xl font-bold text-brand-navy dark:text-white">
+                  {purchaseResult.purchase.status === 'paid'
+                    ? (isEs ? '¡Boletos Oficiales Confirmados!' : 'Tickets Confirmed!')
+                    : (isEs ? '¡Solicitud de Boletos Registrada!' : 'Ticket Request Submitted!')}
                 </h4>
-                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
-                  {t.confirmedSubtitle(email || 'tu correo')}
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 max-w-sm mx-auto leading-relaxed">
+                  {purchaseResult.purchase.status === 'paid'
+                    ? (isEs
+                        ? `Tu compra ha sido procesada con éxito. Hemos enviado un correo a ${email || 'tu email'} con tus boletos y códigos QR adjuntos.`
+                        : `Your tickets have been issued and sent to ${email}.`)
+                    : (isEs
+                        ? `Tu solicitud por ${quantity} ${quantity === 1 ? 'asiento' : 'asientos'} ha sido registrada. Por seguridad de la taquilla, los códigos QR y la descarga oficial en PDF se activarán una vez que el equipo de administración valide tu comprobante de pago.`
+                        : `Your reservation for ${quantity} tickets is registered. QR codes will be unlocked after admin verification.`)}
                 </p>
               </div>
 
               {/* Digital Ticket Voucher Card */}
-              <div className="bg-gradient-to-b from-brand-navyCard to-brand-navyDark p-5 rounded-2xl border border-brand-green/50 text-left relative overflow-hidden shadow-2xl">
+              <div className="bg-[#F8F8F2] dark:bg-brand-navyDark p-5 rounded-2xl border border-brand-green/50 text-left relative overflow-hidden shadow-xl">
                 <div className="absolute right-3 top-3 text-brand-forest dark:text-brand-lime flex items-center space-x-1 text-[10px] bg-brand-green/20 px-2 py-0.5 rounded border border-brand-green/40 font-bold">
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>{t.officialTicketBadge}</span>
+                  <span>Boletería Oficial FC</span>
                 </div>
 
                 <div className="border-b border-slate-200 dark:border-white/10 pb-3 mb-3">
-                  <span className="text-[10px] text-slate-600 dark:text-slate-300 font-mono">ID: TKT-2026-FC-{Math.floor(1000 + Math.random() * 9000)}</span>
+                  <span className="text-[10px] text-slate-500 font-mono">
+                    ID: {purchaseResult.purchase.id.slice(0, 14)}
+                  </span>
                   <h5 className="font-serif text-lg font-bold text-brand-navy dark:text-white">{show.title}</h5>
-                  <p className="text-xs text-brand-blue font-medium">{show.location}</p>
+                  <p className="text-xs text-brand-forest dark:text-brand-lime font-medium">{show.location}</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 text-xs mb-4">
                   <div>
-                    <span className="text-slate-600 dark:text-slate-300 block text-[10px]">{t.ticketPatron}:</span>
-                    <span className="font-semibold text-brand-navy dark:text-white">{name || (language === 'es' ? 'Cliente FC' : 'FC Guest')}</span>
+                    <span className="text-slate-500 block text-[10px]">Titular:</span>
+                    <span className="font-semibold text-brand-navy dark:text-white">{name || 'Asistente'}</span>
                   </div>
                   <div>
-                    <span className="text-slate-600 dark:text-slate-300 block text-[10px]">{t.quantity}:</span>
-                    <span className="font-semibold text-brand-navy dark:text-white">{t.ticketCount(quantity)}</span>
+                    <span className="text-slate-500 block text-[10px]">Asientos Asignados:</span>
+                    <span className="font-bold text-brand-navy dark:text-white">{quantity} {quantity === 1 ? 'asiento general' : 'asientos generales'}</span>
                   </div>
                   <div>
-                    <span className="text-slate-600 dark:text-slate-300 block text-[10px]">{t.ticketDate}:</span>
-                    <span className="font-semibold text-brand-navy dark:text-white">{selectedDate}</span>
+                    <span className="text-slate-500 block text-[10px]">Total:</span>
+                    <span className="font-mono font-bold text-brand-forest dark:text-brand-lime">
+                      {currency === 'CRC' ? `₡${totalPrice.toLocaleString()} CRC` : `$${totalPrice.toLocaleString()} USD`}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-slate-600 dark:text-slate-300 block text-[10px]">{t.ticketTotal}:</span>
-                    <span className="font-mono font-bold text-brand-forest dark:text-brand-lime">₡{totalPrice.toLocaleString()}</span>
+                    <span className="text-slate-500 block text-[10px]">Estado del Pago:</span>
+                    <span className={`font-bold uppercase text-[11px] ${
+                      purchaseResult.purchase.status === 'paid' ? 'text-emerald-500' : 'text-amber-500'
+                    }`}>
+                      {purchaseResult.purchase.status === 'paid' ? 'PAGADO / ACTIVO' : 'PENDIENTE DE VALIDACIÓN'}
+                    </span>
                   </div>
                 </div>
 
-                {purchaseResult?.tickets && purchaseResult.tickets.length > 0 ? (
+                {/* Códigos QR (Solo visibles tras validación) */}
+                {purchaseResult.purchase.status === 'paid' ? (
                   <div className="space-y-2">
-                    <span className="block text-[11px] font-mono text-slate-600 dark:text-slate-300 font-bold mb-1">
-                      {t.yourTickets}
+                    <span className="block text-[11px] font-mono text-slate-500 dark:text-slate-300 font-bold">
+                      Códigos QR por Asiento:
                     </span>
                     {purchaseResult.tickets.map((tItem, i) => (
-                      <div key={tItem.id} className="flex items-center justify-between bg-black/40 p-3 rounded-xl border border-slate-200 dark:border-white/10">
+                      <div
+                        key={tItem.id}
+                        className="flex items-center justify-between bg-white dark:bg-brand-navy p-3 rounded-xl border border-slate-200 dark:border-white/10"
+                      >
                         <div className="flex items-center space-x-3">
-                          <QrCode className="w-8 h-8 text-[#77C65E]" />
-                          <div className="text-[10px] text-slate-600 dark:text-slate-300">
+                          <QrCode className="w-8 h-8 text-brand-green" />
+                          <div className="text-[10px]">
                             <span className="block text-brand-navy dark:text-white font-mono font-bold">
-                              {t.ticketItem(i + 1)}
+                              Boleto #{i + 1} de {quantity}
                             </span>
-                            <span className="font-mono text-[#DCEB4F]">{tItem.qr_code}</span>
+                            <span className="font-mono text-brand-forest dark:text-brand-lime">{tItem.qr_code}</span>
                           </div>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="flex items-center justify-between bg-black/40 p-3 rounded-xl border border-slate-200 dark:border-white/10">
-                    <div className="flex items-center space-x-3">
-                      <QrCode className="w-12 h-12 text-brand-green" />
-                      <div className="text-[10px] text-slate-600 dark:text-slate-300">
-                        <span className="block text-brand-navy dark:text-white font-mono font-bold">
-                          {t.qrCodeTitle}
-                        </span>
-                        <span>
-                          {t.qrCodeSubtitle}
-                        </span>
-                      </div>
+                  <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-start space-x-3 text-xs">
+                    <Lock className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                    <div className="space-y-1 text-slate-700 dark:text-slate-300">
+                      <span className="font-bold text-amber-600 dark:text-amber-300 block text-xs">
+                        Códigos QR protegidos hasta validación
+                      </span>
+                      <p className="text-[11px] leading-relaxed">
+                        Se asignaron <strong>{quantity} {quantity === 1 ? 'asiento' : 'asientos'}</strong> a tu nombre. Tan pronto la administración apruebe el comprobante, tus códigos QR y boletos quedarán activos y te llegará la copia en PDF a <strong>{email}</strong>.
+                      </p>
                     </div>
                   </div>
                 )}
               </div>
 
+              {/* Botón de Descarga del PDF */}
+              {purchaseResult.purchase.status === 'paid' ? (
+                <button
+                  type="button"
+                  onClick={handleDownloadPdf}
+                  className="w-full py-3 bg-brand-navy dark:bg-white text-white dark:text-brand-navy font-bold rounded-xl text-xs flex items-center justify-center space-x-2 border border-slate-300 hover:opacity-90 transition-opacity shadow-md"
+                >
+                  <Download className="w-4 h-4 text-brand-green" />
+                  <span>{isEs ? 'Descargar Boletos en PDF' : 'Download Tickets (PDF)'}</span>
+                </button>
+              ) : (
+                <div className="p-3 bg-slate-100 dark:bg-brand-navyDark rounded-xl text-center text-xs text-slate-500 dark:text-slate-400 flex items-center justify-center space-x-2 border border-dashed border-slate-300 dark:border-white/10">
+                  <Lock className="w-3.5 h-3.5 text-slate-400" />
+                  <span>{isEs ? 'Descarga de boletos habilitada tras validación en taquilla' : 'Download available once payment is validated'}</span>
+                </div>
+              )}
+
               <button
                 onClick={resetAndClose}
-                className="w-full py-3 btn-green text-brand-navy hover:text-brand-navy dark:text-white font-extrabold rounded-xl"
+                className="w-full py-3 btn-green text-brand-navy font-extrabold rounded-xl"
               >
-                {t.closeAndReturn}
+                {isEs ? 'Listo / Cerrar' : 'Close'}
               </button>
             </div>
+          ) : (
+            /* Formulario Unificado de Compra (Estilo Donaciones) */
+            <form onSubmit={handleSubmitPurchase} className="space-y-5">
+              {/* 1. Selección de Función / Fecha */}
+              <div>
+                <label className="block text-xs font-semibold uppercase text-slate-600 dark:text-slate-300 mb-2">
+                  {isEs ? '1. Selecciona la Función:' : '1. Select Performance:'}
+                </label>
+                {loadingInventory ? (
+                  <div className="p-4 text-center text-xs text-slate-400">
+                    <Loader2 className="w-4 h-4 animate-spin inline mr-2 text-brand-green" />
+                    <span>Cargando funciones...</span>
+                  </div>
+                ) : performancesList.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {performancesList.map((perf) => {
+                      let fechaLabel = perf.starts_at;
+                      try {
+                        const d = new Date(perf.starts_at);
+                        if (!isNaN(d.getTime())) {
+                          fechaLabel = d.toLocaleString(isEs ? 'es-CR' : 'en-US', {
+                            weekday: 'short',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          });
+                        }
+                      } catch {}
+
+                      const isSelected = selectedPerformanceId === perf.id;
+
+                      return (
+                        <button
+                          type="button"
+                          key={perf.id}
+                          onClick={() => setSelectedPerformanceId(perf.id)}
+                          className={`p-3 rounded-xl text-left border text-xs transition-all ${
+                            isSelected
+                              ? 'bg-brand-green/20 border-brand-green text-brand-navy dark:text-white font-bold ring-1 ring-brand-green'
+                              : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:bg-slate-100'
+                          }`}
+                        >
+                          <div className="flex items-center space-x-2">
+                            <Calendar className="w-4 h-4 text-brand-green flex-shrink-0" />
+                            <span className="font-semibold">{fechaLabel}</span>
+                          </div>
+                          <div className="flex items-center space-x-1 mt-1 text-[11px] text-slate-500">
+                            <MapPin className="w-3 h-3 text-slate-400" />
+                            <span className="truncate">{perf.venue}</span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="p-3 bg-slate-100 dark:bg-brand-navyDark rounded-xl text-xs text-slate-600 dark:text-slate-300">
+                    {show.location} • {show.dates}
+                  </div>
+                )}
+              </div>
+
+              {/* 2. Cantidad y Selector de Moneda (Igual que en Donaciones) */}
+              <div className="p-4 rounded-2xl bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold uppercase text-slate-600 dark:text-slate-300">
+                    {isEs ? '2. Cantidad y Moneda' : '2. Quantity & Currency'}
+                  </span>
+                  {/* Selector de Moneda */}
+                  <div className="inline-flex rounded-lg border border-slate-300 dark:border-white/10 p-0.5 bg-white dark:bg-brand-navy text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setCurrency('CRC')}
+                      className={`px-3 py-1 rounded-md font-bold transition-all ${
+                        currency === 'CRC'
+                          ? 'bg-brand-green text-brand-navy shadow-sm'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-brand-navy dark:hover:text-white'
+                      }`}
+                    >
+                      CRC (₡)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCurrency('USD')}
+                      className={`px-3 py-1 rounded-md font-bold transition-all ${
+                        currency === 'USD'
+                          ? 'bg-brand-green text-brand-navy shadow-sm'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-brand-navy dark:hover:text-white'
+                      }`}
+                    >
+                      USD ($)
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <div>
+                    <span className="text-xs text-slate-500 block">Tarifa por boleto:</span>
+                    <span className="font-mono text-base font-bold text-brand-forest dark:text-brand-lime">
+                      {currency === 'CRC' ? `₡${pricePerTicket.toLocaleString()} CRC` : `$${pricePerTicket} USD`}
+                    </span>
+                  </div>
+
+                  {/* Contador de Cantidad */}
+                  <div className="flex items-center space-x-3 bg-white dark:bg-brand-navy border border-slate-200 dark:border-white/10 rounded-xl p-1">
+                    <button
+                      type="button"
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/10 text-brand-navy dark:text-white font-bold hover:bg-slate-200 transition-colors"
+                    >
+                      -
+                    </button>
+                    <span className="font-mono font-bold text-base px-2 text-brand-green">{quantity}</span>
+                    <button
+                      type="button"
+                      onClick={() => setQuantity(Math.min(Math.min(10, availableQty || 10), quantity + 1))}
+                      className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/10 text-brand-navy dark:text-white font-bold hover:bg-slate-200 transition-colors"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                {/* Total */}
+                <div className="pt-2 border-t border-slate-200 dark:border-white/10 flex items-center justify-between text-xs">
+                  <span className="font-semibold text-slate-600 dark:text-slate-300">Total a Pagar:</span>
+                  <span className="font-mono text-xl font-extrabold text-brand-forest dark:text-brand-lime">
+                    {currency === 'CRC' ? `₡${totalPrice.toLocaleString()} CRC` : `$${totalPrice.toLocaleString()} USD`}
+                  </span>
+                </div>
+              </div>
+
+              {/* 3. Datos del Asistente */}
+              <div className="space-y-3">
+                <span className="block text-xs font-semibold uppercase text-slate-600 dark:text-slate-300">
+                  {isEs ? '3. Datos del Titular' : '3. Patron Information'}
+                </span>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="sm:col-span-2">
+                    <input
+                      type="text"
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder={isEs ? 'Nombre completo *' : 'Full name *'}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-brand-navyDark border border-slate-200 dark:border-white/10 rounded-xl text-xs text-brand-navy dark:text-white focus:border-brand-green focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder={isEs ? 'Correo electrónico *' : 'Email *'}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-brand-navyDark border border-slate-200 dark:border-white/10 rounded-xl text-xs text-brand-navy dark:text-white focus:border-brand-green focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder={isEs ? 'Teléfono / WhatsApp' : 'Phone'}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-brand-navyDark border border-slate-200 dark:border-white/10 rounded-xl text-xs text-brand-navy dark:text-white focus:border-brand-green focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. Método de Pago */}
+              <div className="space-y-3">
+                <span className="block text-xs font-semibold uppercase text-slate-600 dark:text-slate-300">
+                  {isEs ? '4. Método de Pago' : '4. Payment Method'}
+                </span>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('sinpe')}
+                    className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-center ${
+                      paymentMethod === 'sinpe'
+                        ? 'bg-brand-green border-brand-lime text-brand-navy shadow-glow-green font-extrabold'
+                        : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    SINPE Móvil
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('zeffy')}
+                    className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-center ${
+                      paymentMethod === 'zeffy'
+                        ? 'bg-brand-green border-brand-lime text-brand-navy shadow-glow-green font-extrabold'
+                        : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    Zeffy (0% com)
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('paypal')}
+                    className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-center ${
+                      paymentMethod === 'paypal'
+                        ? 'bg-brand-green border-brand-lime text-brand-navy shadow-glow-green font-extrabold'
+                        : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    PayPal
+                  </button>
+                </div>
+
+                {/* Instrucciones SINPE con número y comprobante */}
+                {paymentMethod === 'sinpe' && (
+                  <div className="p-4 bg-brand-green/10 border border-brand-green/30 rounded-2xl space-y-3 text-xs">
+                    <div className="flex items-center justify-between pb-2 border-b border-brand-green/20">
+                      <span className="font-semibold text-brand-navy dark:text-white">Número SINPE Móvil:</span>
+                      <span className="font-mono font-bold text-sm bg-white dark:bg-brand-navy px-2.5 py-1 rounded-lg border border-brand-green/40 text-brand-forest dark:text-brand-lime">
+                        8888-0000
+                      </span>
+                    </div>
+                    <p className="text-slate-600 dark:text-slate-300">
+                      Transfiere el monto de <strong>{currency === 'CRC' ? `₡${totalPrice.toLocaleString()} CRC` : `$${totalPrice.toLocaleString()} USD`}</strong> a nombre de <strong>Asociación Far Corners</strong> y digita el número de comprobante abajo.
+                    </p>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-brand-navy dark:text-white mb-1">
+                        Número de Comprobante / Referencia SINPE *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={sinpeRef}
+                        onChange={(e) => setSinpeRef(e.target.value)}
+                        placeholder="Ej. REF-839201"
+                        className="w-full px-3 py-2 bg-white dark:bg-brand-navy border border-brand-green/50 rounded-xl text-xs font-mono font-bold text-brand-navy dark:text-white focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Redirección Zeffy */}
+                {paymentMethod === 'zeffy' && (
+                  <div className="p-4 bg-slate-50 dark:bg-brand-navyDark border border-slate-200 dark:border-white/10 rounded-2xl space-y-3 text-xs">
+                    <p className="text-slate-600 dark:text-slate-300">
+                      {isEs
+                        ? 'Plataforma oficial 100% gratuita para el Teatro Comunitario Far Corners. Haz clic abajo para ir a pagar a Zeffy:'
+                        : 'Free non-profit platform. Click below to pay on Zeffy:'}
+                    </p>
+                    <a
+                      href="https://www.zeffy.com/ticketing"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-2.5 px-4 bg-[#75267A] hover:bg-[#8D2E94] text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-2 transition-colors shadow-sm"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>{isEs ? 'Ir a Plataforma Zeffy' : 'Open Zeffy Platform'}</span>
+                    </a>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">
+                        Número de Confirmación / Referencia Zeffy:
+                      </label>
+                      <input
+                        type="text"
+                        value={sinpeRef}
+                        onChange={(e) => setSinpeRef(e.target.value)}
+                        placeholder="Ej. ZEFFY-928172"
+                        className="w-full px-3 py-2 bg-white dark:bg-brand-navy border border-slate-300 dark:border-white/10 rounded-xl text-xs font-mono font-bold text-brand-navy dark:text-white focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Redirección PayPal */}
+                {paymentMethod === 'paypal' && (
+                  <div className="p-4 bg-slate-50 dark:bg-brand-navyDark border border-slate-200 dark:border-white/10 rounded-2xl space-y-3 text-xs">
+                    <p className="text-slate-600 dark:text-slate-300">
+                      {isEs
+                        ? 'Paga de forma segura mediante tu saldo de PayPal o tarjeta vinculada. Haz clic abajo para ir a PayPal:'
+                        : 'Pay securely with PayPal. Click below to proceed:'}
+                    </p>
+                    <a
+                      href="https://www.paypal.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-2.5 px-4 bg-[#0070BA] hover:bg-[#005ea6] text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-2 transition-colors shadow-sm"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>{isEs ? 'Ir a PayPal' : 'Open PayPal'}</span>
+                    </a>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">
+                        ID de Transacción / Correo PayPal:
+                      </label>
+                      <input
+                        type="text"
+                        value={sinpeRef}
+                        onChange={(e) => setSinpeRef(e.target.value)}
+                        placeholder="Ej. 9X928172PP o tu correo PayPal"
+                        className="w-full px-3 py-2 bg-white dark:bg-brand-navy border border-slate-300 dark:border-white/10 rounded-xl text-xs font-mono font-bold text-brand-navy dark:text-white focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {purchaseError && (
+                <div className="p-3 bg-red-500/20 border border-red-500/40 rounded-xl flex items-center space-x-2 text-red-600 dark:text-red-300 text-xs">
+                  <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                  <span>{purchaseError}</span>
+                </div>
+              )}
+
+              {cooldownRemaining > 0 && (
+                <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center space-x-2 text-amber-600 dark:text-amber-300 text-xs font-medium">
+                  <Clock className="w-4 h-4 flex-shrink-0 text-amber-500 animate-spin" />
+                  <span>
+                    {isEs
+                      ? `Por seguridad de la taquilla, debes esperar ${cooldownRemaining}s para realizar otra compra.`
+                      : `Please wait ${cooldownRemaining}s before another purchase.`}
+                  </span>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={purchasing || cooldownRemaining > 0}
+                className="w-full py-3.5 btn-green text-brand-navy font-extrabold rounded-xl shadow-glow-green text-xs uppercase tracking-wider flex items-center justify-center space-x-2 disabled:opacity-50"
+              >
+                {purchasing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>{isEs ? 'Procesando Boletos...' : 'Processing...'}</span>
+                  </>
+                ) : cooldownRemaining > 0 ? (
+                  <span>
+                    {isEs ? `Espera ${cooldownRemaining}s...` : `Wait ${cooldownRemaining}s...`}
+                  </span>
+                ) : (
+                  <span>
+                    {isEs ? `Adquirir ${quantity} ${quantity === 1 ? 'Boleto' : 'Boletos'} (${currency === 'CRC' ? '₡' : '$'}${totalPrice.toLocaleString()})` : `Buy ${quantity} Tickets`}
+                  </span>
+                )}
+              </button>
+            </form>
           )}
         </div>
       </div>

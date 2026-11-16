@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { GoogleLoginButton } from '../components/GoogleLoginButton';
 import type { Language } from '../types';
 import { getTranslations } from '../lib/i18n';
+import { guardarSesion } from '../services/sesion';
 
 interface RegisterViewProps {
   language: Language;
@@ -74,6 +75,15 @@ export const RegisterView = ({
       }
 
       setMensaje(t.success.accountCreated);
+
+      // Iniciar sesión automáticamente si la API devolvió token y usuario
+      if (datos?.data?.token && datos?.data?.user) {
+        guardarSesion(datos.data.token, datos.data.user);
+        if (onSesionIniciada) {
+          onSesionIniciada();
+          return;
+        }
+      }
 
       setNombre('');
       setCorreo('');
@@ -158,7 +168,7 @@ export const RegisterView = ({
               type="password"
               autoComplete="new-password"
               required
-              minLength={10}
+              minLength={6}
               maxLength={128}
               aria-describedby="register-password-help"
               value={password}
@@ -188,7 +198,7 @@ export const RegisterView = ({
               type="password"
               autoComplete="new-password"
               required
-              minLength={10}
+              minLength={6}
               maxLength={128}
               value={confirmacion}
               onChange={(event) => setConfirmacion(event.target.value)}

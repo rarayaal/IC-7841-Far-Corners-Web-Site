@@ -1,23 +1,41 @@
 import { Router } from "express";
 import {
   handleObtenerInventario,
+  handleObtenerMetricasFunciones,
+  handleObtenerBoletosPorFuncion,
   handleCrearInventario,
   handleActualizarInventario,
   handleAdquirirBoletos,
+  handleValidarCompraSinpe,
+  handleValidarQr,
+  handleDescargarPdfCompra,
 } from "../controllers/tickets.controller.js";
 import { authenticateToken } from "../middlewares/auth.middleware.js";
 import { requireRoles } from "../middlewares/rbac.middleware.js";
 
 const router = Router();
 
-// CU-16 / RF-16: Gestión de inventario por evento (Admin)
-// GET  /api/v1/tickets/events/:eventId  → consultar disponibilidad (público)
-// POST /api/v1/tickets/events/:eventId  → crear tipo de boleto (admin)
+// Consultar disponibilidad e inventario por evento (público)
 router.get(
   ["/events/:eventId", "/events/:eventId/tickets"],
   handleObtenerInventario
 );
 
+// Métricas de funciones por evento (capacidad, vendidos, disponibles, precios CRC/USD)
+router.get(
+  "/events/:eventId/performances-metrics",
+  handleObtenerMetricasFunciones
+);
+
+// Lista de boletos por función (Admin)
+router.get(
+  "/performances/:performanceId/tickets",
+  authenticateToken,
+  requireRoles(["admin", "manager"]),
+  handleObtenerBoletosPorFuncion
+);
+
+// Crear tipo de boleto / inventario (Admin)
 router.post(
   ["/events/:eventId", "/events/:eventId/tickets"],
   authenticateToken,
@@ -25,7 +43,7 @@ router.post(
   handleCrearInventario
 );
 
-// PUT /api/v1/tickets/:id  → editar precio o disponibilidad (admin)
+// Actualizar precio o cupos de inventario (Admin)
 router.put(
   "/:id",
   authenticateToken,
@@ -33,8 +51,32 @@ router.put(
   handleActualizarInventario
 );
 
-// CU-17 / RF-17: Adquirir boletos (público)
-// POST /api/v1/tickets/purchases
-router.post("/purchases", handleAdquirirBoletos);
+// Realizar compra de boletos (Público)
+router.post(
+  ["/purchases", "/"],
+  handleAdquirirBoletos
+);
+
+// Validar compra SINPE (Admin)
+router.patch(
+  "/purchases/:purchaseId/validate-sinpe",
+  authenticateToken,
+  requireRoles(["admin", "manager"]),
+  handleValidarCompraSinpe
+);
+
+// In-App Escáner QR para validación en puerta (Admin)
+router.post(
+  "/validate-qr",
+  authenticateToken,
+  requireRoles(["admin", "manager"]),
+  handleValidarQr
+);
+
+// Descargar boletos en PDF (Público con ID de compra)
+router.get(
+  "/purchases/:purchaseId/pdf",
+  handleDescargarPdfCompra
+);
 
 export default router;

@@ -166,6 +166,7 @@ export function App() {
               <DonateView
                 language={language}
                 onOpenDonateModal={() => setIsDonateOpen(true)}
+                onNavigate={(p) => setCurrentPage(p)}
               />
             )}
             {currentPage === 'contact' && (
