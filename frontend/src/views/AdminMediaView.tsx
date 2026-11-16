@@ -252,8 +252,8 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
   }
 
   const inputClass =
-    'w-full rounded-lg border border-[#1e4066] bg-[#00162e] p-3 text-sm text-white focus:border-[#77C65E] focus:outline-none';
-  const labelClass = 'mb-1 block text-sm text-slate-300';
+    'w-full rounded-lg border border-slate-200 dark:border-[#1e4066] bg-[#F8F8F2] dark:bg-[#00162e] p-3 text-sm text-brand-navy dark:text-white focus:border-[#77C65E] focus:outline-none';
+  const labelClass = 'mb-1 block text-sm text-slate-600 dark:text-slate-300';
   const opciones = subida ? targets.filter((x) => x.kind === subida.kind) : [];
   const subeImagen = Boolean(subida?.file && isImage(subida.file.type));
 
@@ -261,14 +261,14 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
     <section className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="font-serif text-xl font-bold text-white">{t.title}</h2>
-          <p className="text-sm text-slate-300">{t.subtitle}</p>
+          <h2 className="font-serif text-xl font-bold text-brand-navy dark:text-white">{t.title}</h2>
+          <p className="text-sm text-slate-600 dark:text-slate-300">{t.subtitle}</p>
         </div>
 
         <button
           type="button"
           onClick={abrirSubida}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#77C65E] px-4 py-2 text-sm font-bold text-[#002244] transition-colors hover:bg-[#008047] hover:text-white sm:w-auto"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#77C65E] px-4 py-2 text-sm font-bold text-[#002244] transition-colors hover:bg-[#008047] hover:text-brand-navy dark:text-white sm:w-auto"
         >
           <Plus className="w-4 h-4" />
           {t.upload}
@@ -276,7 +276,7 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
       </div>
 
       {cargando && (
-        <p role="status" className="text-slate-300">
+        <p role="status" className="text-slate-600 dark:text-slate-300">
           {t.loading}
         </p>
       )}
@@ -289,16 +289,16 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
       {subida && (
         <form
           onSubmit={subir}
-          className="space-y-4 rounded-2xl border border-[#1e4066] bg-[#002244] p-4 sm:p-5"
+          className="space-y-4 rounded-2xl border border-slate-200 dark:border-[#1e4066] bg-white dark:bg-[#002244] p-4 sm:p-5"
         >
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-white">{t.upload}</h3>
+            <h3 className="font-bold text-brand-navy dark:text-white">{t.upload}</h3>
             <button
               type="button"
               disabled={subiendo}
               onClick={() => setSubida(null)}
               aria-label={txt.common.cancel}
-              className="rounded-lg p-1 text-slate-400 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-40"
+              className="rounded-lg p-1 text-slate-500 dark:text-slate-400 transition-colors hover:bg-slate-100 dark:bg-white/10 hover:text-brand-navy dark:text-white disabled:opacity-40"
             >
               <X className="w-4 h-4" />
             </button>
@@ -318,7 +318,7 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
                 }
                 className={`${inputClass} file:mr-3 file:rounded-lg file:border-0 file:bg-[#77C65E] file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-[#002244]`}
               />
-              <p className="mt-1 text-xs text-slate-400">{t.fileHint}</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t.fileHint}</p>
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -363,7 +363,7 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
                   ))}
                 </select>
                 {opciones.length === 0 && (
-                  <p className="mt-1 text-xs text-slate-400">{t.noTargets}</p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t.noTargets}</p>
                 )}
               </div>
             </div>
@@ -384,7 +384,7 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
               />
             </div>
 
-            <label className="flex items-start gap-2 text-sm text-white">
+            <label className="flex items-start gap-2 text-sm text-brand-navy dark:text-white">
               <input
                 type="checkbox"
                 className="mt-1"
@@ -404,17 +404,17 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
                   aria-valuemin={0}
                   aria-valuemax={100}
                   aria-valuenow={progreso}
-                  className="h-2 overflow-hidden rounded-full bg-[#00162e]"
+                  className="h-2 overflow-hidden rounded-full bg-[#F8F8F2] dark:bg-[#00162e]"
                 >
                   <div
                     className="h-full bg-[#77C65E] transition-all"
                     style={{ width: `${progreso}%` }}
                   />
                 </div>
-                <p className="text-xs text-slate-300">
+                <p className="text-xs text-slate-600 dark:text-slate-300">
                   {progreso < 100 ? `${t.uploading} ${progreso}%` : t.registering}
                 </p>
-                {lenta && <p className="text-xs text-[#DCEB4F]">{t.slowUpload}</p>}
+                {lenta && <p className="text-xs text-brand-forest dark:text-[#DCEB4F]">{t.slowUpload}</p>}
               </div>
             )}
 
@@ -428,7 +428,7 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
               <button
                 type="button"
                 onClick={() => setSubida(null)}
-                className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold text-white hover:bg-white/20"
+                className="rounded-xl bg-slate-100 dark:bg-white/10 px-4 py-2 text-sm font-bold text-brand-navy dark:text-white hover:bg-white/20"
               >
                 {txt.common.cancel}
               </button>
@@ -440,15 +440,15 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
       {edicion && (
         <form
           onSubmit={guardarEdicion}
-          className="space-y-4 rounded-2xl border border-[#1e4066] bg-[#002244] p-4 sm:p-5"
+          className="space-y-4 rounded-2xl border border-slate-200 dark:border-[#1e4066] bg-white dark:bg-[#002244] p-4 sm:p-5"
         >
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-white">{t.editTitle}</h3>
+            <h3 className="font-bold text-brand-navy dark:text-white">{t.editTitle}</h3>
             <button
               type="button"
               onClick={() => setEdicion(null)}
               aria-label={txt.common.cancel}
-              className="rounded-lg p-1 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
+              className="rounded-lg p-1 text-slate-500 dark:text-slate-400 transition-colors hover:bg-slate-100 dark:bg-white/10 hover:text-brand-navy dark:text-white"
             >
               <X className="w-4 h-4" />
             </button>
@@ -498,7 +498,7 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
               <button
                 type="button"
                 onClick={() => setEdicion(null)}
-                className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold text-white hover:bg-white/20"
+                className="rounded-xl bg-slate-100 dark:bg-white/10 px-4 py-2 text-sm font-bold text-brand-navy dark:text-white hover:bg-white/20"
               >
                 {txt.common.cancel}
               </button>
@@ -508,7 +508,7 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
       )}
 
       {!cargando && items.length === 0 && !error && (
-        <p className="text-slate-300">{t.empty}</p>
+        <p className="text-slate-600 dark:text-slate-300">{t.empty}</p>
       )}
 
       {items.length > 0 && (
@@ -516,9 +516,9 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
           {items.map((item) => (
             <li
               key={item.id}
-              className="overflow-hidden rounded-2xl border border-[#1e4066] bg-[#002244]"
+              className="overflow-hidden rounded-2xl border border-slate-200 dark:border-[#1e4066] bg-white dark:bg-[#002244]"
             >
-              <div className="flex aspect-[4/3] items-center justify-center bg-[#00162e]">
+              <div className="flex aspect-[4/3] items-center justify-center bg-[#F8F8F2] dark:bg-[#00162e]">
                 {isImage(item.mime_type) ? (
                   <img
                     src={item.url}
@@ -532,7 +532,7 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`${t.openFile}: ${item.filename}`}
-                    className="flex flex-col items-center gap-2 text-slate-300 hover:text-white"
+                    className="flex flex-col items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-brand-navy dark:text-white"
                   >
                     <FileText className="h-10 w-10" />
                     <span className="text-xs">{t.document}</span>
@@ -541,17 +541,17 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
               </div>
 
               <div className="space-y-2 p-4">
-                <p className="truncate text-sm font-bold text-white" title={item.filename}>
+                <p className="truncate text-sm font-bold text-brand-navy dark:text-white" title={item.filename}>
                   {item.filename}
                   {!item.is_published && (
-                    <span className="ml-2 rounded bg-white/10 px-2 py-0.5 text-[10px] font-bold uppercase text-slate-300">
+                    <span className="ml-2 rounded bg-slate-100 dark:bg-white/10 px-2 py-0.5 text-[10px] font-bold uppercase text-slate-600 dark:text-slate-300">
                       {txt.retirement.withdrawn}
                     </span>
                   )}
                 </p>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   {t.columnAssociation}:{' '}
-                  <span className="text-slate-200">
+                  <span className="text-slate-700 dark:text-slate-200">
                     {item.association_label ?? t.emptyAssociation}
                   </span>{' '}
                   · {formatBytes(item.size_bytes)}
@@ -562,7 +562,7 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
                     type="button"
                     onClick={() => abrirEdicion(item)}
                     aria-label={`${txt.common.edit}: ${item.filename}`}
-                    className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-white/20"
+                    className="inline-flex items-center gap-1 rounded-lg bg-slate-100 dark:bg-white/10 px-2.5 py-1.5 text-[10px] font-bold text-brand-navy dark:text-white hover:bg-white/20"
                   >
                     <Pencil className="w-3 h-3" />
                     {txt.common.edit}
