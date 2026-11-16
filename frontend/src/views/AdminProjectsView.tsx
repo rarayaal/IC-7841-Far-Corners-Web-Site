@@ -206,16 +206,16 @@ export const AdminProjectsView = ({ language }: { language: Language }) => {
       </ToastRegion>
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-[#002244] border border-slate-200 dark:border-[#1e4066] p-6 rounded-2xl">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#002244] border border-[#1e4066] p-6 rounded-2xl">
         <div className="flex items-center space-x-3">
           <div className="p-3 bg-[#77C65E]/20 text-[#77C65E] border border-[#77C65E]/40 rounded-xl">
             <FolderKanban className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="font-serif text-xl font-bold text-brand-navy dark:text-white">
+            <h2 className="font-serif text-xl font-bold text-white">
               {isEs ? 'Catálogo de Proyectos' : 'Projects Directory'}
             </h2>
-            <p className="text-xs text-slate-600 dark:text-slate-300">
+            <p className="text-xs text-slate-300">
               {isEs
                 ? 'Gestiona las obras, hitos comunitarios y proyectos por país.'
                 : 'Manage community works, productions, and milestones.'}
@@ -225,7 +225,7 @@ export const AdminProjectsView = ({ language }: { language: Language }) => {
 
         <button
           onClick={abrirNuevo}
-          className="inline-flex items-center space-x-2 px-4 py-2.5 bg-[#77C65E] hover:bg-[#008047] text-[#002244] hover:text-brand-navy dark:text-white font-extrabold rounded-xl transition-all shadow-glow-green text-xs uppercase tracking-wider"
+          className="inline-flex items-center space-x-2 px-4 py-2.5 bg-[#77C65E] hover:bg-[#008047] text-[#002244] hover:text-white font-extrabold rounded-xl transition-all shadow-glow-green text-xs uppercase tracking-wider"
         >
           <Plus className="w-4 h-4" />
           <span>{isEs ? 'Nuevo Proyecto' : 'New Project'}</span>
@@ -235,16 +235,16 @@ export const AdminProjectsView = ({ language }: { language: Language }) => {
       {/* Form Modal */}
       {formulario && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white dark:bg-[#002244] border border-[#77C65E]/40 rounded-2xl p-6 w-full max-w-2xl text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center border-b border-slate-200 dark:border-white/10 pb-3">
-              <h3 className="font-serif text-lg font-bold text-brand-navy dark:text-white">
+          <div className="bg-[#002244] border border-[#77C65E]/40 rounded-2xl p-6 w-full max-w-2xl text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center border-b border-white/10 pb-3">
+              <h3 className="font-serif text-lg font-bold text-white">
                 {formulario.id
                   ? isEs ? 'Editar Proyecto' : 'Edit Project'
                   : isEs ? 'Registrar Nuevo Proyecto' : 'Create Project'}
               </h3>
               <button
                 onClick={() => setFormulario(null)}
-                className="text-slate-500 dark:text-slate-400 hover:text-brand-navy dark:text-white p-1 rounded-lg"
+                className="text-slate-400 hover:text-white p-1 rounded-lg"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -252,7 +252,7 @@ export const AdminProjectsView = ({ language }: { language: Language }) => {
 
             <form onSubmit={guardar} className="space-y-4 text-xs">
               <div>
-                <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">
+                <label className="block text-slate-300 font-semibold mb-1">
                   {isEs ? 'Título de la Obra o Proyecto *' : 'Project Title *'}
                 </label>
                 <input
@@ -261,19 +261,19 @@ export const AdminProjectsView = ({ language }: { language: Language }) => {
                   value={formulario.title}
                   onChange={(e) => setFormulario({ ...formulario, title: e.target.value })}
                   placeholder={isEs ? 'Ej. Campamento de Teatro Monteverde' : 'Project title...'}
-                  className="w-full px-3.5 py-2.5 bg-[#F8F8F2] dark:bg-[#00162e] border border-slate-200 dark:border-[#1e4066] rounded-xl text-brand-navy dark:text-white focus:border-[#77C65E] focus:outline-none"
+                  className="w-full px-3.5 py-2.5 bg-[#00162e] border border-[#1e4066] rounded-xl text-white focus:border-[#77C65E] focus:outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">
+                  <label className="block text-slate-300 font-semibold mb-1">
                     {isEs ? 'País de Enfoque' : 'Country'}
                   </label>
                   <select
                     value={formulario.country}
                     onChange={(e) => setFormulario({ ...formulario, country: e.target.value })}
-                    className="fc-select w-full px-3.5 py-2.5 bg-[#F8F8F2] dark:bg-[#00162e] border border-slate-200 dark:border-[#1e4066] rounded-xl text-brand-navy dark:text-white focus:border-[#77C65E] focus:outline-none"
+                    className="fc-select w-full px-3.5 py-2.5 bg-[#00162e] border border-[#1e4066] rounded-xl text-white focus:border-[#77C65E] focus:outline-none"
                   >
                     <option value="CR">Costa Rica (CR)</option>
                     <option value="CN">China (CN)</option>
@@ -282,7 +282,7 @@ export const AdminProjectsView = ({ language }: { language: Language }) => {
                 </div>
 
                 <div>
-                  <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">
+                  <label className="block text-slate-300 font-semibold mb-1">
                     {isEs ? 'Año del Proyecto' : 'Year'}
                   </label>
                   <input
@@ -290,12 +290,12 @@ export const AdminProjectsView = ({ language }: { language: Language }) => {
                     value={formulario.project_year}
                     onChange={(e) => setFormulario({ ...formulario, project_year: e.target.value })}
                     placeholder="2026"
-                    className="w-full px-3.5 py-2.5 bg-[#F8F8F2] dark:bg-[#00162e] border border-slate-200 dark:border-[#1e4066] rounded-xl text-brand-navy dark:text-white focus:border-[#77C65E] focus:outline-none font-mono"
+                    className="w-full px-3.5 py-2.5 bg-[#00162e] border border-[#1e4066] rounded-xl text-white focus:border-[#77C65E] focus:outline-none font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">
+                  <label className="block text-slate-300 font-semibold mb-1">
                     {isEs ? 'Participantes / Beneficiarios' : 'Participants'}
                   </label>
                   <input
@@ -304,13 +304,13 @@ export const AdminProjectsView = ({ language }: { language: Language }) => {
                     value={formulario.participants_count}
                     onChange={(e) => setFormulario({ ...formulario, participants_count: e.target.value })}
                     placeholder="Ej. 120"
-                    className="w-full px-3.5 py-2.5 bg-[#F8F8F2] dark:bg-[#00162e] border border-slate-200 dark:border-[#1e4066] rounded-xl text-brand-navy dark:text-white focus:border-[#77C65E] focus:outline-none font-mono"
+                    className="w-full px-3.5 py-2.5 bg-[#00162e] border border-[#1e4066] rounded-xl text-white focus:border-[#77C65E] focus:outline-none font-mono"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">
+                <label className="block text-slate-300 font-semibold mb-1">
                   {isEs ? 'URL de Imagen o Póster' : 'Poster / Image URL'}
                 </label>
                 <input
@@ -318,12 +318,12 @@ export const AdminProjectsView = ({ language }: { language: Language }) => {
                   value={formulario.image_url}
                   onChange={(e) => setFormulario({ ...formulario, image_url: e.target.value })}
                   placeholder="/recursos/IMG_2905.PNG o https://..."
-                  className="w-full px-3.5 py-2.5 bg-[#F8F8F2] dark:bg-[#00162e] border border-slate-200 dark:border-[#1e4066] rounded-xl text-brand-navy dark:text-white focus:border-[#77C65E] focus:outline-none"
+                  className="w-full px-3.5 py-2.5 bg-[#00162e] border border-[#1e4066] rounded-xl text-white focus:border-[#77C65E] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">
+                <label className="block text-slate-300 font-semibold mb-1">
                   {isEs ? 'Descripción Detallada' : 'Description'}
                 </label>
                 <textarea
@@ -331,7 +331,7 @@ export const AdminProjectsView = ({ language }: { language: Language }) => {
                   value={formulario.description}
                   onChange={(e) => setFormulario({ ...formulario, description: e.target.value })}
                   placeholder={isEs ? 'Reseña de la obra, logros o actividades desarrolladas...' : 'Detailed project info...'}
-                  className="w-full px-3.5 py-2.5 bg-[#F8F8F2] dark:bg-[#00162e] border border-slate-200 dark:border-[#1e4066] rounded-xl text-brand-navy dark:text-white focus:border-[#77C65E] focus:outline-none resize-none"
+                  className="w-full px-3.5 py-2.5 bg-[#00162e] border border-[#1e4066] rounded-xl text-white focus:border-[#77C65E] focus:outline-none resize-none"
                 />
               </div>
 
@@ -343,24 +343,24 @@ export const AdminProjectsView = ({ language }: { language: Language }) => {
                     onChange={(e) => setFormulario({ ...formulario, is_published: e.target.checked })}
                     className="rounded border-slate-700 text-[#77C65E] focus:ring-[#77C65E]"
                   />
-                  <span className="text-slate-700 dark:text-slate-200 font-semibold">
+                  <span className="text-slate-200 font-semibold">
                     {isEs ? 'Publicar en el sitio web inmediatamente' : 'Publish to website'}
                   </span>
                 </label>
               </div>
 
-              <div className="flex justify-end space-x-3 pt-4 border-t border-slate-200 dark:border-white/10">
+              <div className="flex justify-end space-x-3 pt-4 border-t border-white/10">
                 <button
                   type="button"
                   onClick={() => setFormulario(null)}
-                  className="px-4 py-2.5 bg-slate-100 dark:bg-white/10 hover:bg-white/20 text-brand-navy dark:text-white rounded-xl font-semibold"
+                  className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl font-semibold"
                 >
                   {isEs ? 'Cancelar' : 'Cancel'}
                 </button>
                 <button
                   type="submit"
                   disabled={guardando}
-                  className="px-6 py-2.5 bg-[#77C65E] hover:bg-[#008047] text-[#002244] hover:text-brand-navy dark:text-white font-extrabold rounded-xl transition-all shadow-glow-green"
+                  className="px-6 py-2.5 bg-[#77C65E] hover:bg-[#008047] text-[#002244] hover:text-white font-extrabold rounded-xl transition-all shadow-glow-green"
                 >
                   {guardando
                     ? isEs ? 'Guardando...' : 'Saving...'
@@ -373,19 +373,19 @@ export const AdminProjectsView = ({ language }: { language: Language }) => {
       )}
 
       {/* Projects Table */}
-      <div className="bg-white dark:bg-[#002244] border border-slate-200 dark:border-[#1e4066] rounded-2xl overflow-hidden shadow-card-dark">
+      <div className="bg-[#002244] border border-[#1e4066] rounded-2xl overflow-hidden shadow-card-dark">
         {cargando ? (
-          <div className="p-8 text-center text-slate-500 dark:text-slate-400 text-xs">
+          <div className="p-8 text-center text-slate-400 text-xs">
             {isEs ? 'Cargando catálogo de proyectos...' : 'Loading projects...'}
           </div>
         ) : proyectos.length === 0 ? (
-          <div className="p-8 text-center text-slate-500 dark:text-slate-400 text-xs">
+          <div className="p-8 text-center text-slate-400 text-xs">
             {isEs ? 'No hay proyectos registrados aún.' : 'No projects registered.'}
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300">
-              <thead className="bg-[#F8F8F2] dark:bg-[#00162e] text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-200 dark:border-white/10">
+            <table className="w-full text-left text-xs text-slate-300">
+              <thead className="bg-[#00162e] text-slate-400 uppercase text-[10px] tracking-wider border-b border-white/10">
                 <tr>
                   <th className="px-5 py-3.5">{isEs ? 'Proyecto' : 'Project'}</th>
                   <th className="px-5 py-3.5">{isEs ? 'País' : 'Country'}</th>
@@ -397,23 +397,23 @@ export const AdminProjectsView = ({ language }: { language: Language }) => {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {proyectos.map((proyecto) => (
-                  <tr key={proyecto.id} className="hover:bg-slate-100 dark:bg-white/5 transition-colors">
+                  <tr key={proyecto.id} className="hover:bg-white/5 transition-colors">
                     <td className="px-5 py-3.5">
                       <div className="flex items-center space-x-3">
                         {proyecto.image_url ? (
                           <img
                             src={proyecto.image_url}
                             alt={proyecto.title}
-                            className="w-10 h-10 object-cover rounded-lg border border-slate-200 dark:border-white/10"
+                            className="w-10 h-10 object-cover rounded-lg border border-white/10"
                           />
                         ) : (
-                          <div className="w-10 h-10 rounded-lg bg-[#F8F8F2] dark:bg-[#00162e] border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-500">
+                          <div className="w-10 h-10 rounded-lg bg-[#00162e] border border-white/10 flex items-center justify-center text-slate-500">
                             <FolderKanban className="w-4 h-4" />
                           </div>
                         )}
                         <div>
-                          <span className="font-bold text-brand-navy dark:text-white block">{proyecto.title}</span>
-                          <span className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 max-w-xs">
+                          <span className="font-bold text-white block">{proyecto.title}</span>
+                          <span className="text-[11px] text-slate-400 line-clamp-1 max-w-xs">
                             {proyecto.description || '—'}
                           </span>
                         </div>
@@ -425,10 +425,10 @@ export const AdminProjectsView = ({ language }: { language: Language }) => {
                         {nombrePais(proyecto.country)}
                       </span>
                     </td>
-                    <td className="px-5 py-3.5 font-mono text-slate-700 dark:text-slate-200">
+                    <td className="px-5 py-3.5 font-mono text-slate-200">
                       {proyecto.project_year || '—'}
                     </td>
-                    <td className="px-5 py-3.5 font-mono text-slate-700 dark:text-slate-200">
+                    <td className="px-5 py-3.5 font-mono text-slate-200">
                       {proyecto.participants_count ? `${proyecto.participants_count} personas` : '—'}
                     </td>
                     <td className="px-5 py-3.5">
@@ -445,14 +445,14 @@ export const AdminProjectsView = ({ language }: { language: Language }) => {
                     <td className="px-5 py-3.5 text-right space-x-2 whitespace-nowrap">
                       <button
                         onClick={() => abrirEdicion(proyecto)}
-                        className="p-1.5 text-slate-600 dark:text-slate-300 hover:text-brand-navy dark:text-white bg-slate-100 dark:bg-white/5 hover:bg-slate-100 dark:bg-white/10 rounded-lg transition-colors"
+                        className="p-1.5 text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
                         title={isEs ? 'Editar' : 'Edit'}
                       >
                         <Pencil className="w-4 h-4 text-[#4A90D6]" />
                       </button>
                       <button
                         onClick={() => setPorEliminar(proyecto)}
-                        className="p-1.5 text-slate-600 dark:text-slate-300 hover:text-red-400 bg-slate-100 dark:bg-white/5 hover:bg-red-500/10 rounded-lg transition-colors"
+                        className="p-1.5 text-slate-300 hover:text-red-400 bg-white/5 hover:bg-red-500/10 rounded-lg transition-colors"
                         title={isEs ? 'Eliminar' : 'Delete'}
                       >
                         <Trash2 className="w-4 h-4 text-red-400" />

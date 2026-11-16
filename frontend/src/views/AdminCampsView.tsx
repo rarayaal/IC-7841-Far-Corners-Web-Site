@@ -180,22 +180,22 @@ export const AdminCampsView = ({ language }: { language: Language }) => {
   }
 
   const inputClass =
-    'w-full rounded-lg border border-slate-200 dark:border-brand-border bg-[#F8F8F2] dark:bg-brand-navyDark p-3 text-sm text-brand-navy dark:text-white focus:border-brand-green focus:outline-none';
+    'w-full rounded-lg border border-brand-border bg-brand-navyDark p-3 text-sm text-white focus:border-brand-green focus:outline-none';
 
   return (
     <section className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="font-serif text-xl font-bold text-brand-navy dark:text-white">
+          <h2 className="font-serif text-xl font-bold text-white">
             {txt.camps.title}
           </h2>
-          <p className="text-sm text-slate-600 dark:text-slate-300">{txt.camps.subtitle}</p>
+          <p className="text-sm text-slate-300">{txt.camps.subtitle}</p>
         </div>
 
         <button
           type="button"
           onClick={abrirNueva}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-green px-4 py-2 text-sm font-bold text-brand-navy transition-colors hover:bg-brand-forest hover:text-brand-navy dark:text-white sm:w-auto"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-green px-4 py-2 text-sm font-bold text-brand-navy transition-colors hover:bg-brand-forest hover:text-white sm:w-auto"
         >
           <Plus className="w-4 h-4" />
           {txt.camps.newItem}
@@ -203,7 +203,7 @@ export const AdminCampsView = ({ language }: { language: Language }) => {
       </div>
 
       {cargando && (
-        <p role="status" className="text-slate-600 dark:text-slate-300">
+        <p role="status" className="text-slate-300">
           {txt.camps.loading}
         </p>
       )}
@@ -214,22 +214,22 @@ export const AdminCampsView = ({ language }: { language: Language }) => {
       )}
 
       {!cargando && campistas.length === 0 && !error && (
-        <p className="text-slate-600 dark:text-slate-300">{txt.camps.empty}</p>
+        <p className="text-slate-300">{txt.camps.empty}</p>
       )}
 
       {formulario && (
         <form
           onSubmit={guardar}
-          className="space-y-4 rounded-2xl border border-slate-200 dark:border-brand-border bg-white dark:bg-brand-navy p-5"
+          className="space-y-4 rounded-2xl border border-brand-border bg-brand-navy p-5"
         >
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-brand-navy dark:text-white">
+            <h3 className="font-bold text-white">
               {formulario.id ? txt.camps.editTitle : txt.camps.createTitle}
             </h3>
             <button
               type="button"
               onClick={() => setFormulario(null)}
-              className="p-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-brand-navy dark:text-white hover:bg-slate-100 dark:bg-white/10 transition-colors"
+              className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -240,7 +240,7 @@ export const AdminCampsView = ({ language }: { language: Language }) => {
               <div>
                 <label
                   htmlFor="campista-usuario"
-                  className="mb-1 block text-sm text-slate-600 dark:text-slate-300"
+                  className="mb-1 block text-sm text-slate-300"
                 >
                   {txt.camps.candidateLabel}
                 </label>
@@ -265,7 +265,7 @@ export const AdminCampsView = ({ language }: { language: Language }) => {
                   ))}
                 </select>
                 {candidatos.length === 0 && !cargandoCandidatos && (
-                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  <p className="mt-1 text-xs text-slate-400">
                     {txt.camps.noCandidates}
                   </p>
                 )}
@@ -276,7 +276,7 @@ export const AdminCampsView = ({ language }: { language: Language }) => {
               <div>
                 <label
                   htmlFor="campista-escuela"
-                  className="mb-1 block text-sm text-slate-600 dark:text-slate-300"
+                  className="mb-1 block text-sm text-slate-300"
                 >
                   {txt.camps.school}
                 </label>
@@ -294,7 +294,7 @@ export const AdminCampsView = ({ language }: { language: Language }) => {
               <div>
                 <label
                   htmlFor="campista-grado"
-                  className="mb-1 block text-sm text-slate-600 dark:text-slate-300"
+                  className="mb-1 block text-sm text-slate-300"
                 >
                   {txt.camps.grade}
                 </label>
@@ -314,7 +314,7 @@ export const AdminCampsView = ({ language }: { language: Language }) => {
             <div>
               <label
                 htmlFor="campista-sesion"
-                className="mb-1 block text-sm text-slate-600 dark:text-slate-300"
+                className="mb-1 block text-sm text-slate-300"
               >
                 {txt.camps.session}
               </label>
@@ -334,7 +334,7 @@ export const AdminCampsView = ({ language }: { language: Language }) => {
               <div>
                 <label
                   htmlFor="campista-estado"
-                  className="mb-1 block text-sm text-slate-600 dark:text-slate-300"
+                  className="mb-1 block text-sm text-slate-300"
                 >
                   {txt.common.status}
                 </label>
@@ -364,7 +364,7 @@ export const AdminCampsView = ({ language }: { language: Language }) => {
               <button
                 type="button"
                 onClick={() => setFormulario(null)}
-                className="rounded-xl bg-slate-100 dark:bg-white/10 px-4 py-2 text-sm font-bold text-brand-navy dark:text-white hover:bg-white/20"
+                className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold text-white hover:bg-white/20"
               >
                 {txt.common.cancel}
               </button>
@@ -374,9 +374,9 @@ export const AdminCampsView = ({ language }: { language: Language }) => {
       )}
 
       {campistas.length > 0 && (
-        <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-brand-border bg-white dark:bg-brand-navy">
-          <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300">
-            <thead className="bg-[#F8F8F2] dark:bg-brand-navyDark text-slate-600 dark:text-slate-300 font-mono text-[11px] uppercase border-b border-slate-200 dark:border-white/10">
+        <div className="overflow-x-auto rounded-2xl border border-brand-border bg-brand-navy">
+          <table className="w-full text-left text-xs text-slate-300">
+            <thead className="bg-brand-navyDark text-slate-300 font-mono text-[11px] uppercase border-b border-white/10">
               <tr>
                 <th className="p-3 sm:p-4">{txt.camps.columnCamper}</th>
                 <th className="hidden p-4 sm:table-cell">
@@ -396,26 +396,26 @@ export const AdminCampsView = ({ language }: { language: Language }) => {
               {campistas.map((campista) => (
                 <tr
                   key={campista.id}
-                  className="hover:bg-slate-100 dark:bg-white/5 transition-colors"
+                  className="hover:bg-white/5 transition-colors"
                 >
                   <td className="p-3 sm:p-4">
-                    <span className="font-bold text-brand-navy dark:text-white block">
+                    <span className="font-bold text-white block">
                       {campista.camper_name}
                     </span>
-                    <span className="text-[11px] text-slate-600 dark:text-slate-300 break-all">
+                    <span className="text-[11px] text-slate-300 break-all">
                       {campista.camper_email}
                     </span>
-                    <span className="mt-1 block text-[11px] text-slate-500 dark:text-slate-400 sm:hidden">
+                    <span className="mt-1 block text-[11px] text-slate-400 sm:hidden">
                       {campista.school ?? '—'} · {campista.grade ?? '—'}
                     </span>
                   </td>
-                  <td className="hidden p-4 text-slate-600 dark:text-slate-300 sm:table-cell">
+                  <td className="hidden p-4 text-slate-300 sm:table-cell">
                     {campista.school ?? '—'}
                   </td>
-                  <td className="hidden p-4 text-slate-600 dark:text-slate-300 md:table-cell">
+                  <td className="hidden p-4 text-slate-300 md:table-cell">
                     {campista.grade ?? '—'}
                   </td>
-                  <td className="hidden p-4 text-slate-600 dark:text-slate-300 md:table-cell">
+                  <td className="hidden p-4 text-slate-300 md:table-cell">
                     {campista.session ?? '—'}
                   </td>
                   <td className="p-3 sm:p-4">
@@ -423,7 +423,7 @@ export const AdminCampsView = ({ language }: { language: Language }) => {
                       className={`px-2.5 py-1 rounded text-[10px] uppercase font-bold ${
                         campista.status === 'active'
                           ? 'bg-brand-green/20 text-brand-green'
-                          : 'bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300'
+                          : 'bg-white/10 text-slate-300'
                       }`}
                     >
                       {statusLabel(campista.status, language)}
@@ -435,7 +435,7 @@ export const AdminCampsView = ({ language }: { language: Language }) => {
                         type="button"
                         onClick={() => abrirEdicion(campista)}
                         aria-label={txt.common.edit}
-                        className="inline-flex items-center gap-1 rounded-lg bg-slate-100 dark:bg-white/10 px-2.5 py-1.5 text-[10px] font-bold text-brand-navy dark:text-white hover:bg-white/20"
+                        className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-white/20"
                       >
                         <Pencil className="w-3 h-3" />
                         <span className="hidden sm:inline">{txt.common.edit}</span>

@@ -109,18 +109,18 @@ export const AdminNewsletterView = ({ language = 'es' }: AdminNewsletterViewProp
   }, [pagina, estado, actualizacion, busqueda]);
 
   const botonClass =
-    'rounded-xl bg-slate-100 dark:bg-white/10 px-4 py-2 text-sm font-semibold ' +
-    'text-brand-navy dark:text-white hover:bg-white/20 disabled:opacity-50 ' +
+    'rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold ' +
+    'text-white hover:bg-white/20 disabled:opacity-50 ' +
     'disabled:cursor-not-allowed';
 
   return (
     <section className="space-y-5">
       <div>
-        <h2 className="font-serif text-xl font-bold text-brand-navy dark:text-white">
+        <h2 className="font-serif text-xl font-bold text-white">
           {txt.title}
         </h2>
 
-        <p className="text-sm text-slate-600 dark:text-slate-300">
+        <p className="text-sm text-slate-300">
           {txt.subtitle}
         </p>
       </div>
@@ -137,7 +137,7 @@ export const AdminNewsletterView = ({ language = 'es' }: AdminNewsletterViewProp
         <div className="w-full sm:max-w-sm">
             <label
             htmlFor="newsletter-busqueda"
-            className="mb-1 block text-sm text-slate-600 dark:text-slate-300"
+            className="mb-1 block text-sm text-slate-300"
             >
             {txt.searchPlaceholder}
             </label>
@@ -149,8 +149,8 @@ export const AdminNewsletterView = ({ language = 'es' }: AdminNewsletterViewProp
             value={textoBusqueda}
             onChange={(event) => setTextoBusqueda(event.target.value)}
             placeholder={txt.searchPlaceholder}
-            className="w-full rounded-xl border border-slate-200 dark:border-brand-border
-                        bg-[#F8F8F2] dark:bg-brand-navyDark px-3 py-2 text-brand-navy dark:text-white"
+            className="w-full rounded-xl border border-brand-border
+                        bg-brand-navyDark px-3 py-2 text-white"
             />
         </div>
 
@@ -180,7 +180,7 @@ export const AdminNewsletterView = ({ language = 'es' }: AdminNewsletterViewProp
         <div>
           <label
             htmlFor="newsletter-estado"
-            className="mb-1 block text-sm text-slate-600 dark:text-slate-300"
+            className="mb-1 block text-sm text-slate-300"
           >
             {language === 'es' ? 'Estado de suscripción' : 'Subscription status'}
           </label>
@@ -192,8 +192,8 @@ export const AdminNewsletterView = ({ language = 'es' }: AdminNewsletterViewProp
               setEstado(event.target.value);
               setPagina(1);
             }}
-            className="fc-select rounded-xl border border-slate-200 dark:border-brand-border
-                       bg-[#F8F8F2] dark:bg-brand-navyDark px-3 py-2 text-brand-navy dark:text-white"
+            className="fc-select rounded-xl border border-brand-border
+                       bg-brand-navyDark px-3 py-2 text-white"
           >
             <option value="">{txt.filterAll}</option>
             {Object.entries(txt.status).map(([valor, etiqueta]) => (
@@ -224,7 +224,7 @@ export const AdminNewsletterView = ({ language = 'es' }: AdminNewsletterViewProp
       </div>
 
       {cargando && (
-        <p role="status" className="text-slate-600 dark:text-slate-300">
+        <p role="status" className="text-slate-300">
           {txt.loading}
         </p>
       )}
@@ -237,18 +237,18 @@ export const AdminNewsletterView = ({ language = 'es' }: AdminNewsletterViewProp
 
       {!cargando && !error && datos && (
         <>
-          <p className="text-sm text-slate-600 dark:text-slate-300">
+          <p className="text-sm text-slate-300">
             {txt.totalSubscribers} {datos.total}
           </p>
 
           {datos.contactos.length === 0 ? (
-            <p className="text-slate-600 dark:text-slate-300">
+            <p className="text-slate-300">
               {txt.empty}
             </p>
           ) : (
-            <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-brand-border">
+            <div className="overflow-x-auto rounded-2xl border border-brand-border">
               <table className="w-full text-left text-sm">
-                <thead className="bg-white dark:bg-brand-navy text-brand-navy dark:text-white">
+                <thead className="bg-brand-navy text-white">
                   <tr>
                     <th scope="col" className="px-4 py-3">{language === 'es' ? 'Nombre' : 'First Name'}</th>
                     <th scope="col" className="px-4 py-3">{language === 'es' ? 'Apellido' : 'Last Name'}</th>
@@ -257,7 +257,7 @@ export const AdminNewsletterView = ({ language = 'es' }: AdminNewsletterViewProp
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-white/10 text-slate-700 dark:text-slate-200">
+                <tbody className="divide-y divide-white/10 text-slate-200">
                   {datos.contactos.map((contacto) => (
                     <tr key={contacto.id}>
                       <td className="px-4 py-3">
@@ -290,7 +290,7 @@ export const AdminNewsletterView = ({ language = 'es' }: AdminNewsletterViewProp
               {txt.pagination.prev}
             </button>
 
-            <span className="text-sm text-slate-600 dark:text-slate-300">
+            <span className="text-sm text-slate-300">
               {txt.pagination.page
                 .replace('{current}', String(datos.pagina))
                 .replace('{total}', String(Math.max(1, datos.total_paginas)))}

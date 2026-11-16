@@ -199,7 +199,7 @@ CREATE TABLE institutional_content (
         'history', 'impact', 'future', 'students', 'volunteers',
         'internships', 'communities', 'donations', 'contact',
         'hero', 'intro', 'cta', 'camp', 'values', 'team', 'schedule',
-        'payment_instructions', 'footer', 'board', 'production', 'gallery'
+        'payment_instructions', 'gallery'
     )),
     language VARCHAR(20) NOT NULL DEFAULT 'es',
     title VARCHAR(255) NOT NULL,
@@ -631,8 +631,8 @@ INSERT INTO contact_channels (
 ) VALUES
 (
     'address',
-    'Coordinación de programas',
-    'Monteverde, Costa Rica',
+    'Sede Central y Teatro',
+    'Monteverde, Puntarenas, Costa Rica',
     NULL,
     1,
     TRUE
@@ -648,16 +648,16 @@ INSERT INTO contact_channels (
 (
     'phone',
     'Teléfono',
-    '+506 7131-7013',
-    'tel:+50671317013',
+    '+506 2645-5000',
+    'tel:+50626455000',
     3,
     TRUE
 ),
 (
-    'sinpe',
-    'SINPE Móvil',
-    '7131-7013',
-    NULL,
+    'whatsapp',
+    'WhatsApp',
+    '+506 8888-9999',
+    'https://wa.me/50688889999',
     4,
     TRUE
 ),
@@ -680,7 +680,7 @@ INSERT INTO contact_channels (
 (
     'international_location',
     'Ubicación Internacional',
-    'Programas activos en Costa Rica (Monteverde).',
+    'Programas activos en Costa Rica (Monteverde), China y Mozambique.',
     NULL,
     7,
     TRUE

@@ -284,16 +284,16 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-      <div className="bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border w-full max-w-2xl max-h-[92vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden text-brand-navy dark:text-brand-cream">
+      <div className="bg-brand-navy border border-brand-border w-full max-w-2xl max-h-[92vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden text-brand-cream">
         {/* Header */}
-        <div className="p-5 border-b border-slate-200 dark:border-white/10 bg-[#F8F8F2] dark:bg-brand-navyDark flex items-center justify-between shrink-0">
+        <div className="p-5 border-b border-white/10 bg-brand-navyDark flex items-center justify-between shrink-0">
           <div className="flex items-center space-x-3">
             <div className="p-2 rounded-xl bg-brand-green/20 border border-brand-green/40 text-brand-green">
               <UserCheck className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-serif text-lg font-bold text-brand-navy dark:text-white leading-tight">
+                <h3 className="font-serif text-lg font-bold text-white leading-tight">
                   {language === 'es' ? 'Formulario de Postulación' : 'Application Form'}
                 </h3>
                 <span
@@ -302,8 +302,8 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                 >
                   {estadoGuardado === 'saving' ? (
                     <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-500 dark:text-slate-400" />
-                      <span className="text-slate-500 dark:text-slate-400">Guardando…</span>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-400" />
+                      <span className="text-slate-400">Guardando…</span>
                     </>
                   ) : estadoGuardado === 'unsaved' ? (
                     <>
@@ -318,10 +318,10 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                   )}
                 </span>
               </div>
-              <p className="text-xs text-brand-forest dark:text-brand-lime font-semibold">{tituloForm}</p>
+              <p className="text-xs text-brand-lime font-semibold">{tituloForm}</p>
             </div>
           </div>
-          <button onClick={cerrar} className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-brand-navy dark:text-white hover:bg-slate-100 dark:bg-white/10">
+          <button onClick={cerrar} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -332,24 +332,24 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
               <div className="inline-flex p-3 rounded-full bg-brand-green/20 text-brand-green border border-brand-green/40">
                 <CheckCircle2 className="w-12 h-12" />
               </div>
-              <h4 className="font-serif text-2xl font-bold text-brand-navy dark:text-white">¡Postulación Recibida!</h4>
-              <p className="text-sm text-slate-600 dark:text-slate-300">
+              <h4 className="font-serif text-2xl font-bold text-white">¡Postulación Recibida!</h4>
+              <p className="text-sm text-slate-300">
                 Gracias. El equipo directivo de Far Corners evaluará tu perfil para{' '}
-                <span className="text-brand-forest dark:text-brand-lime font-bold">{tituloForm}</span>.
+                <span className="text-brand-lime font-bold">{tituloForm}</span>.
               </p>
               <button onClick={cerrar} className="w-full py-3 bg-brand-green text-brand-navy font-extrabold rounded-xl">
                 Entendido
               </button>
             </div>
           ) : cargando ? (
-            <div className="flex flex-col items-center justify-center py-16 text-slate-600 dark:text-slate-300">
+            <div className="flex flex-col items-center justify-center py-16 text-slate-300">
               <Loader2 className="w-8 h-8 text-brand-green animate-spin mb-3" />
               <span className="text-sm">Cargando formulario…</span>
             </div>
           ) : error ? (
             <div className="text-center space-y-4 py-8">
               <p className="text-sm text-rose-300">{error}</p>
-              <button onClick={cerrar} className="px-6 py-2.5 bg-slate-100 dark:bg-white/10 text-brand-navy dark:text-white rounded-xl font-bold">
+              <button onClick={cerrar} className="px-6 py-2.5 bg-white/10 text-white rounded-xl font-bold">
                 Cerrar
               </button>
             </div>
@@ -358,12 +358,12 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
               {secciones.map((seccion) => (
                 <div key={seccion.name} className="space-y-4">
                   {seccion.name && (
-                    <h4 className="font-serif text-sm font-bold text-brand-forest dark:text-brand-lime uppercase tracking-wider border-b border-slate-200 dark:border-white/10 pb-1">
+                    <h4 className="font-serif text-sm font-bold text-brand-lime uppercase tracking-wider border-b border-white/10 pb-1">
                       {seccion.name}
                     </h4>
                   )}
                   {seccion.description && (
-                    <p className="text-xs text-slate-500 dark:text-slate-400 whitespace-pre-wrap">{seccion.description}</p>
+                    <p className="text-xs text-slate-400 whitespace-pre-wrap">{seccion.description}</p>
                   )}
                   {seccion.campos.map((campo) => (
                     <Campo
@@ -381,7 +381,7 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                 <button
                   type="submit"
                   disabled={enviando}
-                  className="w-full py-3.5 btn-green text-brand-navy hover:text-brand-navy dark:text-white font-extrabold rounded-xl shadow-glow-green transition-all uppercase tracking-wider text-xs disabled:opacity-60"
+                  className="w-full py-3.5 btn-green text-brand-navy hover:text-white font-extrabold rounded-xl shadow-glow-green transition-all uppercase tracking-wider text-xs disabled:opacity-60"
                 >
                   {enviando ? 'Enviando…' : 'Enviar Postulación Oficial'}
                 </button>
@@ -419,11 +419,11 @@ const Campo: React.FC<CampoProps> = ({ campo, valor, onChange, onCheckboxGroup }
   const opciones = campo.options ?? [];
   const requerido = campo.required;
   const claseInput =
-    'w-full px-3.5 py-2.5 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded-lg text-sm text-brand-navy dark:text-white focus:border-brand-green focus:outline-none';
+    'w-full px-3.5 py-2.5 bg-brand-navyDark border border-brand-border rounded-lg text-sm text-white focus:border-brand-green focus:outline-none';
 
   const etiqueta = (
-    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
-      {campo.label} {requerido && <span className="text-brand-forest dark:text-brand-lime">*</span>}
+    <label className="block text-xs font-semibold text-slate-300 mb-1">
+      {campo.label} {requerido && <span className="text-brand-lime">*</span>}
     </label>
   );
 
@@ -469,12 +469,12 @@ const Campo: React.FC<CampoProps> = ({ campo, valor, onChange, onCheckboxGroup }
     case 'radio':
       return (
         <fieldset>
-          <legend className="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
-            {campo.label} {requerido && <span className="text-brand-forest dark:text-brand-lime">*</span>}
+          <legend className="text-xs font-semibold text-slate-300 mb-1">
+            {campo.label} {requerido && <span className="text-brand-lime">*</span>}
           </legend>
           <div className="space-y-2">
             {opciones.map((opcion) => (
-              <label key={opcion} className="flex items-start space-x-2 text-sm text-slate-700 dark:text-slate-200 cursor-pointer">
+              <label key={opcion} className="flex items-start space-x-2 text-sm text-slate-200 cursor-pointer">
                 <input
                   type="radio"
                   name={campo.field_key}
@@ -494,12 +494,12 @@ const Campo: React.FC<CampoProps> = ({ campo, valor, onChange, onCheckboxGroup }
       if (campo.options) {
         return (
           <fieldset>
-            <legend className="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
-              {campo.label} {requerido && <span className="text-brand-forest dark:text-brand-lime">*</span>}
+            <legend className="text-xs font-semibold text-slate-300 mb-1">
+              {campo.label} {requerido && <span className="text-brand-lime">*</span>}
             </legend>
             <div className="space-y-2">
               {opciones.map((opcion) => (
-                <label key={opcion} className="flex items-start space-x-2 text-sm text-slate-700 dark:text-slate-200 cursor-pointer">
+                <label key={opcion} className="flex items-start space-x-2 text-sm text-slate-200 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={(valor as string[])?.includes(opcion) ?? false}
@@ -514,7 +514,7 @@ const Campo: React.FC<CampoProps> = ({ campo, valor, onChange, onCheckboxGroup }
         );
       }
       return (
-        <label className="flex items-center space-x-2 text-sm text-slate-700 dark:text-slate-200 cursor-pointer">
+        <label className="flex items-center space-x-2 text-sm text-slate-200 cursor-pointer">
           <input
             type="checkbox"
             checked={(valor as boolean) ?? false}

@@ -117,11 +117,11 @@ const ModalConfirmar: React.FC<{
   useLockBodyScroll();
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border w-full max-w-md rounded-2xl p-6 space-y-4 text-sm">
-        <h4 className="font-serif text-lg font-bold text-brand-navy dark:text-white">{titulo ?? txt.confirmDeleteTitle}</h4>
-        <p className="text-slate-600 dark:text-slate-300 text-xs">{mensaje}</p>
+      <div className="bg-brand-navy border border-brand-border w-full max-w-md rounded-2xl p-6 space-y-4 text-sm">
+        <h4 className="font-serif text-lg font-bold text-white">{titulo ?? txt.confirmDeleteTitle}</h4>
+        <p className="text-slate-300 text-xs">{mensaje}</p>
         <div className="flex gap-2">
-          <button onClick={onCancelar} className="flex-1 py-2.5 bg-slate-100 dark:bg-white/10 hover:bg-white/20 text-brand-navy dark:text-white font-bold rounded-xl">
+          <button onClick={onCancelar} className="flex-1 py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl">
             {textoCancelar ?? txt.cancel}
           </button>
           <button onClick={onConfirmar} className="flex-1 py-2.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-200 font-bold rounded-xl">
@@ -149,7 +149,7 @@ const TextareaDescripcion: React.FC<{ value: string; onChange: (v: string) => vo
       rows={1}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full resize-none bg-transparent text-xs text-slate-600 dark:text-slate-300 placeholder:text-slate-500 border-b border-dashed border-slate-300 dark:border-white/20 hover:border-white/50 focus:border-solid focus:border-brand-green focus:outline-none py-1 min-h-[2rem]"
+      className="w-full resize-none bg-transparent text-xs text-slate-300 placeholder:text-slate-500 border-b border-dashed border-white/20 hover:border-white/50 focus:border-solid focus:border-brand-green focus:outline-none py-1 min-h-[2rem]"
     />
   );
 };
@@ -326,12 +326,12 @@ export const AdminFormsView: React.FC<{ language: Language }> = ({ language }) =
       <div className="space-y-6 animate-fadeIn">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 className="font-serif text-xl font-bold text-brand-navy dark:text-white">{txt.listTitle}</h3>
-          <p className="text-xs text-slate-600 dark:text-slate-300">{txt.listSubtitle}</p>
+          <h3 className="font-serif text-xl font-bold text-white">{txt.listTitle}</h3>
+          <p className="text-xs text-slate-300">{txt.listSubtitle}</p>
         </div>
         <button
           onClick={crearForm}
-          className="px-4 py-2 bg-brand-green hover:bg-brand-forest text-brand-navy hover:text-brand-navy dark:text-white text-xs font-extrabold rounded-xl shadow-glow-green flex items-center space-x-1.5 uppercase tracking-wider"
+          className="px-4 py-2 bg-brand-green hover:bg-brand-forest text-brand-navy hover:text-white text-xs font-extrabold rounded-xl shadow-glow-green flex items-center space-x-1.5 uppercase tracking-wider"
         >
           <Plus className="w-4 h-4" />
           <span>{txt.newForm}</span>
@@ -343,21 +343,21 @@ export const AdminFormsView: React.FC<{ language: Language }> = ({ language }) =
       )}
 
       {cargandoForms ? (
-        <div className="flex items-center justify-center py-16 text-slate-600 dark:text-slate-300">
+        <div className="flex items-center justify-center py-16 text-slate-300">
           <Loader2 className="w-7 h-7 text-brand-green animate-spin mr-3" />
           <span className="text-sm">{txt.loading}</span>
         </div>
       ) : forms.length === 0 ? (
-        <div className="bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border rounded-2xl p-8 text-center text-slate-500 dark:text-slate-400 text-sm">
+        <div className="bg-brand-navy border border-brand-border rounded-2xl p-8 text-center text-slate-400 text-sm">
           {txt.empty}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {forms.map((form) => (
-            <div key={form.slug} className="bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border rounded-2xl p-4 flex flex-col gap-3">
+            <div key={form.slug} className="bg-brand-navy border border-brand-border rounded-2xl p-4 flex flex-col gap-3">
               <div>
                 <div className="flex items-start justify-between gap-2">
-                  <h4 className="font-serif font-bold text-brand-navy dark:text-white text-sm leading-snug">{form.title}</h4>
+                  <h4 className="font-serif font-bold text-white text-sm leading-snug">{form.title}</h4>
                   <div className="flex shrink-0 items-center gap-1">
                     {form.is_featured && (
                       <span className="px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-amber-400/20 text-amber-300">
@@ -367,15 +367,15 @@ export const AdminFormsView: React.FC<{ language: Language }> = ({ language }) =
                     <span
                       className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${
                         form.is_published
-                          ? 'bg-brand-green/20 text-brand-forest dark:text-brand-lime'
-                          : 'bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400'
+                          ? 'bg-brand-green/20 text-brand-lime'
+                          : 'bg-white/10 text-slate-400'
                       }`}
                     >
                       {form.is_published ? txt.published : txt.hidden}
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-4 mt-3 text-[11px] text-slate-500 dark:text-slate-400">
+                <div className="flex items-center gap-4 mt-3 text-[11px] text-slate-400">
                   <span className="flex items-center gap-1">
                     <ClipboardList className="w-3.5 h-3.5" /> {form.field_count} {txt.questions}
                   </span>
@@ -392,7 +392,7 @@ export const AdminFormsView: React.FC<{ language: Language }> = ({ language }) =
                       setFormSlug(form.slug);
                       setVista('editor');
                     }}
-                    className="px-2 py-1.5 bg-brand-green/15 hover:bg-brand-green/25 text-brand-forest dark:text-brand-lime text-[11px] font-bold rounded-lg whitespace-nowrap"
+                    className="px-2 py-1.5 bg-brand-green/15 hover:bg-brand-green/25 text-brand-lime text-[11px] font-bold rounded-lg whitespace-nowrap"
                   >
                     {txt.edit}
                   </button>
@@ -401,7 +401,7 @@ export const AdminFormsView: React.FC<{ language: Language }> = ({ language }) =
                       setFormSlug(form.slug);
                       setVista('respuestas');
                     }}
-                    className="px-2 py-1.5 bg-slate-100 dark:bg-white/10 hover:bg-white/20 text-slate-700 dark:text-slate-200 text-[11px] font-bold rounded-lg whitespace-nowrap"
+                    className="px-2 py-1.5 bg-white/10 hover:bg-white/20 text-slate-200 text-[11px] font-bold rounded-lg whitespace-nowrap"
                   >
                     {txt.viewResponses}
                   </button>
@@ -410,7 +410,7 @@ export const AdminFormsView: React.FC<{ language: Language }> = ({ language }) =
                     className={`flex items-center justify-center gap-1 px-2 py-1.5 rounded text-[11px] font-bold whitespace-nowrap ${
                       form.is_featured
                         ? 'bg-amber-400/20 hover:bg-amber-400/30 text-amber-300'
-                        : 'bg-slate-100 dark:bg-white/10 hover:bg-white/20 text-slate-700 dark:text-slate-200'
+                        : 'bg-white/10 hover:bg-white/20 text-slate-200'
                     }`}
                     title={form.is_featured ? txt.unfeature : txt.feature}
                   >
@@ -421,7 +421,7 @@ export const AdminFormsView: React.FC<{ language: Language }> = ({ language }) =
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     onClick={() => void alternarVisibilidad(form)}
-                    className="flex items-center justify-center gap-1 px-2 py-1.5 rounded bg-slate-100 dark:bg-white/10 hover:bg-white/20 text-slate-700 dark:text-slate-200 text-[11px] font-bold whitespace-nowrap"
+                    className="flex items-center justify-center gap-1 px-2 py-1.5 rounded bg-white/10 hover:bg-white/20 text-slate-200 text-[11px] font-bold whitespace-nowrap"
                     title={form.is_published ? txt.unpublish : txt.publish}
                   >
                     {form.is_published ? <EyeOff className="w-3.5 h-3.5 shrink-0" /> : <Eye className="w-3.5 h-3.5 shrink-0" />}
@@ -429,7 +429,7 @@ export const AdminFormsView: React.FC<{ language: Language }> = ({ language }) =
                   </button>
                   <button
                     onClick={() => void duplicar(form)}
-                    className="flex items-center justify-center gap-1 px-2 py-1.5 rounded bg-slate-100 dark:bg-white/10 hover:bg-white/20 text-slate-700 dark:text-slate-200 text-[11px] font-bold whitespace-nowrap"
+                    className="flex items-center justify-center gap-1 px-2 py-1.5 rounded bg-white/10 hover:bg-white/20 text-slate-200 text-[11px] font-bold whitespace-nowrap"
                     title={txt.duplicate}
                   >
                     <Copy className="w-3.5 h-3.5 shrink-0" />
@@ -1007,7 +1007,7 @@ const EditorFormulario: React.FC<EditorFormularioProps> = ({ form, onVolver, onG
 
       {/* Barra superior */}
       <div className="flex items-center gap-3">
-        <button onClick={volver} className="p-2 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-white/20 text-slate-700 dark:text-slate-200 shrink-0" title={txt.back}>
+        <button onClick={volver} className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 shrink-0" title={txt.back}>
           <ArrowLeft className="w-4 h-4" />
         </button>
         <div className="flex-1 min-w-0">
@@ -1017,13 +1017,13 @@ const EditorFormulario: React.FC<EditorFormularioProps> = ({ form, onVolver, onG
             onChange={(e) => setTitulo(e.target.value)}
             placeholder={txt.titlePlaceholder}
             title={txt.titlePlaceholder}
-            className="w-full bg-transparent font-serif text-xl font-bold text-brand-navy dark:text-white border-b border-dashed border-white/30 hover:border-white/60 focus:border-solid focus:border-brand-green focus:outline-none py-1"
+            className="w-full bg-transparent font-serif text-xl font-bold text-white border-b border-dashed border-white/30 hover:border-white/60 focus:border-solid focus:border-brand-green focus:outline-none py-1"
           />
         </div>
         {dirty && <span className="hidden sm:inline text-[11px] text-amber-300 shrink-0">{txt.unsaved}</span>}
         <button
           onClick={() => setPreviaAbierta(true)}
-          className="px-3 py-2 bg-slate-100 dark:bg-white/10 hover:bg-white/20 text-brand-navy dark:text-white text-xs font-bold rounded-xl flex items-center space-x-1.5 shrink-0"
+          className="px-3 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl flex items-center space-x-1.5 shrink-0"
         >
           <Eye className="w-4 h-4" />
           <span className="hidden sm:inline">{txt.preview}</span>
@@ -1031,7 +1031,7 @@ const EditorFormulario: React.FC<EditorFormularioProps> = ({ form, onVolver, onG
         <button
           onClick={() => void guardar()}
           disabled={guardando}
-          className="px-4 py-2 bg-brand-green hover:bg-brand-forest text-brand-navy hover:text-brand-navy dark:text-white text-xs font-extrabold rounded-xl shadow-glow-green flex items-center space-x-1.5 uppercase tracking-wider shrink-0 disabled:opacity-50"
+          className="px-4 py-2 bg-brand-green hover:bg-brand-forest text-brand-navy hover:text-white text-xs font-extrabold rounded-xl shadow-glow-green flex items-center space-x-1.5 uppercase tracking-wider shrink-0 disabled:opacity-50"
         >
           {guardando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           <span>{guardando ? txt.saving : txt.save}</span>
@@ -1041,55 +1041,55 @@ const EditorFormulario: React.FC<EditorFormularioProps> = ({ form, onVolver, onG
       {error && <div className="bg-rose-500/10 border border-rose-500/40 text-rose-300 text-xs rounded-xl px-4 py-3">{error}</div>}
 
       {/* Ficha pública en "Programas y Comunidad" */}
-      <div className="bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border rounded-2xl overflow-hidden">
+      <div className="bg-brand-navy border border-brand-border rounded-2xl overflow-hidden">
         <button
           type="button"
           onClick={() => setFichaAbierta((v) => !v)}
-          className="w-full px-4 py-3 flex items-center gap-2 text-left hover:bg-slate-100 dark:bg-white/5"
+          className="w-full px-4 py-3 flex items-center gap-2 text-left hover:bg-white/5"
         >
           <Globe className="w-4 h-4 text-brand-green shrink-0" />
-          <span className="text-xs font-bold text-brand-navy dark:text-white uppercase tracking-wider flex-1">{txt.publicCard}</span>
+          <span className="text-xs font-bold text-white uppercase tracking-wider flex-1">{txt.publicCard}</span>
           <span
             className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${
-              form.is_published ? 'bg-brand-green/20 text-brand-forest dark:text-brand-lime' : 'bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400'
+              form.is_published ? 'bg-brand-green/20 text-brand-lime' : 'bg-white/10 text-slate-400'
             }`}
           >
             {form.is_published ? txt.published : txt.hidden}
           </span>
-          {fichaAbierta ? <ChevronUp className="w-4 h-4 text-slate-500 dark:text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
+          {fichaAbierta ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
         </button>
 
         {fichaAbierta && (
-          <div className="border-t border-slate-200 dark:border-white/10 p-4 space-y-4">
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">{txt.publicCardHint}</p>
+          <div className="border-t border-white/10 p-4 space-y-4">
+            <p className="text-[11px] text-slate-400">{txt.publicCardHint}</p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <label className="block text-xs text-slate-600 dark:text-slate-300">
+              <label className="block text-xs text-slate-300">
                 {txt.titleEs}
                 <input
                   type="text"
                   maxLength={255}
                   value={titulo}
                   onChange={(e) => setTitulo(e.target.value)}
-                  className="mt-1 w-full px-3 py-2 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded text-brand-navy dark:text-white"
+                  className="mt-1 w-full px-3 py-2 bg-brand-navyDark border border-brand-border rounded text-white"
                 />
               </label>
-              <label className="block text-xs text-slate-600 dark:text-slate-300">
+              <label className="block text-xs text-slate-300">
                 {txt.titleEn}
                 <input
                   type="text"
                   maxLength={255}
                   value={ficha.title_en}
                   onChange={(e) => setFicha({ ...ficha, title_en: e.target.value })}
-                  className="mt-1 w-full px-3 py-2 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded text-brand-navy dark:text-white"
+                  className="mt-1 w-full px-3 py-2 bg-brand-navyDark border border-brand-border rounded text-white"
                 />
               </label>
-              <label className="block text-xs text-slate-600 dark:text-slate-300">
+              <label className="block text-xs text-slate-300">
                 {txt.category}
                 <select
                   value={ficha.category}
                   onChange={(e) => setFicha({ ...ficha, category: e.target.value })}
-                  className="fc-select mt-1 w-full px-3 py-2 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded text-brand-navy dark:text-white"
+                  className="fc-select mt-1 w-full px-3 py-2 bg-brand-navyDark border border-brand-border rounded text-white"
                 >
                   <option value="">—</option>
                   <option value="internship">{txt.categories.internship}</option>
@@ -1097,83 +1097,83 @@ const EditorFormulario: React.FC<EditorFormularioProps> = ({ form, onVolver, onG
                   <option value="camp">{txt.categories.camp}</option>
                 </select>
               </label>
-              <label className="block text-xs text-slate-600 dark:text-slate-300">
+              <label className="block text-xs text-slate-300">
                 {txt.periodEs}
                 <input
                   type="text"
                   maxLength={255}
                   value={ficha.period}
                   onChange={(e) => setFicha({ ...ficha, period: e.target.value })}
-                  className="mt-1 w-full px-3 py-2 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded text-brand-navy dark:text-white"
+                  className="mt-1 w-full px-3 py-2 bg-brand-navyDark border border-brand-border rounded text-white"
                 />
               </label>
-              <label className="block text-xs text-slate-600 dark:text-slate-300">
+              <label className="block text-xs text-slate-300">
                 {txt.periodEn}
                 <input
                   type="text"
                   maxLength={255}
                   value={ficha.period_en}
                   onChange={(e) => setFicha({ ...ficha, period_en: e.target.value })}
-                  className="mt-1 w-full px-3 py-2 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded text-brand-navy dark:text-white"
+                  className="mt-1 w-full px-3 py-2 bg-brand-navyDark border border-brand-border rounded text-white"
                 />
               </label>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <label className="block text-xs text-slate-600 dark:text-slate-300">
+              <label className="block text-xs text-slate-300">
                 {txt.descriptionEs}
                 <textarea
                   rows={3}
                   value={ficha.description}
                   onChange={(e) => setFicha({ ...ficha, description: e.target.value })}
-                  className="mt-1 w-full px-3 py-2 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded text-brand-navy dark:text-white resize-y"
+                  className="mt-1 w-full px-3 py-2 bg-brand-navyDark border border-brand-border rounded text-white resize-y"
                 />
               </label>
-              <label className="block text-xs text-slate-600 dark:text-slate-300">
+              <label className="block text-xs text-slate-300">
                 {txt.descriptionEn}
                 <textarea
                   rows={3}
                   value={ficha.description_en}
                   onChange={(e) => setFicha({ ...ficha, description_en: e.target.value })}
-                  className="mt-1 w-full px-3 py-2 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded text-brand-navy dark:text-white resize-y"
+                  className="mt-1 w-full px-3 py-2 bg-brand-navyDark border border-brand-border rounded text-white resize-y"
                 />
               </label>
-              <label className="block text-xs text-slate-600 dark:text-slate-300">
+              <label className="block text-xs text-slate-300">
                 {txt.requirementsEs}
                 <textarea
                   rows={4}
                   value={ficha.requirementsEs}
                   onChange={(e) => setFicha({ ...ficha, requirementsEs: e.target.value })}
-                  className="mt-1 w-full px-3 py-2 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded text-brand-navy dark:text-white resize-y"
+                  className="mt-1 w-full px-3 py-2 bg-brand-navyDark border border-brand-border rounded text-white resize-y"
                 />
               </label>
-              <label className="block text-xs text-slate-600 dark:text-slate-300">
+              <label className="block text-xs text-slate-300">
                 {txt.requirementsEn}
                 <textarea
                   rows={4}
                   value={ficha.requirementsEn}
                   onChange={(e) => setFicha({ ...ficha, requirementsEn: e.target.value })}
-                  className="mt-1 w-full px-3 py-2 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded text-brand-navy dark:text-white resize-y"
+                  className="mt-1 w-full px-3 py-2 bg-brand-navyDark border border-brand-border rounded text-white resize-y"
                 />
               </label>
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs text-slate-600 dark:text-slate-300">
+              <label className="block text-xs text-slate-300">
                 {txt.imageUrl}
                 <input
                   type="text"
                   value={ficha.image_url}
                   onChange={(e) => setFicha({ ...ficha, image_url: e.target.value })}
                   placeholder="/recursos/…"
-                  className="mt-1 w-full px-3 py-2 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded text-brand-navy dark:text-white"
+                  className="mt-1 w-full px-3 py-2 bg-brand-navyDark border border-brand-border rounded text-white"
                 />
               </label>
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
                   onClick={() => void abrirGaleria()}
-                  className="px-3 py-1.5 bg-slate-100 dark:bg-white/10 hover:bg-white/20 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg"
+                  className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-slate-200 text-xs font-bold rounded-lg"
                 >
                   {galeriaAbierta ? txt.closeGallery : txt.chooseFromGallery}
                 </button>
@@ -1191,7 +1191,7 @@ const EditorFormulario: React.FC<EditorFormularioProps> = ({ form, onVolver, onG
                     src={ficha.image_url}
                     alt=""
                     onError={() => setImagenRota(ficha.image_url)}
-                    className="h-16 w-24 object-cover rounded-lg border border-slate-200 dark:border-brand-border"
+                    className="h-16 w-24 object-cover rounded-lg border border-brand-border"
                   />
                 )}
                 {ficha.image_url && imagenRota === ficha.image_url && (
@@ -1200,13 +1200,13 @@ const EditorFormulario: React.FC<EditorFormularioProps> = ({ form, onVolver, onG
               </div>
 
               {galeriaAbierta && (
-                <div className="border border-slate-200 dark:border-white/10 rounded-lg p-3">
+                <div className="border border-white/10 rounded-lg p-3">
                   {galeriaError ? (
                     <p className="text-[11px] text-rose-300">{galeriaError}</p>
                   ) : !galeria ? (
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">{txt.loadingGallery}</p>
+                    <p className="text-[11px] text-slate-400">{txt.loadingGallery}</p>
                   ) : galeria.length === 0 ? (
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">{txt.emptyGallery}</p>
+                    <p className="text-[11px] text-slate-400">{txt.emptyGallery}</p>
                   ) : (
                     <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                       {galeria.map((item) => (
@@ -1232,7 +1232,7 @@ const EditorFormulario: React.FC<EditorFormularioProps> = ({ form, onVolver, onG
               type="button"
               onClick={() => void guardarFicha()}
               disabled={guardandoFicha}
-              className="px-4 py-2 bg-brand-green hover:bg-brand-forest text-brand-navy hover:text-brand-navy dark:text-white text-xs font-extrabold rounded-xl flex items-center space-x-1.5 uppercase tracking-wider disabled:opacity-50"
+              className="px-4 py-2 bg-brand-green hover:bg-brand-forest text-brand-navy hover:text-white text-xs font-extrabold rounded-xl flex items-center space-x-1.5 uppercase tracking-wider disabled:opacity-50"
             >
               {guardandoFicha ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               <span>{txt.savePublicCard}</span>
@@ -1242,7 +1242,7 @@ const EditorFormulario: React.FC<EditorFormularioProps> = ({ form, onVolver, onG
       </div>
 
       {cargando ? (
-        <div className="flex items-center justify-center py-16 text-slate-600 dark:text-slate-300">
+        <div className="flex items-center justify-center py-16 text-slate-300">
           <Loader2 className="w-7 h-7 text-brand-green animate-spin mr-3" />
           <span className="text-sm">{txt.loading}</span>
         </div>
@@ -1381,12 +1381,12 @@ const ZonaNuevaSeccion: React.FC<{ indice: number; onAgregar: () => void }> = ({
     <div
       ref={setNodeRef}
       className={`rounded-xl border-2 border-dashed transition-colors ${
-        isOver ? 'border-brand-green bg-brand-green/10' : 'border-slate-200 dark:border-white/10 hover:border-white/25'
+        isOver ? 'border-brand-green bg-brand-green/10' : 'border-white/10 hover:border-white/25'
       }`}
     >
       <button
         onClick={onAgregar}
-        className="w-full py-2 text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:text-brand-forest dark:text-brand-lime flex items-center justify-center space-x-1.5"
+        className="w-full py-2 text-[11px] font-bold text-slate-400 hover:text-brand-lime flex items-center justify-center space-x-1.5"
       >
         <Plus className="w-3.5 h-3.5" />
         <span>{txt.addSection}</span>
@@ -1447,12 +1447,12 @@ const SeccionCard: React.FC<SeccionCardProps> = ({
     <div
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={`bg-white dark:bg-brand-navy border rounded-2xl overflow-hidden ${isDragging ? 'opacity-60 border-brand-green/50' : 'border-slate-200 dark:border-brand-border'}`}
+      className={`bg-brand-navy border rounded-2xl overflow-hidden ${isDragging ? 'opacity-60 border-brand-green/50' : 'border-brand-border'}`}
     >
       <div
         {...attributes}
         {...listeners}
-        className="bg-[#F8F8F2] dark:bg-brand-navyDark px-4 py-2.5 flex items-center gap-2 border-b border-slate-200 dark:border-white/10 cursor-grab active:cursor-grabbing select-none"
+        className="bg-brand-navyDark px-4 py-2.5 flex items-center gap-2 border-b border-white/10 cursor-grab active:cursor-grabbing select-none"
       >
         <GripVertical className="w-4 h-4 text-slate-500 shrink-0" />
         {renombrando ? (
@@ -1469,17 +1469,17 @@ const SeccionCard: React.FC<SeccionCardProps> = ({
               }
             }}
             placeholder={txt.sectionNamePlaceholder}
-            className="flex-1 px-2 py-1 bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border rounded text-xs text-brand-navy dark:text-white"
+            className="flex-1 px-2 py-1 bg-brand-navy border border-brand-border rounded text-xs text-white"
             onClick={(e) => e.stopPropagation()}
             onPointerDown={(e) => e.stopPropagation()}
           />
         ) : (
           <>
-            <span className="text-xs font-bold text-brand-forest dark:text-brand-lime uppercase tracking-wider flex-1 truncate">{tituloMostrar}</span>
+            <span className="text-xs font-bold text-brand-lime uppercase tracking-wider flex-1 truncate">{tituloMostrar}</span>
             <button
               onClick={onIniciarRenombrar}
               onPointerDown={(e) => e.stopPropagation()}
-              className="p-1 rounded hover:bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-brand-navy dark:text-white shrink-0"
+              className="p-1 rounded hover:bg-white/10 text-slate-400 hover:text-white shrink-0"
               title={txt.renameSection}
             >
               <Edit2 className="w-3.5 h-3.5" />
@@ -1487,7 +1487,7 @@ const SeccionCard: React.FC<SeccionCardProps> = ({
             <button
               onClick={onEliminarSeccion}
               onPointerDown={(e) => e.stopPropagation()}
-              className="p-1 rounded hover:bg-red-500/20 text-slate-500 dark:text-slate-400 hover:text-red-300 shrink-0"
+              className="p-1 rounded hover:bg-red-500/20 text-slate-400 hover:text-red-300 shrink-0"
               title={txt.deleteSection}
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -1527,7 +1527,7 @@ const SeccionCard: React.FC<SeccionCardProps> = ({
         {campos.length === 0 && (
           <button
             onClick={() => onAgregarCampo(null)}
-            className="w-full py-2.5 text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:text-brand-forest dark:text-brand-lime flex items-center justify-center space-x-1.5"
+            className="w-full py-2.5 text-[11px] font-bold text-slate-400 hover:text-brand-lime flex items-center justify-center space-x-1.5"
             title={txt.newQuestion}
           >
             <Plus className="w-3.5 h-3.5" />
@@ -1566,21 +1566,21 @@ const CampoItem: React.FC<CampoItemProps> = ({ campo, reciente, onEditar, onElim
         <button
           {...attributes}
           {...listeners}
-          className="p-1 rounded hover:bg-slate-100 dark:bg-white/10 text-slate-500 hover:text-brand-navy dark:text-white cursor-grab active:cursor-grabbing shrink-0"
+          className="p-1 rounded hover:bg-white/10 text-slate-500 hover:text-white cursor-grab active:cursor-grabbing shrink-0"
           title={txt.dragQuestion}
         >
           <GripVertical className="w-4 h-4" />
         </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-brand-navy dark:text-white truncate">{campo.label}</span>
-            {campo.required && <span className="text-brand-forest dark:text-brand-lime">*</span>}
+            <span className="font-semibold text-white truncate">{campo.label}</span>
+            {campo.required && <span className="text-brand-lime">*</span>}
           </div>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400">
+          <span className="text-[11px] text-slate-400">
             {txt.fieldTypes[campo.field_type]}
           </span>
         </div>
-        <button onClick={() => onEditar(campo)} className="p-1.5 rounded bg-slate-100 dark:bg-white/10 hover:bg-white/20 text-slate-700 dark:text-slate-200 shrink-0" title={txt.editQuestion}>
+        <button onClick={() => onEditar(campo)} className="p-1.5 rounded bg-white/10 hover:bg-white/20 text-slate-200 shrink-0" title={txt.editQuestion}>
           <Edit2 className="w-3.5 h-3.5" />
         </button>
         <button onClick={() => onEliminar(campo)} className="p-1.5 rounded bg-red-500/20 hover:bg-red-500/30 text-red-300 shrink-0" title={txt.deleteQuestion}>
@@ -1631,16 +1631,16 @@ const ModalCampo: React.FC<ModalCampoProps> = ({
   useLockBodyScroll();
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
-      <form onSubmit={onGuardar} className="bg-[#F8F8F2] dark:bg-brand-navyDark p-5 rounded-2xl border border-brand-green/40 space-y-4 text-xs w-full max-w-lg my-auto">
+      <form onSubmit={onGuardar} className="bg-brand-navyDark p-5 rounded-2xl border border-brand-green/40 space-y-4 text-xs w-full max-w-lg my-auto">
         <div className="flex justify-between items-center">
-          <h4 className="font-serif text-sm font-bold text-brand-forest dark:text-brand-lime">{esEdicion ? txt.editQuestionTitle : txt.newQuestionTitle}</h4>
-          <button type="button" onClick={onCerrar} className="p-1 text-slate-500 dark:text-slate-400 hover:text-brand-navy dark:text-white">
+          <h4 className="font-serif text-sm font-bold text-brand-lime">{esEdicion ? txt.editQuestionTitle : txt.newQuestionTitle}</h4>
+          <button type="button" onClick={onCerrar} className="p-1 text-slate-400 hover:text-white">
             <X className="w-4 h-4" />
           </button>
         </div>
 
         <div>
-          <label className="block text-slate-600 dark:text-slate-300 mb-1">{txt.questionLabel}</label>
+          <label className="block text-slate-300 mb-1">{txt.questionLabel}</label>
           <input
             type="text"
             required
@@ -1648,17 +1648,17 @@ const ModalCampo: React.FC<ModalCampoProps> = ({
             value={fCampo.label}
             onChange={(e) => setFCampo((p) => ({ ...p, label: e.target.value }))}
             placeholder={txt.questionPlaceholder}
-            className="w-full px-3 py-2 bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border rounded text-brand-navy dark:text-white"
+            className="w-full px-3 py-2 bg-brand-navy border border-brand-border rounded text-white"
           />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-slate-600 dark:text-slate-300 mb-1">{txt.questionType}</label>
+            <label className="block text-slate-300 mb-1">{txt.questionType}</label>
             <select
               value={fCampo.field_type}
               onChange={(e) => setFCampo((p) => ({ ...p, field_type: e.target.value as FormFieldType }))}
-              className="fc-select w-full px-3 py-2 bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border rounded text-brand-navy dark:text-white"
+              className="fc-select w-full px-3 py-2 bg-brand-navy border border-brand-border rounded text-white"
             >
               {FIELD_TYPE_ORDER.map((ft) => (
                 <option key={ft} value={ft}>
@@ -1668,8 +1668,8 @@ const ModalCampo: React.FC<ModalCampoProps> = ({
             </select>
           </div>
           <div>
-            <label className="block text-slate-600 dark:text-slate-300 mb-1">{txt.section}</label>
-            <select value={seccionSel} onChange={(e) => setSeccionSel(e.target.value)} className="fc-select w-full px-3 py-2 bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border rounded text-brand-navy dark:text-white">
+            <label className="block text-slate-300 mb-1">{txt.section}</label>
+            <select value={seccionSel} onChange={(e) => setSeccionSel(e.target.value)} className="fc-select w-full px-3 py-2 bg-brand-navy border border-brand-border rounded text-white">
               <option value={SIN_SECCION_OPCION}>{txt.noSection}</option>
               {secciones.filter((s) => !s.esHuerfana).map((s) => (
                 <option key={s.localId} value={s.localId}>
@@ -1683,20 +1683,20 @@ const ModalCampo: React.FC<ModalCampoProps> = ({
 
         {seccionSel === '__nueva' && (
           <div>
-            <label className="block text-slate-600 dark:text-slate-300 mb-1">{txt.newSectionName}</label>
+            <label className="block text-slate-300 mb-1">{txt.newSectionName}</label>
             <input
               type="text"
               value={nombreNuevaSeccion}
               onChange={(e) => setNombreNuevaSeccion(e.target.value)}
               placeholder={txt.newSectionNamePlaceholder}
-              className="w-full px-3 py-2 bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border rounded text-brand-navy dark:text-white"
+              className="w-full px-3 py-2 bg-brand-navy border border-brand-border rounded text-white"
             />
           </div>
         )}
 
         {CON_OPCIONES.includes(fCampo.field_type) && (
           <div>
-            <label className="block text-slate-600 dark:text-slate-300 mb-1">{txt.options}</label>
+            <label className="block text-slate-300 mb-1">{txt.options}</label>
             <div className="space-y-2">
               {fCampo.options.map((opcion, i) => (
                 <div key={i} className="flex items-center gap-2">
@@ -1711,12 +1711,12 @@ const ModalCampo: React.FC<ModalCampoProps> = ({
                       })
                     }
                     placeholder={`${txt.optionPlaceholder} ${i + 1}`}
-                    className="flex-1 px-3 py-2 bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border rounded text-brand-navy dark:text-white"
+                    className="flex-1 px-3 py-2 bg-brand-navy border border-brand-border rounded text-white"
                   />
                   <button
                     type="button"
                     onClick={() => setFCampo((p) => ({ ...p, options: p.options.filter((_, idx) => idx !== i) }))}
-                    className="p-1.5 rounded bg-slate-100 dark:bg-white/10 hover:bg-red-500/30 text-slate-600 dark:text-slate-300 hover:text-red-200"
+                    className="p-1.5 rounded bg-white/10 hover:bg-red-500/30 text-slate-300 hover:text-red-200"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -1725,7 +1725,7 @@ const ModalCampo: React.FC<ModalCampoProps> = ({
               <button
                 type="button"
                 onClick={() => setFCampo((p) => ({ ...p, options: [...p.options, ''] }))}
-                className="px-3 py-1.5 bg-slate-100 dark:bg-white/10 hover:bg-white/20 text-slate-700 dark:text-slate-200 rounded-lg font-bold flex items-center space-x-1"
+                className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-slate-200 rounded-lg font-bold flex items-center space-x-1"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>{txt.addOption}</span>
@@ -1735,7 +1735,7 @@ const ModalCampo: React.FC<ModalCampoProps> = ({
         )}
 
         <div className="flex items-center justify-between">
-          <label className="flex items-center space-x-2 text-slate-700 dark:text-slate-200">
+          <label className="flex items-center space-x-2 text-slate-200">
             <input
               type="checkbox"
               checked={fCampo.required}
@@ -1766,11 +1766,11 @@ const ModalEliminarSeccion: React.FC<ModalEliminarSeccionProps> = ({ titulo, onC
   useLockBodyScroll();
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border w-full max-w-md rounded-2xl p-6 space-y-4 text-sm">
-        <h4 className="font-serif text-lg font-bold text-brand-navy dark:text-white">{txt.deleteSectionTitle}</h4>
-        <p className="text-slate-600 dark:text-slate-300 text-xs">
+      <div className="bg-brand-navy border border-brand-border w-full max-w-md rounded-2xl p-6 space-y-4 text-sm">
+        <h4 className="font-serif text-lg font-bold text-white">{txt.deleteSectionTitle}</h4>
+        <p className="text-slate-300 text-xs">
           {txt.deleteSectionMessage.split('{name}')[0]}
-          <span className="text-brand-forest dark:text-brand-lime font-bold">{titulo}</span>
+          <span className="text-brand-lime font-bold">{titulo}</span>
           {txt.deleteSectionMessage.split('{name}')[1]}
         </p>
         <div className="space-y-2">
@@ -1783,13 +1783,13 @@ const ModalEliminarSeccion: React.FC<ModalEliminarSeccionProps> = ({ titulo, onC
           </button>
           <button
             onClick={() => onConfirmar('orphan')}
-            className="w-full px-4 py-3 bg-slate-100 dark:bg-white/10 hover:bg-white/20 border border-white/15 text-slate-700 dark:text-slate-200 rounded-xl text-left"
+            className="w-full px-4 py-3 bg-white/10 hover:bg-white/20 border border-white/15 text-slate-200 rounded-xl text-left"
           >
             <span className="font-bold block">{txt.deleteSectionKeepQuestions}</span>
-            <span className="text-[11px] text-slate-500 dark:text-slate-400">{txt.deleteSectionKeepQuestionsHint}</span>
+            <span className="text-[11px] text-slate-400">{txt.deleteSectionKeepQuestionsHint}</span>
           </button>
         </div>
-        <button onClick={onCancelar} className="w-full py-2.5 bg-slate-100 dark:bg-white/10 hover:bg-white/20 text-brand-navy dark:text-white font-bold rounded-xl">
+        <button onClick={onCancelar} className="w-full py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl">
           {txt.cancel}
         </button>
       </div>
@@ -1812,29 +1812,29 @@ const ModalPrevia: React.FC<ModalPreviaProps> = ({ titulo, secciones, campos, on
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-md">
-      <div className="bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border w-full max-w-2xl h-full max-h-[88vh] flex flex-col rounded-2xl overflow-hidden">
-        <div className="p-5 border-b border-slate-200 dark:border-white/10 bg-[#F8F8F2] dark:bg-brand-navyDark flex items-center justify-between shrink-0">
+      <div className="bg-brand-navy border border-brand-border w-full max-w-2xl h-full max-h-[88vh] flex flex-col rounded-2xl overflow-hidden">
+        <div className="p-5 border-b border-white/10 bg-brand-navyDark flex items-center justify-between shrink-0">
           <div className="min-w-0">
-            <h3 className="font-serif text-lg font-bold text-brand-navy dark:text-white">{titulo || txt.previewFallbackTitle}</h3>
+            <h3 className="font-serif text-lg font-bold text-white">{titulo || txt.previewFallbackTitle}</h3>
           </div>
-          <button onClick={onCerrar} className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-brand-navy dark:text-white hover:bg-slate-100 dark:bg-white/10 shrink-0 ml-3">
+          <button onClick={onCerrar} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 shrink-0 ml-3">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6 text-brand-navy dark:text-brand-cream">
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6 text-brand-cream">
           {campos.length === 0 && (
-            <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-8">{txt.previewEmpty}</p>
+            <p className="text-sm text-slate-400 text-center py-8">{txt.previewEmpty}</p>
           )}
           {secciones.map((seccion) => {
             const deSeccion = campos.filter((c) => c.seccionId === seccion.localId);
             if (deSeccion.length === 0) return null;
             return (
               <div key={seccion.localId} className="space-y-4">
-                <h4 className="font-serif text-sm font-bold text-brand-forest dark:text-brand-lime uppercase tracking-wider border-b border-slate-200 dark:border-white/10 pb-1">
+                <h4 className="font-serif text-sm font-bold text-brand-lime uppercase tracking-wider border-b border-white/10 pb-1">
                   {seccion.esHuerfana ? txt.noSection : seccion.nombre === '' ? txt.unnamedSection : seccion.nombre}
                 </h4>
-                {seccion.descripcion && <p className="text-xs text-slate-500 dark:text-slate-400 whitespace-pre-wrap">{seccion.descripcion}</p>}
+                {seccion.descripcion && <p className="text-xs text-slate-400 whitespace-pre-wrap">{seccion.descripcion}</p>}
                 {deSeccion.map((campo) => (
                   <CampoPrevia key={campo.localId} campo={campo} />
                 ))}
@@ -1850,12 +1850,12 @@ const ModalPrevia: React.FC<ModalPreviaProps> = ({ titulo, secciones, campos, on
 const CampoPrevia: React.FC<{ campo: CampoDraft }> = ({ campo }) => {
   const txt = useFormsTexts();
   const opciones = campo.options ?? [];
-  const clase = 'w-full px-3.5 py-2.5 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded-lg text-sm text-brand-navy dark:text-white/60 pointer-events-none';
+  const clase = 'w-full px-3.5 py-2.5 bg-brand-navyDark border border-brand-border rounded-lg text-sm text-white/60 pointer-events-none';
 
   return (
     <div>
-      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
-        {campo.label} {campo.required && <span className="text-brand-forest dark:text-brand-lime">*</span>}
+      <label className="block text-xs font-semibold text-slate-300 mb-1">
+        {campo.label} {campo.required && <span className="text-brand-lime">*</span>}
       </label>
       {campo.field_type === 'textarea' && <textarea disabled rows={3} className={clase} />}
       {campo.field_type === 'select' && (
@@ -1866,7 +1866,7 @@ const CampoPrevia: React.FC<{ campo: CampoDraft }> = ({ campo }) => {
       {campo.field_type === 'radio' && (
         <div className="space-y-2">
           {opciones.map((opcion) => (
-            <label key={opcion} className="flex items-center space-x-2 text-xs text-slate-600 dark:text-slate-300">
+            <label key={opcion} className="flex items-center space-x-2 text-xs text-slate-300">
               <input type="radio" disabled className="accent-brand-green" />
               <span>{opcion}</span>
             </label>
@@ -1876,7 +1876,7 @@ const CampoPrevia: React.FC<{ campo: CampoDraft }> = ({ campo }) => {
       {campo.field_type === 'checkbox' && (
         <div className="space-y-2">
           {opciones.map((opcion) => (
-            <label key={opcion} className="flex items-center space-x-2 text-xs text-slate-600 dark:text-slate-300">
+            <label key={opcion} className="flex items-center space-x-2 text-xs text-slate-300">
               <input type="checkbox" disabled className="accent-brand-green" />
               <span>{opcion}</span>
             </label>
@@ -1956,19 +1956,19 @@ const VistaRespuestas: React.FC<VistaRespuestasProps> = ({ form, onVolver }) => 
   return (
     <div className="space-y-5 animate-fadeIn">
       <div className="flex items-center gap-3">
-        <button onClick={onVolver} className="p-2 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-white/20 text-slate-700 dark:text-slate-200" title={txt.back}>
+        <button onClick={onVolver} className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200" title={txt.back}>
           <ArrowLeft className="w-4 h-4" />
         </button>
         <div>
-          <h3 className="font-serif text-xl font-bold text-brand-navy dark:text-white">{form.title}</h3>
-          <p className="text-xs text-slate-600 dark:text-slate-300">{txt.responsesTitle}</p>
+          <h3 className="font-serif text-xl font-bold text-white">{form.title}</h3>
+          <p className="text-xs text-slate-300">{txt.responsesTitle}</p>
         </div>
       </div>
 
       {error && <div className="bg-rose-500/10 border border-rose-500/40 text-rose-300 text-xs rounded-xl px-4 py-3">{error}</div>}
 
       {cargando ? (
-        <div className="flex items-center justify-center py-16 text-slate-600 dark:text-slate-300">
+        <div className="flex items-center justify-center py-16 text-slate-300">
           <Loader2 className="w-7 h-7 text-brand-green animate-spin mr-3" />
           <span className="text-sm">{txt.loading}</span>
         </div>
@@ -2009,7 +2009,7 @@ const ListaEnvios: React.FC<ListaEnviosProps> = ({ envios, envioAbierto, setEnvi
 
   if (envios.length === 0) {
     return (
-      <div className="bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border rounded-2xl p-8 text-center text-slate-500 dark:text-slate-400 text-sm">
+      <div className="bg-brand-navy border border-brand-border rounded-2xl p-8 text-center text-slate-400 text-sm">
         {txt.noResponses}
       </div>
     );
@@ -2049,14 +2049,14 @@ const ListaEnvios: React.FC<ListaEnviosProps> = ({ envios, envioAbierto, setEnvi
         const abierto = envioAbierto === envio.id;
         const entradas = entradasDe(envio);
         return (
-          <div key={envio.id} className="bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border rounded-2xl overflow-hidden">
+          <div key={envio.id} className="bg-brand-navy border border-brand-border rounded-2xl overflow-hidden">
             <div className="px-4 py-3 flex flex-wrap items-center gap-3 text-xs">
               <FileText className="w-4 h-4 text-brand-green shrink-0" />
               <div className="flex-1 min-w-0">
-                <span className="font-semibold text-brand-navy dark:text-white block truncate">{envio.user_name}</span>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400">{envio.user_email}</span>
+                <span className="font-semibold text-white block truncate">{envio.user_name}</span>
+                <span className="text-[11px] text-slate-400">{envio.user_email}</span>
               </div>
-              <span className="font-mono text-[11px] text-slate-500 dark:text-slate-400">{new Date(envio.created_at).toLocaleString()}</span>
+              <span className="font-mono text-[11px] text-slate-400">{new Date(envio.created_at).toLocaleString()}</span>
               <span
                 className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${
                   envio.status === 'approved'
@@ -2072,14 +2072,14 @@ const ListaEnvios: React.FC<ListaEnviosProps> = ({ envios, envioAbierto, setEnvi
               </span>
               <button
                 onClick={() => setEnvioAbierto(abierto ? null : envio.id)}
-                className="p-1.5 rounded bg-slate-100 dark:bg-white/10 hover:bg-white/20 text-slate-700 dark:text-slate-200"
+                className="p-1.5 rounded bg-white/10 hover:bg-white/20 text-slate-200"
               >
                 {abierto ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </button>
             </div>
 
             {abierto && (
-              <div className="border-t border-slate-200 dark:border-white/10 px-4 py-4 space-y-4 bg-[#F8F8F2] dark:bg-brand-navyDark">
+              <div className="border-t border-white/10 px-4 py-4 space-y-4 bg-brand-navyDark">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
                   {entradas.map(({ clave, etiqueta, valor }) => {
                     const texto = Array.isArray(valor)
@@ -2091,15 +2091,15 @@ const ListaEnvios: React.FC<ListaEnviosProps> = ({ envios, envioAbierto, setEnvi
                       : String(valor ?? '');
                     return (
                       <div key={clave} className="text-xs">
-                        <span className="text-slate-500 dark:text-slate-400 block">{etiqueta}</span>
-                        <span className="text-brand-navy dark:text-white whitespace-pre-wrap">{texto || '—'}</span>
+                        <span className="text-slate-400 block">{etiqueta}</span>
+                        <span className="text-white whitespace-pre-wrap">{texto || '—'}</span>
                       </div>
                     );
                   })}
                 </div>
 
                 <div className="space-y-2 pt-3 border-t border-white/5">
-                  <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                  <label className="block text-[11px] font-semibold text-slate-400">
                     {txt.reviewNotes}
                   </label>
                   <textarea
@@ -2107,13 +2107,13 @@ const ListaEnvios: React.FC<ListaEnviosProps> = ({ envios, envioAbierto, setEnvi
                     value={notas[envio.id] ?? envio.review_notes ?? ''}
                     onChange={(e) => setNotas((prev) => ({ ...prev, [envio.id]: e.target.value }))}
                     placeholder={txt.reviewNotesPlaceholder}
-                    className="w-full px-3 py-2 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded-lg text-xs text-brand-navy dark:text-white focus:border-brand-green focus:outline-none"
+                    className="w-full px-3 py-2 bg-brand-navyDark border border-brand-border rounded-lg text-xs text-white focus:border-brand-green focus:outline-none"
                   />
                   {envio.reviewed_by_name && envio.reviewed_at && (
                     <p className="text-[11px] text-slate-500">
-                      {txt.reviewedBy}: <span className="text-slate-600 dark:text-slate-300">{envio.reviewed_by_name}</span>
+                      {txt.reviewedBy}: <span className="text-slate-300">{envio.reviewed_by_name}</span>
                       {' · '}
-                      {txt.reviewedAt}: <span className="text-slate-600 dark:text-slate-300">{new Date(envio.reviewed_at).toLocaleString()}</span>
+                      {txt.reviewedAt}: <span className="text-slate-300">{new Date(envio.reviewed_at).toLocaleString()}</span>
                     </p>
                   )}
                 </div>
@@ -2125,7 +2125,7 @@ const ListaEnvios: React.FC<ListaEnviosProps> = ({ envios, envioAbierto, setEnvi
                       onClick={() => cambiarEstado(envio, estado, notas[envio.id] ?? envio.review_notes ?? '')}
                       disabled={envio.status === estado}
                       className={`px-3 py-1.5 rounded text-[11px] font-bold transition-all disabled:opacity-40 ${
-                        envio.status === estado ? 'bg-brand-green text-brand-navy' : 'bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-200 hover:bg-white/20'
+                        envio.status === estado ? 'bg-brand-green text-brand-navy' : 'bg-white/10 text-slate-200 hover:bg-white/20'
                       }`}
                     >
                       {txt.status[estado]}

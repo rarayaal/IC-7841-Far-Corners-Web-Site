@@ -14,7 +14,6 @@ function obtenerIcono(tipo: ContactChannel['channel_type']) {
 
     case 'phone':
     case 'whatsapp':
-    case 'sinpe':
       return Phone;
 
     case 'address':
@@ -35,7 +34,7 @@ export const ContactChannelsList = ({
   language,
 }: ContactChannelsListProps) => {
   return (
-    <div className="space-y-5 text-xs text-slate-600 dark:text-slate-300">
+    <div className="space-y-5 text-xs text-slate-300">
       {contactos.map((contacto) => {
         const Icono = obtenerIcono(contacto.channel_type);
 
@@ -65,7 +64,7 @@ export const ContactChannelsList = ({
             />
 
             <div className="min-w-0">
-              <strong className="block text-brand-navy dark:text-white">
+              <strong className="block text-white">
                 {titulo}
               </strong>
 

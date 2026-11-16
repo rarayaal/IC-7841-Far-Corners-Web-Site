@@ -145,16 +145,16 @@ export const AdminContactChannelsView = ({ language = 'es' }: AdminContactChanne
   return (
     <section className="space-y-5">
       <div>
-        <h2 className="font-serif text-xl font-bold text-brand-navy dark:text-white">
+        <h2 className="font-serif text-xl font-bold text-white">
           {txt.title}
         </h2>
-        <p className="text-sm text-slate-600 dark:text-slate-300">
+        <p className="text-sm text-slate-300">
           {txt.subtitle}
         </p>
       </div>
 
       {cargando && (
-        <p role="status" className="text-slate-600 dark:text-slate-300">
+        <p role="status" className="text-slate-300">
           {txt.loading}
         </p>
       )}
@@ -172,7 +172,7 @@ export const AdminContactChannelsView = ({ language = 'es' }: AdminContactChanne
       )}
 
       {!cargando && contactos.length === 0 && !error && (
-        <p className="text-slate-600 dark:text-slate-300">
+        <p className="text-slate-300">
           {txt.empty}
         </p>
       )}
@@ -180,14 +180,14 @@ export const AdminContactChannelsView = ({ language = 'es' }: AdminContactChanne
       {!editando && contactos.map((contacto) => (
         <article
           key={contacto.id}
-          className="flex flex-col gap-4 rounded-2xl border border-slate-200 dark:border-brand-border bg-white dark:bg-brand-navy p-5 sm:flex-row sm:items-start sm:justify-between"
+          className="flex flex-col gap-4 rounded-2xl border border-brand-border bg-brand-navy p-5 sm:flex-row sm:items-start sm:justify-between"
         >
           <div className="min-w-0 space-y-1">
-            <h3 className="font-bold text-brand-navy dark:text-white break-words">
+            <h3 className="font-bold text-white break-words">
               {language === 'en' && contacto.label_en ? contacto.label_en : contacto.label}
             </h3>
 
-            <p className="text-sm text-slate-600 dark:text-slate-300 whitespace-pre-wrap break-words">
+            <p className="text-sm text-slate-300 whitespace-pre-wrap break-words">
               {language === 'en' && contacto.value_en ? contacto.value_en : contacto.value}
             </p>
 
@@ -201,7 +201,7 @@ export const AdminContactChannelsView = ({ language = 'es' }: AdminContactChanne
           <button
             type="button"
             onClick={() => seleccionarContacto(contacto)}
-            className="shrink-0 rounded-xl bg-slate-100 dark:bg-white/10 px-4 py-2 text-sm font-bold text-brand-navy dark:text-white hover:bg-white/20"
+            className="shrink-0 rounded-xl bg-white/10 px-4 py-2 text-sm font-bold text-white hover:bg-white/20"
           >
             {txt.editBtn}
           </button>
@@ -211,9 +211,9 @@ export const AdminContactChannelsView = ({ language = 'es' }: AdminContactChanne
       {editando && (
         <form
           onSubmit={guardarCambios}
-          className="space-y-4 rounded-2xl border border-slate-200 dark:border-brand-border bg-white dark:bg-brand-navy p-5"
+          className="space-y-4 rounded-2xl border border-brand-border bg-brand-navy p-5"
         >
-          <h3 className="font-bold text-brand-navy dark:text-white">
+          <h3 className="font-bold text-white">
             {txt.editTitle}
           </h3>
 
@@ -222,7 +222,7 @@ export const AdminContactChannelsView = ({ language = 'es' }: AdminContactChanne
               <div key={campo}>
                 <label
                   htmlFor={`contacto-${campo}`}
-                  className="mb-1 block text-sm text-slate-600 dark:text-slate-300"
+                  className="mb-1 block text-sm text-slate-300"
                 >
                   {titulo}{obligatorio ? ' *' : ''}
                 </label>
@@ -240,7 +240,7 @@ export const AdminContactChannelsView = ({ language = 'es' }: AdminContactChanne
                       actual ? { ...actual, [campo]: valor } : actual
                     );
                   }}
-                  className="w-full rounded-lg border border-slate-200 dark:border-brand-border bg-[#F8F8F2] dark:bg-brand-navyDark p-3 text-sm text-brand-navy dark:text-white focus:border-brand-green focus:outline-none"
+                  className="w-full rounded-lg border border-brand-border bg-brand-navyDark p-3 text-sm text-white focus:border-brand-green focus:outline-none"
                 />
               </div>
             ))}
@@ -248,7 +248,7 @@ export const AdminContactChannelsView = ({ language = 'es' }: AdminContactChanne
             <div>
               <label
                 htmlFor="contacto-orden"
-                className="mb-1 block text-sm text-slate-600 dark:text-slate-300"
+                className="mb-1 block text-sm text-slate-300"
               >
                 {txt.fields.order}
               </label>
@@ -272,11 +272,11 @@ export const AdminContactChannelsView = ({ language = 'es' }: AdminContactChanne
                     actual ? { ...actual, display_order: orden } : actual
                   );
                 }}
-                className="w-full rounded-lg border border-slate-200 dark:border-brand-border bg-[#F8F8F2] dark:bg-brand-navyDark p-3 text-sm text-brand-navy dark:text-white"
+                className="w-full rounded-lg border border-brand-border bg-brand-navyDark p-3 text-sm text-white"
               />
             </div>
 
-            <label className="flex items-center gap-2 text-sm text-brand-navy dark:text-white">
+            <label className="flex items-center gap-2 text-sm text-white">
               <input
                 type="checkbox"
                 checked={editando.is_published}
@@ -305,7 +305,7 @@ export const AdminContactChannelsView = ({ language = 'es' }: AdminContactChanne
                   setEditando(null);
                   setError('');
                 }}
-                className="rounded-xl bg-slate-100 dark:bg-white/10 px-4 py-2 text-sm font-bold text-brand-navy dark:text-white"
+                className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold text-white"
               >
                 {txt.cancel}
               </button>

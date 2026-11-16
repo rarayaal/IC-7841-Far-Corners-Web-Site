@@ -1,19 +1,6 @@
 import type { Language } from '../types';
 
-export type InstitutionalSection =
-  | 'history'
-  | 'impact'
-  | 'future'
-  | 'footer'
-  | 'board'
-  | 'production'
-  | 'gallery';
-
-/** Secciones donde cada fila es una persona (nombre, cargo, biografía y foto). */
-export const PEOPLE_SECTIONS: InstitutionalSection[] = ['board', 'production'];
-
-/** Secciones cuyo identificador (page_slug) lo escribe el administrador. */
-export const SLUG_LIBRE_SECTIONS: InstitutionalSection[] = ['board', 'production', 'gallery'];
+export type InstitutionalSection = 'history' | 'impact' | 'future';
 
 export interface InstitutionalContent {
   id: string;
@@ -37,12 +24,6 @@ export const SCOPES_BY_SECTION: Record<InstitutionalSection, string[]> = {
   history: ['about'],
   impact: ['about', 'impact-cr', 'impact-cn', 'impact-mz'],
   future: ['about'],
-  footer: ['footer'],
-  // Una fila por persona: el identificador (page_slug) lo escribe el administrador.
-  board: [],
-  production: [],
-  // Una fila por obra o proyecto: page_slug = id (p. ej. addams-family-2026, proj-cr).
-  gallery: [],
 };
 
 /** Lee el contenido publicado de una sección (sin sesión). */

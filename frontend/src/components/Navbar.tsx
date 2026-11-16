@@ -95,14 +95,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="hidden sm:inline-block text-brand-forest dark:text-brand-lime font-bold tracking-wider text-[11px] uppercase">
               {t.tagline}
             </span>
-            {t.locations && (
-              <>
-                <span className="hidden md:inline text-slate-400 dark:text-brand-blue/60">•</span>
-                <span className="text-slate-600 dark:text-brand-cream/80 text-xs">
-                  {t.locations}
-                </span>
-              </>
-            )}
+            <span className="hidden md:inline text-slate-400 dark:text-brand-blue/60">•</span>
+            <span className="text-slate-600 dark:text-brand-cream/80 text-xs">
+              {t.locations}
+            </span>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">

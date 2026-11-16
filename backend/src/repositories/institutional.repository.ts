@@ -2,19 +2,8 @@ import { pool } from '../db.js';
 import { registrarAuditoria } from './audit.repository.js';
 
 // CU-01 historia, CU-02 impacto y CU-03 visión de futuro comparten la tabla
-// institutional_content y se distinguen por la columna section. También se
-// administran aquí el pie de página (footer), la junta directiva (board) y el
-// equipo de producción (production): una fila por persona (title = nombre,
-// subtitle = cargo, content = biografía, imágenes = foto).
-export const SECCIONES_INSTITUCIONALES = [
-  'history',
-  'impact',
-  'future',
-  'footer',
-  'board',
-  'production',
-  'gallery',
-] as const;
+// institutional_content y se distinguen por la columna section.
+export const SECCIONES_INSTITUCIONALES = ['history', 'impact', 'future'] as const;
 
 export type SeccionInstitucional = (typeof SECCIONES_INSTITUCIONALES)[number];
 
