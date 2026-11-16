@@ -155,7 +155,7 @@ export const AdminRetirementView = ({ language }: { language: Language }) => {
     `whitespace-nowrap rounded-xl px-4 py-2 text-xs font-bold transition-all ${
       activo
         ? 'bg-[#77C65E] text-[#002244]'
-        : 'bg-[#002244] text-slate-300 hover:text-white'
+        : 'bg-white dark:bg-[#002244] text-slate-600 dark:text-slate-300 hover:text-brand-navy dark:text-white'
     }`;
 
   const mensajeConfirmacion = porRetirar
@@ -172,13 +172,13 @@ export const AdminRetirementView = ({ language }: { language: Language }) => {
   return (
     <section className="space-y-5">
       <div>
-        <h2 className="font-serif text-xl font-bold text-white">{t.title}</h2>
-        <p className="text-sm text-slate-300">{t.subtitle}</p>
+        <h2 className="font-serif text-xl font-bold text-brand-navy dark:text-white">{t.title}</h2>
+        <p className="text-sm text-slate-600 dark:text-slate-300">{t.subtitle}</p>
       </div>
 
       <div
         role="tablist"
-        className="flex gap-2 overflow-x-auto border-b border-white/10 pb-2"
+        className="flex gap-2 overflow-x-auto border-b border-slate-200 dark:border-white/10 pb-2"
       >
         {permitidos.map((valor) => (
           <button
@@ -209,7 +209,7 @@ export const AdminRetirementView = ({ language }: { language: Language }) => {
       </div>
 
       {cargando && (
-        <p role="status" className="text-slate-300">
+        <p role="status" className="text-slate-600 dark:text-slate-300">
           {t.loading}
         </p>
       )}
@@ -220,15 +220,15 @@ export const AdminRetirementView = ({ language }: { language: Language }) => {
       )}
 
       {!cargando && items.length === 0 && !error && (
-        <p className="text-slate-300">
+        <p className="text-slate-600 dark:text-slate-300">
           {estado === 'published' ? t.emptyPublished : t.emptyWithdrawn}
         </p>
       )}
 
       {items.length > 0 && (
-        <div className="overflow-x-auto rounded-2xl border border-[#1e4066] bg-[#002244]">
-          <table className="w-full text-left text-xs text-slate-300">
-            <thead className="border-b border-white/10 bg-[#00162e] font-mono text-[11px] uppercase text-slate-300">
+        <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-[#1e4066] bg-white dark:bg-[#002244]">
+          <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+            <thead className="border-b border-slate-200 dark:border-white/10 bg-[#F8F8F2] dark:bg-[#00162e] font-mono text-[11px] uppercase text-slate-600 dark:text-slate-300">
               <tr>
                 <th className="p-3 sm:p-4">{t.columnTitle}</th>
                 <th className="hidden p-4 md:table-cell">{t.columnDetail}</th>
@@ -238,10 +238,10 @@ export const AdminRetirementView = ({ language }: { language: Language }) => {
             </thead>
             <tbody className="divide-y divide-white/5">
               {items.map((item) => (
-                <tr key={item.id} className="transition-colors hover:bg-white/5">
+                <tr key={item.id} className="transition-colors hover:bg-slate-100 dark:bg-white/5">
                   <td className="p-3 sm:p-4">
-                    <span className="font-bold text-white">{item.title}</span>
-                    <span className="mt-1 block text-[11px] text-slate-400 md:hidden">
+                    <span className="font-bold text-brand-navy dark:text-white">{item.title}</span>
+                    <span className="mt-1 block text-[11px] text-slate-500 dark:text-slate-400 md:hidden">
                       {item.detail || '—'}
                     </span>
                   </td>

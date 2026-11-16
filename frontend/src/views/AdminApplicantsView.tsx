@@ -117,20 +117,20 @@ export const AdminApplicantsView = ({ language }: AdminApplicantsViewProps) => {
     <div className="space-y-6 animate-fadeIn">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
-          <h3 className="font-serif text-xl font-bold text-white flex items-center gap-2">
+          <h3 className="font-serif text-xl font-bold text-brand-navy dark:text-white flex items-center gap-2">
             <ClipboardList className="w-5 h-5 text-[#77C65E]" />
             {txt.title}
           </h3>
-          <p className="text-xs text-slate-300">{txt.subtitle}</p>
+          <p className="text-xs text-slate-600 dark:text-slate-300">{txt.subtitle}</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-xs font-mono text-brand-lime font-bold">
+          <span className="text-xs font-mono text-brand-forest dark:text-brand-lime font-bold">
             {txt.activeCount.replace('{count}', String(envios.length))}
           </span>
           <button
             type="button"
             onClick={() => void cargar()}
-            className="p-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all inline-flex items-center"
+            className="p-1.5 bg-slate-100 dark:bg-white/10 hover:bg-white/20 text-brand-navy dark:text-white rounded-lg transition-all inline-flex items-center"
             title={language === 'es' ? 'Recargar' : 'Reload'}
           >
             <RefreshCw className="w-4 h-4" />
@@ -151,15 +151,15 @@ export const AdminApplicantsView = ({ language }: AdminApplicantsViewProps) => {
         </div>
       )}
 
-      <div className="bg-brand-navy border border-brand-border rounded-2xl overflow-hidden">
+      <div className="bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border rounded-2xl overflow-hidden">
         {loading ? (
-          <div className="p-12 text-center text-slate-400 text-sm">{txt.loading}</div>
+          <div className="p-12 text-center text-slate-500 dark:text-slate-400 text-sm">{txt.loading}</div>
         ) : envios.length === 0 ? (
-          <div className="p-12 text-center text-slate-400 text-sm">{txt.empty}</div>
+          <div className="p-12 text-center text-slate-500 dark:text-slate-400 text-sm">{txt.empty}</div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="bg-brand-navyDark text-slate-300 font-mono text-[11px] uppercase border-b border-white/10">
+            <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+              <thead className="bg-[#F8F8F2] dark:bg-brand-navyDark text-slate-600 dark:text-slate-300 font-mono text-[11px] uppercase border-b border-slate-200 dark:border-white/10">
                 <tr>
                   <th className="p-4">{txt.table.applicant}</th>
                   <th className="p-4">{txt.table.form}</th>
@@ -171,12 +171,12 @@ export const AdminApplicantsView = ({ language }: AdminApplicantsViewProps) => {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {envios.map((envio) => (
-                  <tr key={envio.id} className="hover:bg-white/5 transition-colors">
+                  <tr key={envio.id} className="hover:bg-slate-100 dark:bg-white/5 transition-colors">
                     <td className="p-4">
-                      <span className="font-bold text-white block">{envio.user_name}</span>
-                      <span className="text-[11px] text-slate-300">{envio.user_email}</span>
+                      <span className="font-bold text-brand-navy dark:text-white block">{envio.user_name}</span>
+                      <span className="text-[11px] text-slate-600 dark:text-slate-300">{envio.user_email}</span>
                     </td>
-                    <td className="p-4 font-semibold text-slate-200">{envio.form_title}</td>
+                    <td className="p-4 font-semibold text-slate-700 dark:text-slate-200">{envio.form_title}</td>
                     <td className="p-4">
                       {new Date(envio.created_at).toLocaleDateString(
                         language === 'es' ? 'es-CR' : 'en-US'
@@ -194,7 +194,7 @@ export const AdminApplicantsView = ({ language }: AdminApplicantsViewProps) => {
                         value={envio.status}
                         disabled={actualizando === envio.id}
                         onChange={(e) => void cambiarEstado(envio, e.target.value as SubmissionStatus)}
-                        className="fc-select px-2.5 py-1.5 bg-[#000d1a] border border-white/10 rounded-lg text-xs text-white focus:border-[#77C65E] outline-none disabled:opacity-50"
+                        className="fc-select px-2.5 py-1.5 bg-white dark:bg-[#000d1a] border border-slate-200 dark:border-white/10 rounded-lg text-xs text-brand-navy dark:text-white focus:border-[#77C65E] outline-none disabled:opacity-50"
                       >
                         {ESTADOS.map((estado) => (
                           <option key={estado} value={estado}>
@@ -207,7 +207,7 @@ export const AdminApplicantsView = ({ language }: AdminApplicantsViewProps) => {
                       <button
                         type="button"
                         onClick={() => setDetalle(envio)}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-white/20"
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 dark:bg-white/10 px-2.5 py-1.5 text-[10px] font-bold text-brand-navy dark:text-white hover:bg-white/20"
                       >
                         <Eye className="w-3 h-3" />
                         <span>{txt.view}</span>
@@ -228,13 +228,13 @@ export const AdminApplicantsView = ({ language }: AdminApplicantsViewProps) => {
             role="dialog"
             aria-modal="true"
           >
-            <div className="bg-brand-navy border border-brand-border w-full max-w-2xl max-h-[85vh] rounded-2xl flex flex-col">
-              <div className="flex items-start justify-between gap-4 p-5 border-b border-white/10">
+            <div className="bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border w-full max-w-2xl max-h-[85vh] rounded-2xl flex flex-col">
+              <div className="flex items-start justify-between gap-4 p-5 border-b border-slate-200 dark:border-white/10">
                 <div>
-                  <h4 className="font-serif text-lg font-bold text-white">
+                  <h4 className="font-serif text-lg font-bold text-brand-navy dark:text-white">
                     {txt.detailTitle}
                   </h4>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
                     {detalle.user_name} · {detalle.form_title} ·{' '}
                     {new Date(detalle.created_at).toLocaleString(
                       language === 'es' ? 'es-CR' : 'en-US'
@@ -245,19 +245,19 @@ export const AdminApplicantsView = ({ language }: AdminApplicantsViewProps) => {
                   type="button"
                   onClick={() => setDetalle(null)}
                   aria-label={txt.close}
-                  className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200"
+                  className="p-1.5 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-white/20 text-slate-700 dark:text-slate-200"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
               <div className="overflow-y-auto p-5 space-y-4">
-                <p className="text-[11px] text-slate-400">{txt.detailSubtitle}</p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">{txt.detailSubtitle}</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
                   {entradasDe(detalle).map(({ clave, etiqueta, valor }) => (
                     <div key={clave} className="text-xs">
-                      <span className="text-slate-400 block">{etiqueta}</span>
-                      <span className="text-white whitespace-pre-wrap">
+                      <span className="text-slate-500 dark:text-slate-400 block">{etiqueta}</span>
+                      <span className="text-brand-navy dark:text-white whitespace-pre-wrap">
                         {valorTexto(valor) || '—'}
                       </span>
                     </div>
@@ -265,11 +265,11 @@ export const AdminApplicantsView = ({ language }: AdminApplicantsViewProps) => {
                 </div>
               </div>
 
-              <div className="p-4 border-t border-white/10 flex justify-end">
+              <div className="p-4 border-t border-slate-200 dark:border-white/10 flex justify-end">
                 <button
                   type="button"
                   onClick={() => setDetalle(null)}
-                  className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-lg"
+                  className="px-4 py-2 bg-slate-100 dark:bg-white/10 hover:bg-white/20 text-brand-navy dark:text-white text-xs font-bold rounded-lg"
                 >
                   {txt.close}
                 </button>
