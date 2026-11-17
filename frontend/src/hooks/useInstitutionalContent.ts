@@ -1,7 +1,7 @@
+import { loadPublicContent } from '../services/publicLocalization';
 import { useEffect, useState } from 'react';
 import type { Language } from '../types';
 import {
-  fetchInstitutionalContent,
   type InstitutionalContent,
   type InstitutionalSection,
 } from '../services/institutional';
@@ -22,14 +22,12 @@ export function useInstitutionalContent(
 
     setLoading(true);
 
-    fetchInstitutionalContent(section, language, controller.signal)
-      .then(setItems)
-      .catch(() => {
-        if (!controller.signal.aborted) setItems([]);
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
+    void loadPublicContent<InstitutionalContent[]>(
+      `/api/v1/institutional/${section}`, language, controller.signal,
+      data => { setItems(data); setLoading(false); }
+    ).catch(() => {
+      if (!controller.signal.aborted) { setItems([]); setLoading(false); }
+    });
 
     return () => controller.abort();
   }, [section, language]);

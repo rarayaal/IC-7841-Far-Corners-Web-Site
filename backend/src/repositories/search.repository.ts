@@ -43,7 +43,7 @@ export async function buscarContenido(q: string) {
     ),
     pool.query(
       `
-      SELECT id, title, description, type, location
+      SELECT id, title, title_en, description, description_en, type, location
       FROM opportunities
       WHERE is_published = TRUE
         AND (title ILIKE $1 OR description ILIKE $1)

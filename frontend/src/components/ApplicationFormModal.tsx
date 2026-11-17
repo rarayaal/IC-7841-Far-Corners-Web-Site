@@ -3,6 +3,7 @@ import { Language, PublicForm, FormField, FormSection } from '../types';
 import { X, UserCheck, CheckCircle2, Loader2, Check, CloudOff } from 'lucide-react';
 import type { UsuarioSesion } from '../services/sesion';
 import { apiAdminJson } from '../services/apiAdmin';
+import { displayFormText, useFormLocalization } from '../hooks/useFormLocalization';
 
 type EstadoGuardado = 'saved' | 'saving' | 'unsaved';
 
@@ -55,7 +56,13 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
   const resaveRef = useRef(false);
 
   const formType = form?.slug;
-  const tituloForm = form ? (language === 'es' ? form.title : form.title_en || form.title) : '';
+  const usuarioId = usuario?.id;
+  const localization = useFormLocalization(formType, language, isOpen && !!usuarioId && !cargando && campos.length > 0);
+  const texto = (value: string) => displayFormText(value, localization);
+  const tituloOriginal = form ? (language === 'es' ? form.title : form.title_en || form.title) : '';
+  const tituloTraducido = texto(tituloOriginal);
+  const tituloForm = tituloTraducido !== tituloOriginal ? tituloTraducido
+    : form?.localization?.language === language ? form.localization.title : tituloOriginal;
 
   useEffect(() => {
     if (!isOpen || !formType || !usuario) return;
@@ -117,7 +124,7 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
     return () => {
       activo = false;
     };
-  }, [isOpen, formType, usuario]);
+  }, [isOpen, formType, usuarioId]);
 
   const guardarBorrador = useCallback(async () => {
     if (!formType || !usuario) return;
@@ -145,7 +152,7 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
       saveEnCursoRef.current = false;
     }
     if (ok) setEstadoGuardado('saved');
-  }, [formType, usuario]);
+  }, [formType, usuarioId]);
 
   // Mantiene la referencia sincronizada con el último estado para el autosave y el cierre.
   useEffect(() => {
@@ -165,7 +172,7 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
       guardarBorrador();
     }, 1500);
     return () => clearTimeout(t);
-  }, [valores, formType, usuario, guardarBorrador]);
+  }, [valores, formType, usuarioId, guardarBorrador]);
 
   // Al intentar cerrar con cambios sin guardar, guarda de inmediato (keepalive)
   // y deja que el navegador muestre su aviso nativo de "salir o quedarse".
@@ -198,7 +205,7 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
     };
     window.addEventListener('beforeunload', handler);
     return () => window.removeEventListener('beforeunload', handler);
-  }, [formType, usuario]);
+  }, [formType, usuarioId]);
 
   // Bloquea el scroll del fondo mientras el formulario está abierto.
   useEffect(() => {
@@ -303,17 +310,19 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                   {estadoGuardado === 'saving' ? (
                     <>
                       <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-500 dark:text-slate-400" />
-                      <span className="text-slate-500 dark:text-slate-400">Guardando…</span>
+                      <span className="text-slate-500 dark:text-slate-400">
+                        {language === 'es' ? 'Guardando…' : 'Saving…'}
+                      </span>
                     </>
                   ) : estadoGuardado === 'unsaved' ? (
                     <>
                       <CloudOff className="w-3.5 h-3.5 text-amber-400" />
-                      <span className="text-amber-400">Cambios sin guardar</span>
+                      <span className="text-amber-400">{language === 'es' ? 'Cambios sin guardar' : 'Unsaved changes'}</span>
                     </>
                   ) : (
                     <>
                       <Check className="w-3.5 h-3.5 text-brand-green" />
-                      <span className="text-brand-green">Guardado</span>
+                      <span className="text-brand-green">{language === 'es' ? 'Guardado' : 'Saved'}</span>
                     </>
                   )}
                 </span>
@@ -332,43 +341,61 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
               <div className="inline-flex p-3 rounded-full bg-brand-green/20 text-brand-green border border-brand-green/40">
                 <CheckCircle2 className="w-12 h-12" />
               </div>
-              <h4 className="font-serif text-2xl font-bold text-brand-navy dark:text-white">¡Postulación Recibida!</h4>
-              <p className="text-sm text-slate-600 dark:text-slate-300">
-                Gracias. El equipo directivo de Far Corners evaluará tu perfil para{' '}
-                <span className="text-brand-forest dark:text-brand-lime font-bold">{tituloForm}</span>.
+                <h4 className="font-serif text-2xl font-bold text-brand-navy dark:text-white">
+                  {language === 'es' ? '¡Postulación Recibida!' : 'Application received!'}
+                </h4>
+                <p className="text-sm text-slate-600 dark:text-slate-300">
+                  {language === 'es'
+                    ? 'Gracias. El equipo directivo de Far Corners evaluará tu perfil para'
+                    : 'Thank you. The Far Corners team will review your application for'}{' '}
+                  <span className="text-brand-forest dark:text-brand-lime font-bold">
+                    {tituloForm}
+                  </span>.
               </p>
               <button onClick={cerrar} className="w-full py-3 bg-brand-green text-brand-navy font-extrabold rounded-xl">
-                Entendido
+                {language === 'es' ? 'Entendido' : 'Got it'}
               </button>
             </div>
           ) : cargando ? (
             <div className="flex flex-col items-center justify-center py-16 text-slate-600 dark:text-slate-300">
               <Loader2 className="w-8 h-8 text-brand-green animate-spin mb-3" />
-              <span className="text-sm">Cargando formulario…</span>
+              <span className="text-sm">{language === 'es' ? 'Cargando formulario…' : 'Loading form…'}</span>
             </div>
           ) : error ? (
             <div className="text-center space-y-4 py-8">
               <p className="text-sm text-rose-300">{error}</p>
-              <button onClick={cerrar} className="px-6 py-2.5 bg-slate-100 dark:bg-white/10 text-brand-navy dark:text-white rounded-xl font-bold">
-                Cerrar
+              <button
+                onClick={cerrar}
+                className="px-6 py-2.5 bg-slate-100 dark:bg-white/10 text-brand-navy dark:text-white rounded-xl font-bold"
+              >
+                {language === 'es' ? 'Cerrar' : 'Close'}
               </button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
+              {localization?.state === 'pending' && (
+                <p role="status" className="text-xs text-slate-400">
+                  {language === 'es' ? 'Preparando traducción. Puedes completar el formulario mientras tanto.' : 'Preparing translation. You can fill in the form in the meantime.'}
+                </p>
+              )}
               {secciones.map((seccion) => (
                 <div key={seccion.name} className="space-y-4">
                   {seccion.name && (
-                    <h4 className="font-serif text-sm font-bold text-brand-forest dark:text-brand-lime uppercase tracking-wider border-b border-slate-200 dark:border-white/10 pb-1">
-                      {seccion.name}
-                    </h4>
-                  )}
-                  {seccion.description && (
-                    <p className="text-xs text-slate-500 dark:text-slate-400 whitespace-pre-wrap">{seccion.description}</p>
+                  <h4 className="font-serif text-sm font-bold text-brand-forest dark:text-brand-lime uppercase tracking-wider border-b border-slate-200 dark:border-white/10 pb-1">
+                    {texto(seccion.name)}
+                  </h4>
+                )}
+                {seccion.description && (
+                  <p className="text-xs text-slate-500 dark:text-slate-400 whitespace-pre-wrap">
+                    {texto(seccion.description)}
+                  </p>
                   )}
                   {seccion.campos.map((campo) => (
                     <Campo
                       key={campo.id}
                       campo={campo}
+                      displayText={texto}
+                      language={language}
                       valor={valores[campo.field_key]}
                       onChange={(v) => cambiarValor(campo, v)}
                       onCheckboxGroup={handleCheckboxGroup}
@@ -383,7 +410,7 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                   disabled={enviando}
                   className="w-full py-3.5 btn-green text-brand-navy hover:text-brand-navy dark:text-white font-extrabold rounded-xl shadow-glow-green transition-all uppercase tracking-wider text-xs disabled:opacity-60"
                 >
-                  {enviando ? 'Enviando…' : 'Enviar Postulación Oficial'}
+                  {enviando ? (language === 'es' ? 'Enviando…' : 'Submitting…') : (language === 'es' ? 'Enviar Postulación Oficial' : 'Submit application')}
                 </button>
               )}
             </form>
@@ -410,12 +437,14 @@ function valoresIniciales(campos: FormField[]): Record<string, FieldValue> {
 
 interface CampoProps {
   campo: FormField;
+  displayText: (text: string) => string;
+  language: Language;
   valor: FieldValue | undefined;
   onChange: (v: FieldValue) => void;
   onCheckboxGroup: (field: FormField, opcion: string, marcado: boolean) => void;
 }
 
-const Campo: React.FC<CampoProps> = ({ campo, valor, onChange, onCheckboxGroup }) => {
+const Campo: React.FC<CampoProps> = ({ campo, displayText, language, valor, onChange, onCheckboxGroup }) => {
   const opciones = campo.options ?? [];
   const requerido = campo.required;
   const claseInput =
@@ -423,7 +452,9 @@ const Campo: React.FC<CampoProps> = ({ campo, valor, onChange, onCheckboxGroup }
 
   const etiqueta = (
     <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
-      {campo.label} {requerido && <span className="text-brand-forest dark:text-brand-lime">*</span>}
+      {displayText(campo.label)} {requerido && (
+        <span className="text-brand-forest dark:text-brand-lime">*</span>
+      )}
     </label>
   );
 
@@ -454,11 +485,11 @@ const Campo: React.FC<CampoProps> = ({ campo, valor, onChange, onCheckboxGroup }
               className={`${claseInput} fc-select cursor-pointer [color-scheme:dark]`}
             >
               <option value="" disabled>
-                Elegir…
+                {language === 'es' ? 'Elegir…' : 'Choose…'}
               </option>
               {opciones.map((opcion) => (
                 <option key={opcion} value={opcion}>
-                  {opcion}
+                  {displayText(opcion)}
                 </option>
               ))}
             </select>
@@ -470,7 +501,9 @@ const Campo: React.FC<CampoProps> = ({ campo, valor, onChange, onCheckboxGroup }
       return (
         <fieldset>
           <legend className="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
-            {campo.label} {requerido && <span className="text-brand-forest dark:text-brand-lime">*</span>}
+            {displayText(campo.label)} {requerido && (
+              <span className="text-brand-forest dark:text-brand-lime">*</span>
+            )}
           </legend>
           <div className="space-y-2">
             {opciones.map((opcion) => (
@@ -483,7 +516,7 @@ const Campo: React.FC<CampoProps> = ({ campo, valor, onChange, onCheckboxGroup }
                   onChange={() => onChange(opcion)}
                   className="mt-0.5 accent-brand-green"
                 />
-                <span className="text-xs leading-relaxed">{opcion}</span>
+                <span className="text-xs leading-relaxed">{displayText(opcion)}</span>
               </label>
             ))}
           </div>
@@ -495,7 +528,9 @@ const Campo: React.FC<CampoProps> = ({ campo, valor, onChange, onCheckboxGroup }
         return (
           <fieldset>
             <legend className="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
-              {campo.label} {requerido && <span className="text-brand-forest dark:text-brand-lime">*</span>}
+              {displayText(campo.label)} {requerido && (
+                <span className="text-brand-forest dark:text-brand-lime">*</span>
+              )}
             </legend>
             <div className="space-y-2">
               {opciones.map((opcion) => (
@@ -506,7 +541,7 @@ const Campo: React.FC<CampoProps> = ({ campo, valor, onChange, onCheckboxGroup }
                     onChange={(e) => onCheckboxGroup(campo, opcion, e.target.checked)}
                     className="mt-0.5 accent-brand-green"
                   />
-                  <span className="text-xs leading-relaxed">{opcion}</span>
+                  <span className="text-xs leading-relaxed">{displayText(opcion)}</span>
                 </label>
               ))}
             </div>
@@ -521,7 +556,7 @@ const Campo: React.FC<CampoProps> = ({ campo, valor, onChange, onCheckboxGroup }
             onChange={(e) => onChange(e.target.checked)}
             className="accent-brand-green"
           />
-          <span className="text-xs">{campo.label}</span>
+          <span className="text-xs">{displayText(campo.label)}</span>
         </label>
       );
 

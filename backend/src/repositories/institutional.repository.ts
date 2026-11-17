@@ -64,7 +64,7 @@ const IMAGENES_PUBLICAS = `
 `;
 
 // Devuelve el contenido publicado de una sección. Si una página no tiene
-// traducción al idioma pedido se usa la versión en español.
+// traducción al idioma pedido se usa la otra versión publicada.
 export async function obtenerContenidoPublicado(
   section: SeccionInstitucional,
   language: IdiomaInstitucional
@@ -75,7 +75,7 @@ export async function obtenerContenidoPublicado(
       FROM institutional_content
       WHERE section = $1
         AND is_published = TRUE
-        AND language IN ($2, 'es')
+        AND language IN ('es', 'en')
       ORDER BY page_slug, (language = $2) DESC
     `,
     [section, language]

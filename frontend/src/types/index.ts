@@ -1,5 +1,13 @@
 export type Language = 'es' | 'en';
 
+export type TranslationState = 'ready' | 'pending' | 'limited' | 'unavailable';
+
+export interface FormTextLocalization {
+  language: Language;
+  texts: Record<string, string>;
+  state: TranslationState;
+}
+
 export type PageView = 'home' | 'about' | 'shows' | 'participate' | 'donate' | 'contact' | 'admin' | 'register' | 'login' | 'profile';
 
 export interface Show {
@@ -100,6 +108,15 @@ export interface PublicForm {
   requirements: { es?: string[]; en?: string[] } | null;
   is_featured: boolean;
   image_url: string | null;
+  /** Presentation only; the original fields above retain the database values. */
+  localization?: {
+    language: Language;
+    title: string;
+    description: string | null;
+    period: string | null;
+    requirements: string[];
+    state: TranslationState;
+  };
 }
 
 export interface Form extends PublicForm {

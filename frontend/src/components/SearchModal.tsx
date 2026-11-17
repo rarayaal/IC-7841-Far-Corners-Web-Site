@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Language } from '../types';
-import { apiAdminJson } from '../services/apiAdmin';
+import { loadPublicContent } from '../services/publicLocalization';
 import { Search, X, Ticket, Globe, Users, Briefcase } from 'lucide-react';
 import { getTranslations } from '../lib/i18n';
 
@@ -80,12 +80,10 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, langu
     const controlador = new AbortController();
     const temporizador = setTimeout(async () => {
       try {
-        const datos = await apiAdminJson<SearchResult>(
-          `/api/v1/search?q=${encodeURIComponent(texto)}`,
-          { signal: controlador.signal },
-          { tokenOpcional: true }
+        await loadPublicContent<SearchResult>(
+          `/api/v1/search?q=${encodeURIComponent(texto)}`, language, controlador.signal,
+          datos => { setResultado(datos); setCargando(false); }
         );
-        setResultado(datos);
       } catch (e) {
         if (controlador.signal.aborted) return;
         setError(

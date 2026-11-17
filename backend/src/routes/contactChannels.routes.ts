@@ -1,3 +1,4 @@
+import { publicLocalization } from '../middlewares/public-localization.middleware.js';
 import { Router } from 'express';
 import {
   listarContactosPublicos,
@@ -15,7 +16,7 @@ import {
 export const contactChannelsRouter = Router();
 
 // Público.
-contactChannelsRouter.get('/', listarContactosPublicos);
+contactChannelsRouter.get('/', publicLocalization('contacts'), listarContactosPublicos);
 
 // Consultar contactos desde el administrador.
 contactChannelsRouter.get(

@@ -1,3 +1,5 @@
+import type { Language } from '../types';
+import { loadPublicContent } from '../services/publicLocalization';
 import { useEffect, useState } from 'react';
 
 export interface ContactChannel {
@@ -21,7 +23,7 @@ export interface ContactChannel {
   display_order: number;
 }
 
-export function useContactChannels() {
+export function useContactChannels(language: Language = 'es') {
   const [contactos, setContactos] = useState<ContactChannel[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
@@ -31,21 +33,8 @@ export function useContactChannels() {
 
     async function cargarContactos() {
       try {
-        const respuesta = await fetch('/api/v1/contact-channels', {
-          signal: controller.signal,
-        });
-
-        if (!respuesta.ok) {
-          throw new Error('No se pudieron cargar los medios de contacto.');
-        }
-
-        const datos: ContactChannel[] = await respuesta.json();
-
-        if (!Array.isArray(datos)) {
-          throw new Error('La API no devolvió una lista de contactos.');
-        }
-
-        setContactos(datos);
+        await loadPublicContent<ContactChannel[]>('/api/v1/contact-channels', language, controller.signal,
+          datos => { setContactos(datos); setCargando(false); setError(''); });
       } catch (error) {
         if (controller.signal.aborted) return;
 
@@ -66,7 +55,7 @@ export function useContactChannels() {
     void cargarContactos();
 
     return () => controller.abort();
-  }, []);
+  }, [language]);
 
   return { contactos, cargando, error };
 }

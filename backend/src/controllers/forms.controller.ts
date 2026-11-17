@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { isDisplayLanguage, localizePublishedForms, localizeFormStructure } from "../services/forms-localization.service.js";
 import {
   FIELD_TYPES,
   SUBMISSION_STATUSES,
@@ -125,10 +126,15 @@ export async function eliminarFormulario(req: Request<{ slug: string }>, res: Re
 }
 
 // GET /api/v1/forms/published (público: lo consume la página Programas y Comunidad)
-export async function listarFormulariosPublicados(_req: Request, res: Response) {
+export async function listarFormulariosPublicados(req: Request, res: Response) {
+  const language = req.query.lang;
+  if (language !== undefined && !isDisplayLanguage(language)) {
+    res.status(400).json({ message: "El idioma debe ser 'es' o 'en'." });
+    return;
+  }
   try {
     const forms = await listarFormsPublicados();
-    res.status(200).json(forms);
+    res.status(200).json(language ? await localizePublishedForms(forms, language) : forms);
   } catch (error) {
     console.error("Error al listar los formularios publicados:", error);
     res.status(500).json({ message: "No se pudieron obtener los formularios publicados" });
@@ -263,10 +269,23 @@ export async function actualizarPublicacion(req: Request<{ slug: string }>, res:
 // GET /api/v1/forms/:formType/fields
 export async function listarCampos(req: Request<{ formType: string }>, res: Response) {
   const { formType } = req.params;
+  const language = req.query.lang;
+  if (language !== undefined && !isDisplayLanguage(language)) {
+    res.status(400).json({ message: "El idioma debe ser 'es' o 'en'." });
+    return;
+  }
   try {
-    if (!(await asegurarForm(formType, res))) return;
+    const formulario = await obtenerForm(formType);
+    if (!formulario) {
+      res.status(404).json({ message: "Formulario no encontrado." });
+      return;
+    }
     const [sections, fields] = await Promise.all([obtenerSecciones(formType), obtenerCampos(formType)]);
-    res.status(200).json({ sections, fields });
+    // Without ?lang the administrative editor receives exactly the original structure.
+    const localization = language
+      ? await localizeFormStructure(sections, fields, language, undefined, [formulario.title])
+      : undefined;
+    res.status(200).json({ sections, fields, ...(localization ? { localization } : {}) });
   } catch (error) {
     console.error("Error al obtener los campos del formulario:", error);
     res.status(500).json({ message: "No se pudieron obtener los campos del formulario" });

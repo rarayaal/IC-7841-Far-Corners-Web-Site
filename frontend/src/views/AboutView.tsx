@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
+import { usePublicProjects } from '../hooks/usePublicProjects';
 import { Language, PageView } from '../types';
-import { projectsData } from '../data/mockData';
 import { Globe, Heart, Users, Lightbulb, Feather } from 'lucide-react';
 import { useInstitutionalContent } from '../hooks/useInstitutionalContent';
 import { ContentParagraphs } from '../components/ContentParagraphs';
@@ -70,6 +70,7 @@ export const AboutView: React.FC<AboutViewProps> = ({
   language,
   setCurrentPage,
 }) => {
+  const projects = usePublicProjects(language);
   const t = getTranslations(language).views.about;
   const es = language === 'es';
   const { items: historyItems } = useInstitutionalContent('history', language);
@@ -153,7 +154,9 @@ export const AboutView: React.FC<AboutViewProps> = ({
 
   const openGallery = (title: string, images: GalleryImage[]) => setGallery({ title, images });
 
-  const impactCount = impactItems.length > 0 ? impactItems.length : projectsData.length;
+  const impactCount = impactItems.length > 0
+  ? impactItems.length
+  : projects.length;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-12 sm:space-y-16 animate-fadeIn">
@@ -310,36 +313,38 @@ export const AboutView: React.FC<AboutViewProps> = ({
                       </div>
                     )}
                   </div>
-                );
+            );
               })
-            : projectsData.map((p) => {
-                const images = toGalleryImages(p.gallery, p.title);
-                const title = es ? p.title : p.titleEn;
-
-                return (
-                  <div key={p.id} className="bg-[#F8F8F2] dark:bg-brand-navyDark p-5 rounded-2xl border border-slate-200 dark:border-brand-border space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="font-serif text-lg font-bold text-brand-navy dark:text-white">{p.country}</span>
-                      <span className="text-xs font-mono text-brand-green">{p.year}</span>
-                    </div>
-                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{es ? p.summary : p.summaryEn}</p>
-
-                    <div className="pt-2 border-t border-slate-200 dark:border-white/10 space-y-1 text-[11px] text-slate-600 dark:text-slate-300">
-                      {p.impactMetrics.map((metric) => (
-                        <p key={metric}>• {metric}</p>
-                      ))}
-                    </div>
-
-                    {images.length > 0 && (
-                      <GalleryButton
-                        count={images.length}
-                        language={language}
-                        onClick={() => openGallery(title, images)}
-                      />
-                    )}
+            : projects.map((p) => (
+                <div
+                  key={p.id}
+                  className="bg-[#F8F8F2] dark:bg-brand-navyDark p-5 rounded-2xl border border-slate-200 dark:border-brand-border space-y-3"
+                >
+                  <div className="flex justify-between items-center">
+                    <span className="font-serif text-lg font-bold text-brand-navy dark:text-white">
+                      {p.country}
+                    </span>
+                    <span className="text-xs font-mono text-brand-green">
+                      {p.year}
+                    </span>
                   </div>
-                );
-              })}
+
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                    {es ? p.summary : p.summaryEn}
+                  </p>
+
+                  {p.participants != null && (
+                    <div className="pt-2 border-t border-slate-200 dark:border-white/10 text-[11px] text-slate-600 dark:text-slate-300">
+                      <span className="text-brand-navy dark:text-white font-bold">
+                        {p.participants}+
+                      </span>{' '}
+                      {es
+                        ? 'participantes registrados'
+                        : 'registered participants'}
+                    </div>
+                  )}
+                </div>
+              ))}
         </div>
       </div>
 

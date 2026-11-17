@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { usePublicProjects } from '../hooks/usePublicProjects';
 import { Language, Show, PageView, ImpactProject } from '../types';
-import { showsData, projectsData } from '../data/mockData';
+import { showsData } from '../data/mockData';
 import { Ticket, Users, Sparkles, ChevronRight, Star, FileText } from 'lucide-react';
 import { CountUp } from '../components/CountUp';
 import { ShowsCarousel } from '../components/ShowsCarousel';
@@ -24,9 +25,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onOpenDonate,
   onOpenVolunteer,
 }) => {
+  const projects = usePublicProjects(language);
   const t = getTranslations(language).views.home;
   const { galleryFor } = useGalleries();
-  const [galleryProject, setGalleryProject] = useState<ImpactProject | null>(null);
+  const [galleryProject, setGalleryProject] = useState<
+    (typeof projects)[number] | null
+  >(null);
   const fallbackShow = showsData.find(s => s.status === 'current') || showsData[0];
   const [currentShow, setCurrentShow] = useState<Show>(fallbackShow);
   const [upcomingShows, setUpcomingShows] = useState<Show[]>(showsData.slice(0, 3));
@@ -258,11 +262,17 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </p>
           </div>
 
-          <div className={`grid grid-cols-1 gap-8 ${projectsData.length === 1 ? 'max-w-lg mx-auto' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
-            {projectsData.map((proj) => (
+          <div
+            className={`grid grid-cols-1 gap-8 ${
+              projects.length === 1
+                ? 'max-w-lg mx-auto'
+                : 'md:grid-cols-2 lg:grid-cols-3'
+            }`}
+          >
+            {projects.map((proj) => (
               <div key={proj.id} className="bg-white dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded-2xl p-6 space-y-4 hover:border-brand-green/50 shadow-sm dark:shadow-none transition-all">
                 <div className="h-44 rounded-xl overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 relative">
-                  <img src={proj.image} alt={proj.title} className="w-full h-full object-cover" />
+                  {proj.image && <img src={proj.image} alt={proj.title} className="w-full h-full object-cover" />}
                   <span className="absolute bottom-3 left-3 px-3 py-1 rounded bg-brand-green text-brand-navy text-xs font-extrabold">
                     {proj.country}
                   </span>

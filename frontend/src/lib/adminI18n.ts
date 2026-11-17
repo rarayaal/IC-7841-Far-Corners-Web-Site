@@ -1,6 +1,12 @@
 import type { Language } from '../types';
 
 const es = {
+  generalUsers: {
+    title: 'Usuarios generales',
+    subtitle: 'Gestión de cuentas sin acceso al panel administrativo.',
+    createBtn: 'Crear usuario',
+    refreshBtn: 'Actualizar',
+  },
   tabs: {
     content: 'Contenido',
     media: 'Galería',
@@ -758,6 +764,12 @@ const es = {
 export type AdminTexts = typeof es;
 
 const en: AdminTexts = {
+  generalUsers: {
+    title: 'General users',
+    subtitle: 'Manage accounts without access to the administration panel.',
+    createBtn: 'Create user',
+    refreshBtn: 'Refresh',
+  },
   tabs: {
     content: 'Content',
     media: 'Gallery',

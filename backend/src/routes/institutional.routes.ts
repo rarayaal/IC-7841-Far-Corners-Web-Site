@@ -1,3 +1,4 @@
+import { publicLocalization } from '../middlewares/public-localization.middleware.js';
 import { Router } from 'express';
 import {
   consultarContenidoPublico,
@@ -21,7 +22,7 @@ const soloGestorDeContenido = [
 ];
 
 // Público: contenido publicado de history, impact o future.
-institutionalRouter.get('/:section', consultarContenidoPublico);
+institutionalRouter.get('/:section', publicLocalization('institutional'), consultarContenidoPublico);
 
 // Administración (CU-01, CU-02, CU-03).
 institutionalRouter.get(

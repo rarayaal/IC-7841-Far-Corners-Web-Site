@@ -1,0 +1,13 @@
+# Complemento opcional para ejecutar también la API dentro de Docker.
+# No cambia el servicio db ni el volumen postgres_data del compose original.
+services:
+  api:
+    environment:
+      MYMEMORY_ENABLED: ${MYMEMORY_ENABLED:-true}
+      MYMEMORY_EMAIL: ${MYMEMORY_EMAIL:-}
+      MYMEMORY_DAILY_CHAR_LIMIT: ${MYMEMORY_DAILY_CHAR_LIMIT:-}
+    volumes:
+      - mymemory_cache:/home/node/.cache/farcorners-mymemory
+
+volumes:
+  mymemory_cache:
