@@ -28,7 +28,7 @@ export async function loadPublicContent<T>(url: string, language: Language, sign
   const localizedUrl = `${url}${url.includes('?') ? '&' : '?'}lang=${language}`;
   for (let attempt = 0; attempt < 60; attempt++) {
     try {
-      const response = await fetch(localizedUrl, { signal });
+      const response = await fetch(localizedUrl, { signal, cache: 'no-store' });
       if (!response.ok) throw new Error(language === 'es' ? 'No se pudo cargar el contenido.' : 'Could not load content.');
       const data = await response.json() as T;
       if (signal.aborted) return;

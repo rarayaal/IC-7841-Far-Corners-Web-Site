@@ -78,13 +78,18 @@ export function generarPdfBoletos(tickets: TicketPdfItem[]): Buffer {
     // Generar la matriz del QR para este boleto
     const qrMatrix = generateQrMatrix(tkt.qrCode);
     const qrSize = qrMatrix.length;
-    const qrBoxSize = 150; // 150x150 pt en el PDF
+    const qrBoxSize = 140; // 140x140 pt en el PDF
     const moduleSize = (qrBoxSize / qrSize).toFixed(2);
-    const qrOriginX = 390;
-    const qrOriginY = 460;
+    const qrOriginX = 395;
+    const qrOriginY = 465;
 
-    // Vectorizar los módulos del código QR
-    let qrOps = '0.04 0.1 0.18 rg\n'; // color #0A192F
+    // Fondo blanco con zona quieta (Quiet Zone de 4 módulos)
+    const marginModules = 4;
+    const quietX = (qrOriginX - marginModules * Number(moduleSize)).toFixed(2);
+    const quietY = (qrOriginY - marginModules * Number(moduleSize)).toFixed(2);
+    const quietSize = ((qrSize + marginModules * 2) * Number(moduleSize)).toFixed(2);
+
+    let qrOps = `1 1 1 rg\n${quietX} ${quietY} ${quietSize} ${quietSize} re f\n0.04 0.1 0.18 rg\n`;
     for (let r = 0; r < qrSize; r++) {
       for (let c = 0; c < qrSize; c++) {
         if (qrMatrix[r][c]) {

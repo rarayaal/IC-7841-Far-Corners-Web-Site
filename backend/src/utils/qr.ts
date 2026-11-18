@@ -1,6 +1,6 @@
 /**
  * Generador de Códigos QR autónomo en TypeScript sin dependencias externas.
- * Implementa el estándar QR (ISO/IEC 18004) en Modo Byte con corrección de error 'M'.
+ * Implementa estrictamente el estándar QR (ISO/IEC 18004) en Modo Byte con corrección de error 'M'.
  */
 
 // Tablas de Galois Field GF(2^8) para Reed-Solomon con polinomio irreducible 0x11D (285)
@@ -27,20 +27,28 @@ function gfMul(x: number, y: number): number {
   return EXP_TABLE[LOG_TABLE[x] + LOG_TABLE[y]];
 }
 
+/**
+ * Genera el polinomio generador de Reed-Solomon de grado degree.
+ * Coeficiente de x^degree está en index 0 y siempre es 1.
+ */
 function rsGeneratorPoly(degree: number): Uint8Array {
   let poly = new Uint8Array([1]);
   for (let i = 0; i < degree; i++) {
     const nextPoly = new Uint8Array(poly.length + 1);
     const factor = EXP_TABLE[i];
+    // (P(x))*(x + factor) = x*P(x) + factor*P(x)
     for (let j = 0; j < poly.length; j++) {
-      nextPoly[j] ^= gfMul(poly[j], factor);
-      nextPoly[j + 1] ^= poly[j];
+      nextPoly[j] ^= poly[j];
+      nextPoly[j + 1] ^= gfMul(poly[j], factor);
     }
     poly = nextPoly;
   }
   return poly;
 }
 
+/**
+ * Calcula los codewords de corrección de error usando división sintética en GF(2^8).
+ */
 function rsCompute(data: Uint8Array, ecLength: number): Uint8Array {
   const gen = rsGeneratorPoly(ecLength);
   const remainder = new Uint8Array(ecLength);
@@ -55,10 +63,6 @@ function rsCompute(data: Uint8Array, ecLength: number): Uint8Array {
   return remainder;
 }
 
-// Especificaciones por versión para nivel 'M':
-// Version 2 (25x25): total codewords = 44, data codewords = 28, ec codewords = 16, alignment = [6, 18]
-// Version 3 (29x29): total codewords = 70, data codewords = 44, ec codewords = 26, alignment = [6, 22]
-// Version 4 (33x33): total codewords = 100, data codewords = 64, ec codewords = 36, alignment = [6, 26]
 interface QrVersionSpec {
   version: number;
   size: number;
@@ -68,12 +72,23 @@ interface QrVersionSpec {
   alignPos: number[];
 }
 
+// Especificaciones por versión para nivel 'M' según ISO/IEC 18004
 const VERSIONS: QrVersionSpec[] = [
+  { version: 1, size: 21, dataCapacityBytes: 14, totalCodewords: 26, ecCodewords: 10, alignPos: [] },
   { version: 2, size: 25, dataCapacityBytes: 26, totalCodewords: 44, ecCodewords: 16, alignPos: [6, 18] },
   { version: 3, size: 29, dataCapacityBytes: 42, totalCodewords: 70, ecCodewords: 26, alignPos: [6, 22] },
   { version: 4, size: 33, dataCapacityBytes: 62, totalCodewords: 100, ecCodewords: 36, alignPos: [6, 26] },
-  { version: 5, size: 37, dataCapacityBytes: 84, totalCodewords: 134, ecCodewords: 48, alignPos: [6, 30] },
 ];
+
+/**
+ * Determina si unas coordenadas solapan con alguno de los tres patrones de búsqueda (Finders).
+ */
+function isInsideFinder(r: number, c: number, size: number): boolean {
+  if (r <= 8 && c <= 8) return true; // Top-left
+  if (r <= 8 && c >= size - 9) return true; // Top-right
+  if (r >= size - 9 && c <= 8) return true; // Bottom-left
+  return false;
+}
 
 export function generateQrMatrix(text: string): boolean[][] {
   const utf8Bytes = Buffer.from(text, 'utf8');
@@ -98,6 +113,7 @@ export function generateQrMatrix(text: string): boolean[][] {
   for (let i = 0; i < utf8Bytes.length; i++) {
     pushBits(utf8Bytes[i], 8);
   }
+
   // Terminador
   const maxDataBits = spec.dataCapacityBytes * 8;
   const termLen = Math.min(4, maxDataBits - bitstream.length);
@@ -137,7 +153,7 @@ export function generateQrMatrix(text: string): boolean[][] {
     Array.from({ length: size }, () => null)
   );
 
-  // Función auxiliar para colocar patrones fijos
+  // Función para colocar patrones fijos de búsqueda (Finders 7x7 + Separador de 1 módulo)
   function setFinder(row: number, col: number) {
     for (let r = -1; r <= 7; r++) {
       for (let c = -1; c <= 7; c++) {
@@ -145,7 +161,7 @@ export function generateQrMatrix(text: string): boolean[][] {
         const mc = col + c;
         if (mr >= 0 && mr < size && mc >= 0 && mc < size) {
           if (r === -1 || r === 7 || c === -1 || c === 7) {
-            matrix[mr][mc] = false; // Separator
+            matrix[mr][mc] = false; // Separador
           } else if (r === 0 || r === 6 || c === 0 || c === 6 || (r >= 2 && r <= 4 && c >= 2 && c <= 4)) {
             matrix[mr][mc] = true;
           } else {
@@ -161,10 +177,10 @@ export function generateQrMatrix(text: string): boolean[][] {
   setFinder(0, size - 7);
   setFinder(size - 7, 0);
 
-  // Patrones de alineación
+  // Patrones de alineación (Alignment Patterns)
   for (const ar of spec.alignPos) {
     for (const ac of spec.alignPos) {
-      if (matrix[ar][ac] !== null) continue; // Si solapa con finders, omitir
+      if (isInsideFinder(ar, ac, size)) continue; // Omitir si solapa con finders
       for (let r = -2; r <= 2; r++) {
         for (let c = -2; c <= 2; c++) {
           const mr = ar + r;
@@ -179,13 +195,13 @@ export function generateQrMatrix(text: string): boolean[][] {
     }
   }
 
-  // Patrones de sincronización (timing patterns)
+  // Patrones de sincronización (Timing Patterns en fila 6 y columna 6)
   for (let i = 8; i < size - 8; i++) {
     if (matrix[6][i] === null) matrix[6][i] = i % 2 === 0;
     if (matrix[i][6] === null) matrix[i][6] = i % 2 === 0;
   }
 
-  // Módulo oscuro fijo
+  // Módulo oscuro fijo requerido por ISO 18004
   matrix[size - 8][8] = true;
 
   // Reservar áreas de información de formato (15 bits)
@@ -198,7 +214,7 @@ export function generateQrMatrix(text: string): boolean[][] {
     if (matrix[i][8] === null) matrix[i][8] = false;
   }
 
-  // 4. Colocar datos en zigzag
+  // 4. Colocar datos en zigzag (de derecha a izquierda, dos columnas por pasada)
   let bitIdx = 0;
   const allBits: number[] = [];
   for (const b of fullCodewords) {
@@ -220,7 +236,7 @@ export function generateQrMatrix(text: string): boolean[][] {
       for (const c of cols) {
         if (matrix[r][c] === null) {
           const bitVal = bitIdx < allBits.length ? allBits[bitIdx++] : 0;
-          // Máscara 0: (row + col) % 2 === 0
+          // Máscara 0 estándar ISO 18004: (row + col) % 2 === 0
           const mask = (r + c) % 2 === 0;
           matrix[r][c] = (bitVal === 1) !== mask;
         }
@@ -229,19 +245,37 @@ export function generateQrMatrix(text: string): boolean[][] {
     upward = !upward;
   }
 
-  // 5. Escribir formato con Máscara 0 y Nivel 'M' (00 + 000 = 00000 => BCH = 0x5412 XOR)
-  // Formato: Nivel M (00), Mask 0 (000) => 15 bits = 101010000010010
-  const formatBits = [1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0];
-  // Top-left
-  for (let i = 0; i <= 5; i++) matrix[8][i] = formatBits[i] === 1;
-  matrix[8][7] = formatBits[6] === 1;
-  matrix[8][8] = formatBits[7] === 1;
-  matrix[7][8] = formatBits[8] === 1;
-  for (let i = 9; i < 15; i++) matrix[14 - i][8] = formatBits[i] === 1;
+  // 5. Escribir formato según ISO/IEC 18004
+  // Nivel M ('00') + Máscara 0 ('000') => 15 bits BCH con XOR 0x5412 = 0b101010000010010
+  const FORMAT_BITS = 0x5412;
+  const getFormatBit = (bitIndex: number) => ((FORMAT_BITS >> bitIndex) & 1) === 1;
 
-  // Split finders
-  for (let i = 0; i < 7; i++) matrix[size - 1 - i][8] = formatBits[i] === 1;
-  for (let i = 0; i < 8; i++) matrix[8][size - 8 + i] = formatBits[7 + i] === 1;
+  // Finder superior-izquierdo: bit 0 en (8,0) hasta bit 14 en (0,8)
+  matrix[8][0] = getFormatBit(0);
+  matrix[8][1] = getFormatBit(1);
+  matrix[8][2] = getFormatBit(2);
+  matrix[8][3] = getFormatBit(3);
+  matrix[8][4] = getFormatBit(4);
+  matrix[8][5] = getFormatBit(5);
+  matrix[8][7] = getFormatBit(6);
+  matrix[8][8] = getFormatBit(7);
+  matrix[7][8] = getFormatBit(8);
+  matrix[5][8] = getFormatBit(9);
+  matrix[4][8] = getFormatBit(10);
+  matrix[3][8] = getFormatBit(11);
+  matrix[2][8] = getFormatBit(12);
+  matrix[1][8] = getFormatBit(13);
+  matrix[0][8] = getFormatBit(14);
+
+  // Finders inferior-izquierdo y superior-derecho:
+  // Inferior-izquierdo: bits 0 a 6
+  for (let i = 0; i < 7; i++) {
+    matrix[size - 1 - i][8] = getFormatBit(i);
+  }
+  // Superior-derecho: bits 7 a 14
+  for (let i = 0; i < 8; i++) {
+    matrix[8][size - 8 + i] = getFormatBit(7 + i);
+  }
 
   return matrix.map((row) => row.map((cell) => !!cell));
 }

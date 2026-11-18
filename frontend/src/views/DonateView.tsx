@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Language } from '../types';
 import {
   Heart,
@@ -14,6 +14,7 @@ import {
   RefreshCw,
   Coins,
   ExternalLink,
+  ChevronDown,
 } from 'lucide-react';
 import { getTranslations } from '../lib/i18n';
 import { useSesion } from '../hooks/useSesion';
@@ -53,7 +54,7 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onNavigate }) 
   const [donorEmail, setDonorEmail] = useState(usuario?.email || '');
   const [currency, setCurrency] = useState<'CRC' | 'USD'>('CRC');
   const [amount, setAmount] = useState('10000');
-  const [paymentMethod, setPaymentMethod] = useState<'sinpe' | 'zeffy' | 'paypal'>('sinpe');
+  const [paymentMethod, setPaymentMethod] = useState<'sinpe' | 'paypal'>('sinpe');
   const [refNumber, setRefNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -87,10 +88,75 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onNavigate }) 
     donor_name: string;
     amount: number;
     currency: string;
+    status?: string;
     created_at?: string;
   }
+  interface DonationGroup {
+    key: string;
+    amount: number;
+    currency: string;
+    totalSum: number;
+    donations: PublicDonation[];
+    normalizedSortValue: number;
+  }
+
   const [donacionesPublicas, setDonacionesPublicas] = useState<PublicDonation[]>([]);
   const [cargandoMuro, setCargandoMuro] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+
+  // Agrupar donaciones públicas validadas por monto y ordenarlas de mayor a menor
+  const donationGroups = useMemo<DonationGroup[]>(() => {
+    const map = new Map<string, DonationGroup>();
+
+    for (const don of donacionesPublicas) {
+      // Filtrar únicamente donaciones validadas/completadas
+      if (don.status && don.status !== 'completed') {
+        continue;
+      }
+
+      const amt = Number(don.amount) || 0;
+      const curr = (don.currency || 'USD').toUpperCase();
+      const key = `${curr}_${amt}`;
+
+      if (!map.has(key)) {
+        // Normalización aproximada para posicionar los montos más altos primero
+        const normalizedSortValue = curr === 'USD' ? amt * 520 : amt;
+        map.set(key, {
+          key,
+          amount: amt,
+          currency: curr,
+          totalSum: 0,
+          donations: [],
+          normalizedSortValue,
+        });
+      }
+
+      const group = map.get(key)!;
+      group.donations.push(don);
+      group.totalSum += amt;
+    }
+
+    return Array.from(map.values()).sort((a, b) => b.normalizedSortValue - a.normalizedSortValue);
+  }, [donacionesPublicas]);
+
+  // Expandir el primer grupo por defecto
+  useEffect(() => {
+    if (donationGroups.length > 0) {
+      setExpandedGroups((prev) => {
+        if (Object.keys(prev).length === 0 && donationGroups[0]) {
+          return { [donationGroups[0].key]: true };
+        }
+        return prev;
+      });
+    }
+  }, [donationGroups]);
+
+  const toggleGroup = (key: string) => {
+    setExpandedGroups((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
 
   const cargarMuroPublico = useCallback(async () => {
     setCargandoMuro(true);
@@ -268,7 +334,7 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onNavigate }) 
               <label className="block text-xs font-semibold uppercase text-slate-600 dark:text-slate-300 mb-2">
                 {t.paymentMethodLabel}
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('sinpe')}
@@ -279,17 +345,6 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onNavigate }) 
                   }`}
                 >
                   SINPE Móvil
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod('zeffy')}
-                  className={`p-3 rounded-xl border text-xs font-bold text-center transition-all ${
-                    paymentMethod === 'zeffy'
-                      ? 'bg-brand-green border-brand-lime text-brand-navy shadow-glow-green'
-                      : 'bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:bg-white/10'
-                  }`}
-                >
-                  Zeffy (0% com)
                 </button>
                 <button
                   type="button"
@@ -313,7 +368,7 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onNavigate }) 
                     {t.sinpeNumberTitle}
                   </span>
                   <span className="font-mono font-bold text-brand-forest dark:text-brand-lime text-sm bg-white dark:bg-brand-navy px-2 py-0.5 rounded border border-slate-200 dark:border-brand-border">
-                    8888-9999
+                    7131-7013
                   </span>
                 </div>
                 <p className="text-slate-600 dark:text-slate-300">
@@ -335,28 +390,6 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onNavigate }) 
               </div>
             )}
 
-            {paymentMethod === 'zeffy' && (
-              <div className="bg-[#F8F8F2] dark:bg-brand-navyDark p-4 rounded-xl border border-slate-200 dark:border-white/10 text-xs space-y-2">
-                <p className="text-slate-700 dark:text-slate-200 font-semibold">
-                  {t.zeffyTitle}
-                </p>
-                <p className="text-slate-600 dark:text-slate-300">
-                  {t.zeffySubtitle}
-                </p>
-                <div className="pt-1">
-                  <a
-                    href="https://www.zeffy.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center space-x-1.5 text-brand-blue hover:text-brand-forest dark:hover:text-brand-lime font-bold"
-                  >
-                    <span>{isEs ? 'Ir al portal seguro de Zeffy' : 'Go to secure Zeffy portal'}</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-                </div>
-              </div>
-            )}
-
             {paymentMethod === 'paypal' && (
               <div className="bg-[#F8F8F2] dark:bg-brand-navyDark p-4 rounded-xl border border-slate-200 dark:border-white/10 text-xs space-y-2">
                 <div className="flex items-center space-x-2 text-slate-700 dark:text-slate-200 font-semibold">
@@ -368,12 +401,12 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onNavigate }) 
                 </p>
                 <div className="pt-1">
                   <a
-                    href="https://www.paypal.com"
+                    href="https://www.paypal.com/US/fundraiser/charity/1902778"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center space-x-1.5 text-brand-blue hover:text-brand-forest dark:hover:text-brand-lime font-bold"
                   >
-                    <span>{isEs ? 'Ir al portal seguro de PayPal' : 'Go to secure PayPal portal'}</span>
+                    <span>{isEs ? 'Ir a donar en PayPal (Far Corners Charity)' : 'Donate via PayPal (Far Corners Charity)'}</span>
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 </div>
@@ -665,7 +698,7 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onNavigate }) 
         </div>
       )}
 
-      {/* Muro de Donaciones Realizadas (Ordenadas por Monto) */}
+      {/* Muro de Donaciones por Monto (Pestañas Desplegables / Acordeón) */}
       <div className="max-w-4xl mx-auto space-y-6 pt-6 animate-fadeIn border-t border-slate-200 dark:border-white/10">
         <div className="text-center space-y-2">
           <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-brand-green/20 text-brand-forest dark:text-brand-lime text-[11px] font-bold border border-brand-green/40 uppercase tracking-wider">
@@ -673,12 +706,12 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onNavigate }) 
             <span>{isEs ? 'Muro de Donantes y Gratitud' : 'Donor Wall of Gratitude'}</span>
           </div>
           <h3 className="font-serif text-2xl sm:text-3xl font-bold text-brand-navy dark:text-white">
-            {isEs ? 'Donaciones Realizadas' : 'Donations Wall'}
+            {isEs ? 'Donaciones por Tipo de Monto' : 'Donations by Tier'}
           </h3>
           <p className="text-xs text-slate-600 dark:text-slate-300 max-w-lg mx-auto">
             {isEs
-              ? 'Agradecemos a quienes apoyan nuestras producciones y talleres teatrales. Mostramos aquí las donaciones ordenadas por monto:'
-              : 'Grateful recognition of all donations supporting our theatrical programs, ordered by amount:'}
+              ? 'Agradecemos a todos nuestros benefactores. Mostramos únicamente las donaciones validadas y confirmadas, organizadas por monto:'
+              : 'Grateful recognition of all verified donors supporting our projects, organized by tier:'}
           </p>
         </div>
 
@@ -688,48 +721,176 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onNavigate }) 
               <RefreshCw className="w-4 h-4 animate-spin text-brand-green" />
               <span>{isEs ? 'Cargando donaciones realizadas...' : 'Loading donations...'}</span>
             </div>
-          ) : donacionesPublicas.length === 0 ? (
+          ) : donationGroups.length === 0 ? (
             <div className="text-center py-8 text-xs text-slate-500">
               {isEs ? 'Aún no hay donaciones registradas para mostrar.' : 'No donations recorded yet.'}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {donacionesPublicas.map((don, idx) => (
-                <div
-                  key={don.id || idx}
-                  className="flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-brand-navy border border-slate-200 dark:border-white/10 shadow-sm hover:border-brand-green/50 transition-colors"
-                >
-                  <div className="flex items-center space-x-3 min-w-0">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${
-                      idx === 0
-                        ? 'bg-amber-400 text-brand-navy shadow-md ring-2 ring-amber-300'
-                        : idx === 1
-                        ? 'bg-slate-300 text-brand-navy shadow-sm'
-                        : idx === 2
-                        ? 'bg-amber-700/40 text-amber-900 dark:text-amber-200'
-                        : 'bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300'
-                    }`}>
-                      #{idx + 1}
-                    </div>
-                    <div className="truncate">
-                      <span className="font-bold text-xs sm:text-sm text-brand-navy dark:text-white block truncate">
-                        {don.donor_name}
-                      </span>
-                      <span className="text-[10px] text-slate-400">
-                        {isEs ? 'Donación al proyecto teatral' : 'Donation to theatre project'}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="text-right shrink-0 pl-3">
-                    <span className="font-mono text-sm sm:text-base font-extrabold text-brand-forest dark:text-brand-lime">
-                      {don.currency === 'USD'
-                        ? `$${Number(don.amount).toLocaleString()} USD`
-                        : `₡${Number(don.amount).toLocaleString()} CRC`}
-                    </span>
-                  </div>
+            <div className="space-y-4">
+              {/* Acciones de expandir / colapsar todos */}
+              <div className="flex items-center justify-between pb-2 border-b border-slate-200/60 dark:border-white/5 text-xs">
+                <span className="text-slate-500 font-medium">
+                  {donationGroups.length}{' '}
+                  {donationGroups.length === 1
+                    ? isEs
+                      ? 'monto registrado'
+                      : 'tier registered'
+                    : isEs
+                    ? 'montos registrados'
+                    : 'tiers registered'}{' '}
+                  ({donacionesPublicas.length} {isEs ? 'donaciones en total' : 'total donations'})
+                </span>
+                <div className="flex items-center space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const all: Record<string, boolean> = {};
+                      donationGroups.forEach((g) => {
+                        all[g.key] = true;
+                      });
+                      setExpandedGroups(all);
+                    }}
+                    className="text-brand-blue hover:underline font-semibold"
+                  >
+                    {isEs ? 'Desplegar todos' : 'Expand all'}
+                  </button>
+                  <span className="text-slate-400">|</span>
+                  <button
+                    type="button"
+                    onClick={() => setExpandedGroups({})}
+                    className="text-slate-500 hover:underline font-semibold"
+                  >
+                    {isEs ? 'Colapsar todos' : 'Collapse all'}
+                  </button>
                 </div>
-              ))}
+              </div>
+
+              {/* Lista de pestañas desplegables por monto */}
+              <div className="space-y-3">
+                {donationGroups.map((group, groupIdx) => {
+                  const isOpen = !!expandedGroups[group.key];
+                  const formattedAmount =
+                    group.currency === 'USD'
+                      ? `$${group.amount.toLocaleString()} USD`
+                      : `₡${group.amount.toLocaleString()} CRC`;
+
+                  return (
+                    <div
+                      key={group.key}
+                      className="border border-slate-200 dark:border-white/10 rounded-2xl bg-white dark:bg-brand-navy overflow-hidden transition-all shadow-sm hover:border-brand-green/50"
+                    >
+                      {/* Pestaña / Botón del Acordeón */}
+                      <button
+                        type="button"
+                        onClick={() => toggleGroup(group.key)}
+                        className="w-full flex items-center justify-between p-4 sm:p-5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-white/5 focus:outline-none"
+                        aria-expanded={isOpen}
+                      >
+                        <div className="flex items-center space-x-3 sm:space-x-4 min-w-0">
+                          <div
+                            className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 font-extrabold text-sm ${
+                              groupIdx === 0
+                                ? 'bg-amber-400 text-brand-navy shadow-md ring-2 ring-amber-300'
+                                : groupIdx === 1
+                                ? 'bg-slate-300 text-brand-navy shadow-sm'
+                                : groupIdx === 2
+                                ? 'bg-amber-700/30 text-amber-900 dark:text-amber-200'
+                                : 'bg-brand-green/20 text-brand-forest dark:text-brand-lime'
+                            }`}
+                          >
+                            {group.currency === 'USD' ? '$' : '₡'}
+                          </div>
+
+                          <div className="min-w-0">
+                            <div className="flex items-center space-x-2">
+                              <span className="font-mono text-base sm:text-lg font-black text-brand-navy dark:text-white">
+                                {formattedAmount}
+                              </span>
+                              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-brand-green/15 text-brand-forest dark:text-brand-lime border border-brand-green/30">
+                                {group.donations.length}{' '}
+                                {group.donations.length === 1
+                                  ? isEs
+                                    ? 'donante'
+                                    : 'donor'
+                                  : isEs
+                                  ? 'donantes'
+                                  : 'donors'}
+                              </span>
+                            </div>
+                            <span className="text-[11px] text-slate-500 dark:text-slate-400 block truncate">
+                              {isEs ? 'Monto acumulado:' : 'Total collected:'}{' '}
+                              <strong className="text-brand-forest dark:text-brand-lime">
+                                {group.currency === 'USD'
+                                  ? `$${group.totalSum.toLocaleString()} USD`
+                                  : `₡${group.totalSum.toLocaleString()} CRC`}
+                              </strong>
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-2 pl-3">
+                          <span className="text-xs font-semibold text-brand-blue hidden sm:inline">
+                            {isOpen ? (isEs ? 'Ocultar' : 'Hide') : (isEs ? 'Ver donantes' : 'Show donors')}
+                          </span>
+                          <div
+                            className={`w-7 h-7 rounded-full flex items-center justify-center bg-slate-100 dark:bg-white/10 transition-transform duration-200 ${
+                              isOpen ? 'rotate-180 bg-brand-green text-brand-navy' : 'text-slate-500'
+                            }`}
+                          >
+                            <ChevronDown className="w-4 h-4" />
+                          </div>
+                        </div>
+                      </button>
+
+                      {/* Contenido desplegable con la lista de personas */}
+                      {isOpen && (
+                        <div className="p-4 sm:p-5 pt-0 border-t border-slate-100 dark:border-white/5 animate-fadeIn">
+                          <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                            {group.donations.map((don, donIdx) => {
+                              const initial = (don.donor_name || 'D').charAt(0).toUpperCase();
+                              const formattedDate = don.created_at
+                                ? new Date(don.created_at).toLocaleDateString(isEs ? 'es-CR' : 'en-US', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                    year: 'numeric',
+                                  })
+                                : null;
+
+                              return (
+                                <div
+                                  key={don.id || donIdx}
+                                  className="flex items-center space-x-3 p-3 rounded-xl bg-slate-50 dark:bg-brand-navyDark border border-slate-200/80 dark:border-white/5 hover:border-brand-green/40 transition-colors"
+                                >
+                                  <div className="w-8 h-8 rounded-full bg-brand-navy dark:bg-white/10 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
+                                    {initial}
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <span
+                                      className="font-bold text-xs text-brand-navy dark:text-white block truncate"
+                                      title={don.donor_name}
+                                    >
+                                      {don.donor_name}
+                                    </span>
+                                    <div className="flex items-center space-x-1.5 text-[10px] text-slate-500 dark:text-slate-400">
+                                      <span>{isEs ? 'Aporte benéfico' : 'Charitable gift'}</span>
+                                      {formattedDate && (
+                                        <>
+                                          <span>•</span>
+                                          <span>{formattedDate}</span>
+                                        </>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>

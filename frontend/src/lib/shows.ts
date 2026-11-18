@@ -33,6 +33,14 @@ export function mapearEventoAShow(e: any): Show {
       biography: c.biography,
     })),
     gallery: (e.media || []).map((m: any) => (typeof m === 'string' ? m : m.url)).filter(Boolean),
+    zeffyUrl: e.zeffy_url || undefined,
+    paypalUrl: e.paypal_url || undefined,
+    sinpePhone: e.sinpe_phone || '7131-7013',
+    paymentMethods: e.payment_methods
+      ? (typeof e.payment_methods === 'string'
+          ? e.payment_methods.split(',').map((m: string) => m.trim().toLowerCase())
+          : e.payment_methods)
+      : ['sinpe', 'zeffy', 'paypal'],
     performances: e.performances || [],
   };
 }

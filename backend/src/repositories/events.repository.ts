@@ -38,6 +38,10 @@ export interface EventInput {
   display_order?: number;
   is_published?: boolean;
   is_featured?: boolean;
+  zeffy_url?: string | null;
+  paypal_url?: string | null;
+  sinpe_phone?: string | null;
+  payment_methods?: string | string[] | null;
   performances?: PerformanceInput[];
   cast?: CastMemberInput[];
   media_ids?: string[];
@@ -59,6 +63,10 @@ export interface EventRow {
   display_order: number;
   is_published: boolean;
   is_featured: boolean;
+  zeffy_url?: string | null;
+  paypal_url?: string | null;
+  sinpe_phone?: string | null;
+  payment_methods?: string | string[] | null;
   created_at: string;
   updated_at: string;
   performances?: any[];
@@ -67,8 +75,25 @@ export interface EventRow {
   inventory?: any[];
 }
 
+let paymentColumnsEnsured = false;
+async function ensurePaymentColumns() {
+  if (paymentColumnsEnsured) return;
+  try {
+    await pool.query(`
+      ALTER TABLE events ADD COLUMN IF NOT EXISTS zeffy_url TEXT;
+      ALTER TABLE events ADD COLUMN IF NOT EXISTS paypal_url TEXT;
+      ALTER TABLE events ADD COLUMN IF NOT EXISTS sinpe_phone VARCHAR(50) DEFAULT '7131-7013';
+      ALTER TABLE events ADD COLUMN IF NOT EXISTS payment_methods VARCHAR(255) DEFAULT 'sinpe,zeffy,paypal';
+    `);
+    paymentColumnsEnsured = true;
+  } catch (err) {
+    // Si falla o la base no está lista, continuará sin bloquear
+  }
+}
+
 // Obtener lista de eventos (obras) con sus funciones y elenco
 export async function obtenerEventos(soloPublicados = true): Promise<EventRow[]> {
+  await ensurePaymentColumns();
   const whereClause = soloPublicados ? "WHERE e.is_published = TRUE" : "";
   const query = `
     SELECT
@@ -87,6 +112,10 @@ export async function obtenerEventos(soloPublicados = true): Promise<EventRow[]>
       e.display_order,
       e.is_published,
       e.is_featured,
+      e.zeffy_url,
+      e.paypal_url,
+      e.sinpe_phone,
+      e.payment_methods,
       e.created_at,
       e.updated_at,
       COALESCE(
@@ -196,6 +225,7 @@ export async function obtenerEventoDestacado(): Promise<EventRow | null> {
 
 // Obtener un evento por ID
 export async function obtenerEventoPorId(id: string): Promise<EventRow | null> {
+  await ensurePaymentColumns();
   const query = `
     SELECT
       e.id,
@@ -213,6 +243,10 @@ export async function obtenerEventoPorId(id: string): Promise<EventRow | null> {
       e.display_order,
       e.is_published,
       e.is_featured,
+      e.zeffy_url,
+      e.paypal_url,
+      e.sinpe_phone,
+      e.payment_methods,
       e.created_at,
       e.updated_at,
       COALESCE(
@@ -314,6 +348,7 @@ export async function obtenerEventoPorId(id: string): Promise<EventRow | null> {
 
 // Crear un nuevo evento completo con funciones, elenco y precios de manera transaccional
 export async function crearEvento(data: EventInput): Promise<EventRow> {
+  await ensurePaymentColumns();
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
@@ -359,9 +394,13 @@ export async function crearEvento(data: EventInput): Promise<EventRow> {
         dates_label,
         display_order,
         is_published,
-        is_featured
+        is_featured,
+        zeffy_url,
+        paypal_url,
+        sinpe_phone,
+        payment_methods
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
       RETURNING *;
     `;
 
@@ -380,6 +419,10 @@ export async function crearEvento(data: EventInput): Promise<EventRow> {
       displayOrder,
       data.is_published !== undefined ? data.is_published : true,
       !!data.is_featured,
+      data.zeffy_url || null,
+      data.paypal_url || null,
+      data.sinpe_phone || '7131-7013',
+      Array.isArray(data.payment_methods) ? data.payment_methods.join(',') : (data.payment_methods || 'sinpe,zeffy,paypal'),
     ];
 
     const eventResult = await client.query(eventInsertQuery, eventValues);
@@ -561,6 +604,7 @@ export async function crearEvento(data: EventInput): Promise<EventRow> {
 
 // Actualizar evento existente
 export async function actualizarEvento(id: string, data: Partial<EventInput>): Promise<EventRow | null> {
+  await ensurePaymentColumns();
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
@@ -628,6 +672,22 @@ export async function actualizarEvento(id: string, data: Partial<EventInput>): P
     if (data.is_featured !== undefined) {
       campos.push(`is_featured = $${idx++}`);
       valores.push(data.is_featured);
+    }
+    if (data.zeffy_url !== undefined) {
+      campos.push(`zeffy_url = $${idx++}`);
+      valores.push(data.zeffy_url || null);
+    }
+    if (data.paypal_url !== undefined) {
+      campos.push(`paypal_url = $${idx++}`);
+      valores.push(data.paypal_url || null);
+    }
+    if (data.sinpe_phone !== undefined) {
+      campos.push(`sinpe_phone = $${idx++}`);
+      valores.push(data.sinpe_phone || '7131-7013');
+    }
+    if (data.payment_methods !== undefined) {
+      campos.push(`payment_methods = $${idx++}`);
+      valores.push(Array.isArray(data.payment_methods) ? data.payment_methods.join(',') : (data.payment_methods || 'sinpe,zeffy,paypal'));
     }
 
     if (campos.length > 0) {

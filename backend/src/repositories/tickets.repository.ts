@@ -1,6 +1,6 @@
 import { pool } from "../db.js";
 import { generarPdfBoletos, TicketPdfItem } from "../services/ticket-pdf.service.js";
-import { enviarBoletosPorCorreo } from "../services/mail.service.js";
+import { enviarBoletosPorCorreo, enviarConfirmacionCompraPendiente } from "../services/mail.service.js";
 
 export interface TicketInventoryInput {
   event_id: string;
@@ -348,15 +348,30 @@ export async function procesarCompraBoletos(data: PurchaseInput) {
       console.error("Error al generar PDF de boletos:", pdfErr);
     }
 
-    // Si la compra está pagada inmediatamente y se especificó correo, despachar por email
-    if (initialPurchaseStatus === 'paid' && data.buyer_email && pdfBuffer) {
-      void enviarBoletosPorCorreo({
-        destinatario: data.buyer_email,
-        nombre: data.buyer_name || 'Espectador',
-        tituloObra: showTitle,
-        cantidadBoletos: data.quantity,
-        pdfBuffer,
-      }).catch((e) => console.error("Error en envío asíncrono de correo:", e));
+    // Despachar correo al comprador
+    if (data.buyer_email) {
+      if (initialPurchaseStatus === 'paid' && pdfBuffer) {
+        // Si el pago ya fue validado/aprobado de inmediato
+        void enviarBoletosPorCorreo({
+          destinatario: data.buyer_email,
+          nombre: data.buyer_name || 'Espectador',
+          tituloObra: showTitle,
+          cantidadBoletos: data.quantity,
+          pdfBuffer,
+        }).catch((e) => console.error("Error en envío asíncrono de correo con boletos:", e));
+      } else {
+        // Notificación inmediata: solicitud de compra recibida en proceso de validación
+        void enviarConfirmacionCompraPendiente({
+          destinatario: data.buyer_email,
+          nombre: data.buyer_name || 'Espectador',
+          tituloObra: showTitle,
+          cantidadBoletos: data.quantity,
+          montoTotal: totalAmount,
+          moneda: data.currency || inventory.currency || "CRC",
+          metodoPago: data.payment_method || 'sinpe',
+          referencia: data.sinpe_reference,
+        }).catch((e) => console.error("Error en envío asíncrono de confirmación pendiente:", e));
+      }
     }
 
     return {
@@ -468,9 +483,121 @@ export async function validarCompraSinpe(purchaseId: string) {
 }
 
 /**
+ * Reenvía los boletos o confirmación de compra por correo al comprador.
+ */
+export async function reenviarCorreoBoletos(purchaseId: string, emailOpcional?: string) {
+  const purchaseRes = await pool.query(
+    `SELECT * FROM purchases WHERE id = $1`,
+    [purchaseId]
+  );
+
+  if (purchaseRes.rows.length === 0) {
+    throw new Error("PURCHASE_NOT_FOUND");
+  }
+
+  const purchase = purchaseRes.rows[0];
+  const destinatario = emailOpcional?.trim() || purchase.buyer_email;
+
+  if (!destinatario) {
+    throw new Error("NO_EMAIL_PROVIDED");
+  }
+
+  if (emailOpcional && emailOpcional.trim() !== purchase.buyer_email) {
+    await pool.query(
+      `UPDATE purchases SET buyer_email = $1 WHERE id = $2`,
+      [destinatario, purchaseId]
+    );
+  }
+
+  // Obtener tickets
+  const ticketsRes = await pool.query(
+    `
+    SELECT
+      t.id as ticket_id,
+      t.qr_code,
+      t.status,
+      ti.price,
+      ti.currency,
+      e.title as show_title,
+      e.season_year,
+      COALESCE(ep.venue, e.venue) as venue,
+      COALESCE(ep.starts_at, e.event_date) as starts_at
+    FROM tickets t
+    JOIN ticket_inventory ti ON t.ticket_inventory_id = ti.id
+    JOIN events e ON ti.event_id = e.id
+    LEFT JOIN event_performances ep ON ti.performance_id = ep.id
+    WHERE t.purchase_id = $1
+    ORDER BY t.created_at ASC
+    `,
+    [purchaseId]
+  );
+
+  const tickets = ticketsRes.rows;
+  const showTitle = tickets[0]?.show_title || "Obra Teatral";
+
+  if (purchase.status === 'paid' && tickets.length > 0) {
+    const pdfItems: TicketPdfItem[] = tickets.map((t, idx) => ({
+      ticketNumber: idx + 1,
+      totalTickets: tickets.length,
+      qrCode: t.qr_code,
+      showTitle: t.show_title,
+      seasonYear: t.season_year,
+      venue: t.venue,
+      startsAt: new Date(t.starts_at).toISOString(),
+      patronName: purchase.buyer_name || 'Asistente Far Corners',
+      patronEmail: destinatario,
+      price: t.price,
+      currency: t.currency,
+      purchaseId: purchase.id,
+      status: 'paid',
+    }));
+
+    const pdfBuffer = generarPdfBoletos(pdfItems);
+    const qrCodesList = tickets.map((t: any) => String(t.qr_code));
+
+    const emailRes = await enviarBoletosPorCorreo({
+      destinatario,
+      nombre: purchase.buyer_name || 'Espectador',
+      tituloObra: showTitle,
+      cantidadBoletos: tickets.length,
+      pdfBuffer,
+      qrCodes: qrCodesList,
+    });
+
+    return {
+      success: true,
+      destinatario,
+      status: 'paid',
+      emailResult: emailRes,
+    };
+  } else {
+    // Si la compra sigue en estado pendiente
+    const emailRes = await enviarConfirmacionCompraPendiente({
+      destinatario,
+      nombre: purchase.buyer_name || 'Espectador',
+      tituloObra: showTitle,
+      cantidadBoletos: tickets.length || 1,
+      montoTotal: Number(purchase.total_amount),
+      moneda: purchase.currency || 'CRC',
+      metodoPago: purchase.payment_intent_id?.startsWith('SINPE') ? 'SINPE Móvil' : 'Pasarela Digital',
+      referencia: purchase.payment_intent_id,
+    });
+
+    return {
+      success: true,
+      destinatario,
+      status: 'pending',
+      emailResult: emailRes,
+    };
+  }
+}
+
+/**
  * Validador de código QR en puerta (In-App Scanner).
  */
 export async function validarBoletoQr(qrCode: string, performanceId?: string) {
+  const cleanCode = (qrCode || "").replace(/[\r\n\t]/g, "").trim();
+
   const result = await pool.query(
     `
     SELECT
@@ -494,9 +621,9 @@ export async function validarBoletoQr(qrCode: string, performanceId?: string) {
     JOIN purchases p ON t.purchase_id = p.id
     JOIN events e ON ti.event_id = e.id
     LEFT JOIN event_performances ep ON ti.performance_id = ep.id
-    WHERE t.qr_code = $1
+    WHERE LOWER(t.qr_code) = LOWER($1) OR t.id::text = $1
     `,
-    [qrCode.trim()]
+    [cleanCode]
   );
 
   if (result.rows.length === 0) {

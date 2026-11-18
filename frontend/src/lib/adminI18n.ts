@@ -8,7 +8,7 @@ const es = {
     refreshBtn: 'Actualizar',
   },
   tabs: {
-    content: 'Contenido',
+    content: 'Junta Directiva y Equipo',
     media: 'Galería',
     retirement: 'Retirar contenido',
     communities: 'Comunidades',
@@ -192,8 +192,8 @@ const es = {
     },
   },
   institutional: {
-    title: 'Contenido institucional',
-    subtitle: 'Administra la historia, el impacto, la visión de futuro, el pie de página, la junta directiva y el equipo de producción que se muestran en el sitio.',
+    title: 'Junta Directiva y Equipo de Producción',
+    subtitle: 'Administra las personas que integran la Junta Directiva y el Equipo de Producción de Far Corners.',
     sections: {
       history: 'Historia',
       impact: 'Impacto',
@@ -771,7 +771,7 @@ const en: AdminTexts = {
     refreshBtn: 'Refresh',
   },
   tabs: {
-    content: 'Content',
+    content: 'Board & Production Team',
     media: 'Gallery',
     retirement: 'Withdraw content',
     communities: 'Communities',
@@ -953,8 +953,8 @@ const en: AdminTexts = {
     },
   },
   institutional: {
-    title: 'Institutional content',
-    subtitle: 'Manage the history, impact, vision for the future, footer, board of directors and production team shown on the site.',
+    title: 'Board of Directors & Production Team',
+    subtitle: 'Manage the people on the Board of Directors and the Production Team of Far Corners.',
     sections: {
       history: 'History',
       impact: 'Impact',

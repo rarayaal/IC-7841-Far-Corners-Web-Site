@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Ticket, Calendar, CheckCircle2, AlertTriangle, Loader2,
   DollarSign, Package, TrendingUp, QrCode, Search, Filter,
-  Check, Download, Camera, RefreshCw, UserCheck, ShieldAlert
+  Check, Download, Camera, RefreshCw, UserCheck, ShieldAlert, Mail
 } from 'lucide-react';
 import { apiAdminJson } from '../services/apiAdmin';
 
@@ -155,6 +155,25 @@ export const AdminTicketingView: React.FC = () => {
   }, [activeTab, fetchTickets]);
 
   // Validar Pago SINPE
+  const [resendingEmailId, setResendingEmailId] = useState<string | null>(null);
+
+  const handleResendEmail = async (purchaseId: string, email?: string) => {
+    setResendingEmailId(purchaseId);
+    setActionSuccessMsg('');
+    try {
+      const res: any = await apiAdminJson(`/api/v1/tickets/purchases/${purchaseId}/resend-email`, {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      });
+      setActionSuccessMsg(res.message || 'Boletos reenviados por correo exitosamente.');
+      setTimeout(() => setActionSuccessMsg(''), 5000);
+    } catch (err: any) {
+      alert(err.message || 'Error al reenviar boletos por correo.');
+    } finally {
+      setResendingEmailId(null);
+    }
+  };
+
   const handleValidateSinpe = async (purchaseId: string) => {
     setValidatingSinpeId(purchaseId);
     setActionSuccessMsg('');
@@ -254,7 +273,11 @@ export const AdminTicketingView: React.FC = () => {
               }
             }
           } catch {}
-        }, 400);
+        }, 300);
+      } else {
+        setCameraError(
+          'Aviso: Tu navegador no soporta detección automática BarcodeDetector. Puedes usar un lector/pistola QR USB o pegar el código directamente en el campo inferior para validación instantánea.'
+        );
       }
     } catch (err: any) {
       console.error('Error al iniciar cámara:', err);
@@ -775,6 +798,19 @@ export const AdminTicketingView: React.FC = () => {
                                 <span>Validar SINPE</span>
                               </button>
                             )}
+
+                            <button
+                              onClick={() => handleResendEmail(tItem.purchase_id, tItem.buyer_email || undefined)}
+                              disabled={resendingEmailId === tItem.purchase_id || !tItem.buyer_email}
+                              className="p-1.5 text-slate-400 hover:text-brand-green rounded hover:bg-slate-100 dark:hover:bg-white/10 transition-colors disabled:opacity-30"
+                              title={tItem.buyer_email ? `Reenviar boletos a ${tItem.buyer_email}` : 'Sin correo registrado'}
+                            >
+                              {resendingEmailId === tItem.purchase_id ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin text-brand-green" />
+                              ) : (
+                                <Mail className="w-3.5 h-3.5" />
+                              )}
+                            </button>
 
                             <a
                               href={`/api/v1/tickets/purchases/${tItem.purchase_id}/pdf`}

@@ -9,6 +9,7 @@ import {
   handleValidarCompraSinpe,
   handleValidarQr,
   handleDescargarPdfCompra,
+  handleReenviarCorreoBoletos,
 } from "../controllers/tickets.controller.js";
 import { authenticateToken } from "../middlewares/auth.middleware.js";
 import { requireRoles } from "../middlewares/rbac.middleware.js";
@@ -77,6 +78,14 @@ router.post(
 router.get(
   "/purchases/:purchaseId/pdf",
   handleDescargarPdfCompra
+);
+
+// Reenviar boletos por correo (Admin)
+router.post(
+  "/purchases/:purchaseId/resend-email",
+  authenticateToken,
+  requireRoles(["admin", "manager"]),
+  handleReenviarCorreoBoletos
 );
 
 export default router;

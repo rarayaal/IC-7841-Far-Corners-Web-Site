@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Language, Show, AuditLogItem } from '../types';
+import { apiAdminJson } from '../services/apiAdmin';
 import { showsData, auditLogsMock } from '../data/mockData';
 import {
   Shield, Ticket, Users, Heart, Plus, Edit2, Trash2,
   LayoutDashboard, FolderKanban, GraduationCap, HandHeart, Building2,
   ClipboardList, FileText, PenLine, Image, Archive, Phone, MessageSquare,
-  Mail, ScrollText, Tent, Sparkles,
+  Mail, ScrollText, Tent, Sparkles, RefreshCw, Loader2, Coins
 } from 'lucide-react';
 import { AdminMessagesView } from './AdminMessagesView';
 import { AdminContactChannelsView } from './AdminContactChannelsView';
@@ -33,13 +34,78 @@ type AdminTab =
   | 'retirement' | 'applicants' | 'audit' | 'messages' | 'contacts'
   | 'communities' | 'students' | 'volunteers' | 'camps' | 'users' | 'newsletter' | 'forms';
 
+interface DashboardMetrics {
+  donations: {
+    totalCRC: number;
+    totalUSD: number;
+    completedCount: number;
+    pendingCount: number;
+    totalCount: number;
+  };
+  tickets: {
+    soldCount: number;
+    pendingCount: number;
+    activeCount: number;
+    usedCount: number;
+    totalCapacity: number;
+    occupancyPercentage: number;
+    totalRevenueCRC: number;
+    totalRevenueUSD: number;
+    paidPurchases: number;
+    pendingPurchases: number;
+  };
+  applicants: {
+    total: number;
+  };
+  users: {
+    total: number;
+  };
+  auditLogs: {
+    total: number;
+  };
+  salesByShow: {
+    id: string;
+    title: string;
+    sold: number;
+    pendingSold: number;
+    capacity: number;
+    percentage: number;
+  }[];
+}
+
 interface AdminViewProps {
   language: Language;
 }
 
 export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
   const txt = adminTexts[language];
+  const isEs = language === 'es';
   const [activeTab, setActiveTab] = useState<AdminTab>('kpi');
+  
+  // Métricas reales del Dashboard desde la base de datos
+  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [loadingMetrics, setLoadingMetrics] = useState(false);
+  const [metricsError, setMetricsError] = useState('');
+
+  const loadMetrics = useCallback(async () => {
+    setLoadingMetrics(true);
+    setMetricsError('');
+    try {
+      const data = await apiAdminJson<DashboardMetrics>('/api/v1/dashboard/metrics');
+      setMetrics(data);
+    } catch (err: any) {
+      console.warn('Error al cargar métricas reales del dashboard:', err);
+      setMetricsError(err.message || 'Error al conectar con la base de datos.');
+    } finally {
+      setLoadingMetrics(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'kpi') {
+      void loadMetrics();
+    }
+  }, [activeTab, loadMetrics]);
   
   // Dynamic state for CRUD demo
   const [shows, setShows] = useState<Show[]>(showsData);
@@ -240,82 +306,209 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
       {activeTab === 'forms' && <AdminFormsView language={language} />}
       {activeTab === 'kpi' && (
         <div className="space-y-8 animate-fadeIn">
-          {/* Top KPI Cards */}
+          {/* Header del Panel General con botón de refresco */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white dark:bg-brand-navy p-4 rounded-2xl border border-slate-200 dark:border-brand-border">
+            <div>
+              <h2 className="font-serif text-xl font-bold text-brand-navy dark:text-white flex items-center gap-2">
+                <LayoutDashboard className="w-5 h-5 text-brand-green" />
+                <span>{isEs ? 'Métricas Clave del Sistema (En Tiempo Real)' : 'Key System Metrics (Real-Time)'}</span>
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                {isEs ? 'Información consolidada directamente desde la base de datos de Far Corners.' : 'Consolidated information queried directly from Far Corners database.'}
+              </p>
+            </div>
+            <button
+              onClick={loadMetrics}
+              disabled={loadingMetrics}
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-brand-navy dark:text-white text-xs font-semibold transition-all border border-slate-200 dark:border-white/10"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loadingMetrics ? 'animate-spin' : ''}`} />
+              <span>{isEs ? 'Actualizar Datos' : 'Refresh Data'}</span>
+            </button>
+          </div>
+
+          {metricsError && (
+            <div className="p-4 bg-red-500/20 border border-red-500/40 rounded-xl text-xs text-red-600 dark:text-red-300">
+              {metricsError}
+            </div>
+          )}
+
+          {/* Top KPI Cards con datos reales */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white dark:bg-brand-navy p-5 rounded-2xl border border-slate-200 dark:border-brand-border space-y-2">
+            {/* Donaciones */}
+            <div className="bg-white dark:bg-brand-navy p-5 rounded-2xl border border-slate-200 dark:border-brand-border space-y-2 shadow-sm">
               <div className="flex justify-between items-center text-xs text-slate-600 dark:text-slate-300">
-                <span>{txt.kpi.donationsTitle}</span>
+                <span className="font-semibold">{txt.kpi.donationsTitle}</span>
                 <Heart className="w-4 h-4 text-brand-green fill-current" />
               </div>
-              <span className="font-mono text-3xl font-extrabold text-brand-forest dark:text-brand-lime block">$4,250 USD</span>
-              <span className="text-[11px] text-brand-green block">{txt.kpi.donationsGrowth}</span>
+              {loadingMetrics && !metrics ? (
+                <div className="py-2 text-slate-400"><Loader2 className="w-5 h-5 animate-spin" /></div>
+              ) : metrics ? (
+                <div>
+                  {metrics.donations.totalUSD > 0 && metrics.donations.totalCRC > 0 ? (
+                    <div className="space-y-0.5">
+                      <span className="font-mono text-xl font-extrabold text-brand-forest dark:text-[#DCEB4F] block">
+                        ₡{metrics.donations.totalCRC.toLocaleString()} CRC
+                      </span>
+                      <span className="font-mono text-sm font-bold text-brand-forest dark:text-[#77C65E] block">
+                        ${metrics.donations.totalUSD.toLocaleString()} USD
+                      </span>
+                    </div>
+                  ) : metrics.donations.totalUSD > 0 ? (
+                    <span className="font-mono text-2xl font-extrabold text-brand-forest dark:text-brand-lime block">
+                      ${metrics.donations.totalUSD.toLocaleString()} USD
+                    </span>
+                  ) : (
+                    <span className="font-mono text-2xl font-extrabold text-brand-forest dark:text-brand-lime block">
+                      ₡{metrics.donations.totalCRC.toLocaleString()} CRC
+                    </span>
+                  )}
+                  <span className="text-[11px] text-brand-green block mt-1 font-medium">
+                    {metrics.donations.completedCount} {isEs ? 'validadas' : 'validated'}
+                    {metrics.donations.pendingCount > 0 ? ` (${metrics.donations.pendingCount} ${isEs ? 'pendientes' : 'pending'})` : ''}
+                  </span>
+                </div>
+              ) : (
+                <span className="font-mono text-2xl font-bold text-slate-400">—</span>
+              )}
             </div>
 
-            <div className="bg-white dark:bg-brand-navy p-5 rounded-2xl border border-slate-200 dark:border-brand-border space-y-2">
+            {/* Boletos */}
+            <div className="bg-white dark:bg-brand-navy p-5 rounded-2xl border border-slate-200 dark:border-brand-border space-y-2 shadow-sm">
               <div className="flex justify-between items-center text-xs text-slate-600 dark:text-slate-300">
-                <span>{txt.kpi.ticketsTitle}</span>
+                <span className="font-semibold">{txt.kpi.ticketsTitle}</span>
                 <Ticket className="w-4 h-4 text-brand-blue" />
               </div>
-              <span className="font-mono text-3xl font-extrabold text-brand-navy dark:text-white block">182</span>
-              <span className="text-[11px] text-slate-600 dark:text-slate-300 block">{txt.kpi.ticketsTotal}</span>
+              {loadingMetrics && !metrics ? (
+                <div className="py-2 text-slate-400"><Loader2 className="w-5 h-5 animate-spin" /></div>
+              ) : metrics ? (
+                <div>
+                  <div className="flex items-baseline space-x-2">
+                    <span className="font-mono text-3xl font-extrabold text-brand-navy dark:text-white block">
+                      {metrics.tickets.soldCount}
+                    </span>
+                    <span className="text-xs font-mono font-bold text-brand-forest dark:text-brand-lime">
+                      ({metrics.tickets.occupancyPercentage}% {isEs ? 'ocupación' : 'occupancy'})
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-600 dark:text-slate-300 block mt-1">
+                    {isEs
+                      ? `De ${metrics.tickets.totalCapacity} boletos totales • ${metrics.tickets.usedCount} en puerta`
+                      : `Out of ${metrics.tickets.totalCapacity} capacity • ${metrics.tickets.usedCount} checked in`}
+                  </span>
+                  {metrics.tickets.pendingCount > 0 && (
+                    <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold block mt-0.5">
+                      +{metrics.tickets.pendingCount} {isEs ? 'en revisión por validar' : 'pending validation'}
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <span className="font-mono text-2xl font-bold text-slate-400">—</span>
+              )}
             </div>
 
-            <div className="bg-white dark:bg-brand-navy p-5 rounded-2xl border border-slate-200 dark:border-brand-border space-y-2">
+            {/* Postulaciones */}
+            <div className="bg-white dark:bg-brand-navy p-5 rounded-2xl border border-slate-200 dark:border-brand-border space-y-2 shadow-sm">
               <div className="flex justify-between items-center text-xs text-slate-600 dark:text-slate-300">
-                <span>{txt.kpi.applicantsTitle}</span>
+                <span className="font-semibold">{txt.kpi.applicantsTitle}</span>
                 <Users className="w-4 h-4 text-brand-blue" />
               </div>
-              <span className="font-mono text-3xl font-extrabold text-brand-navy dark:text-white block">14</span>
-              <span className="text-[11px] text-slate-600 dark:text-slate-300 block">{txt.kpi.applicantsSub}</span>
+              {loadingMetrics && !metrics ? (
+                <div className="py-2 text-slate-400"><Loader2 className="w-5 h-5 animate-spin" /></div>
+              ) : metrics ? (
+                <div>
+                  <span className="font-mono text-3xl font-extrabold text-brand-navy dark:text-white block">
+                    {metrics.applicants.total}
+                  </span>
+                  <span className="text-[11px] text-slate-600 dark:text-slate-300 block mt-1">
+                    {isEs ? 'Postulaciones registradas' : 'Registered submissions'}
+                  </span>
+                </div>
+              ) : (
+                <span className="font-mono text-2xl font-bold text-slate-400">—</span>
+              )}
             </div>
 
-            <div className="bg-white dark:bg-brand-navy p-5 rounded-2xl border border-slate-200 dark:border-brand-border space-y-2">
+            {/* Operaciones / Seguridad */}
+            <div className="bg-white dark:bg-brand-navy p-5 rounded-2xl border border-slate-200 dark:border-brand-border space-y-2 shadow-sm">
               <div className="flex justify-between items-center text-xs text-slate-600 dark:text-slate-300">
-                <span>{txt.kpi.concurrencyTitle}</span>
+                <span className="font-semibold">{isEs ? 'Auditoría & Usuarios' : 'Audit & Users'}</span>
                 <Shield className="w-4 h-4 text-brand-green" />
               </div>
-              <span className="font-mono text-3xl font-extrabold text-brand-green block">28</span>
-              <span className="text-[11px] text-slate-600 dark:text-slate-300 block">{txt.kpi.concurrencySub}</span>
+              {loadingMetrics && !metrics ? (
+                <div className="py-2 text-slate-400"><Loader2 className="w-5 h-5 animate-spin" /></div>
+              ) : metrics ? (
+                <div>
+                  <span className="font-mono text-3xl font-extrabold text-brand-green block">
+                    {metrics.auditLogs.total}
+                  </span>
+                  <span className="text-[11px] text-slate-600 dark:text-slate-300 block mt-1">
+                    {metrics.users.total} {isEs ? 'usuarios registrados' : 'registered users'}
+                  </span>
+                </div>
+              ) : (
+                <span className="font-mono text-2xl font-bold text-slate-400">—</span>
+              )}
             </div>
           </div>
 
-          {/* Graphical Analytics Bar Chart */}
-          <div className="bg-white dark:bg-brand-navy p-6 rounded-3xl border border-slate-200 dark:border-brand-border space-y-4">
-            <div className="flex justify-between items-center">
+          {/* Gráfico de Barras con Datos Reales por Obra */}
+          <div className="bg-white dark:bg-brand-navy p-6 rounded-3xl border border-slate-200 dark:border-brand-border space-y-4 shadow-sm">
+            <div className="flex justify-between items-center border-b border-slate-200 dark:border-white/10 pb-3">
               <div>
                 <h3 className="font-serif text-lg font-bold text-brand-navy dark:text-white">{txt.kpi.salesChartTitle}</h3>
                 <p className="text-xs text-slate-600 dark:text-slate-300">{txt.kpi.salesChartSub}</p>
               </div>
-              <span className="text-xs text-brand-forest dark:text-brand-lime font-mono">{txt.kpi.updatedRealtime}</span>
+              <span className="text-xs text-brand-forest dark:text-brand-lime font-mono font-semibold">{txt.kpi.updatedRealtime}</span>
             </div>
 
-            {/* SVG Custom Bar Chart */}
-            <div className="pt-4 space-y-4">
-              {[
-                { name: 'The Addams Family (2026)', count: 95, max: 250, color: 'from-brand-green to-brand-forest' },
-                { name: 'MAMMA MIA! (2024)', count: 182, max: 250, color: 'from-brand-blue to-brand-navy' },
-                { name: 'Jesus Christ Superstar (2019)', count: 240, max: 250, color: 'from-brand-lime to-brand-green' },
-              ].map((bar, i) => {
-                const percentage = Math.round((bar.count / bar.max) * 100);
-                return (
-                  <div key={i} className="space-y-1 text-xs">
-                    <div className="flex justify-between text-slate-700 dark:text-slate-200 font-semibold">
-                      <span>{bar.name}</span>
-                      <span className="font-mono font-bold text-brand-forest dark:text-brand-lime">
-                        {txt.kpi.ticketsSold
-                          .replace('{count}', String(bar.count))
-                          .replace('{percentage}', String(percentage))}
-                      </span>
+            {/* Barras dinámicas de obras */}
+            <div className="pt-2 space-y-4">
+              {loadingMetrics && !metrics ? (
+                <div className="py-8 text-center text-xs text-slate-400 flex items-center justify-center space-x-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-brand-green" />
+                  <span>{isEs ? 'Consultando producciones e inventarios...' : 'Loading productions and ticket inventory...'}</span>
+                </div>
+              ) : !metrics?.salesByShow || metrics.salesByShow.length === 0 ? (
+                <div className="py-8 text-center text-xs text-slate-500">
+                  {isEs ? 'No hay producciones teatrales con funciones o boletos registrados actualmente.' : 'No theatre productions with inventory currently registered.'}
+                </div>
+              ) : (
+                metrics.salesByShow.map((bar, i) => {
+                  const colors = [
+                    'from-brand-green to-brand-forest',
+                    'from-brand-blue to-brand-navy',
+                    'from-brand-lime to-brand-green',
+                    'from-amber-400 to-amber-600',
+                    'from-purple-500 to-indigo-600',
+                  ];
+                  const barColor = colors[i % colors.length];
+
+                  return (
+                    <div key={bar.id} className="space-y-1.5 text-xs">
+                      <div className="flex justify-between items-start text-slate-700 dark:text-slate-200 font-semibold">
+                        <span className="font-bold text-brand-navy dark:text-white">{bar.title}</span>
+                        <div className="text-right shrink-0">
+                          <span className="font-mono font-bold text-brand-forest dark:text-brand-lime">
+                            {bar.sold} / {bar.capacity} {isEs ? 'boletos' : 'tickets'} ({bar.percentage}%)
+                          </span>
+                          {bar.pendingSold > 0 && (
+                            <span className="text-[10px] text-amber-500 font-normal block">
+                              +{bar.pendingSold} {isEs ? 'pendientes' : 'pending'}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="w-full bg-[#F8F8F2] dark:bg-brand-navyDark h-4 rounded-full overflow-hidden border border-slate-200 dark:border-white/10 p-0.5">
+                        <div
+                          className={`h-full rounded-full bg-gradient-to-r ${barColor} transition-all duration-1000`}
+                          style={{ width: `${Math.min(100, Math.max(bar.sold > 0 ? 3 : 0, bar.percentage))}%` }}
+                        ></div>
+                      </div>
                     </div>
-                    <div className="w-full bg-[#F8F8F2] dark:bg-brand-navyDark h-4 rounded-full overflow-hidden border border-slate-200 dark:border-white/10 p-0.5">
-                      <div
-                        className={`h-full rounded-full bg-gradient-to-r ${bar.color} transition-all duration-1000`}
-                        style={{ width: `${percentage}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           </div>
         </div>

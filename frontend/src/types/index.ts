@@ -32,6 +32,11 @@ export interface Show {
   cast: { name: string; role: string; photo?: string; biography?: string }[];
   /** Fotos de la obra para la galería (URLs). */
   gallery?: string[];
+  /** Configuración de pagos personalizada por obra / programa */
+  zeffyUrl?: string;
+  paypalUrl?: string;
+  sinpePhone?: string;
+  paymentMethods?: ('sinpe' | 'zeffy' | 'paypal')[];
   performances?: {
     id: string;
     starts_at: string;

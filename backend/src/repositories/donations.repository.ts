@@ -261,7 +261,7 @@ export async function eliminarDonacionUsuario(id: string, email: string) {
   return result.rows[0];
 }
 
-// Donaciones públicas para muro de transparencia (ordenadas por monto descendente)
+// Donaciones públicas para muro de transparencia (únicamente donaciones validadas / completadas)
 export async function obtenerDonacionesPublicas() {
   const query = `
     SELECT
@@ -269,9 +269,10 @@ export async function obtenerDonacionesPublicas() {
       COALESCE(NULLIF(TRIM(donor_name), ''), 'Donante Anónimo') AS donor_name,
       amount,
       currency,
+      status,
       created_at
     FROM donations
-    WHERE status != 'failed'
+    WHERE status = 'completed'
     ORDER BY amount DESC, created_at DESC
     LIMIT 100;
   `;
