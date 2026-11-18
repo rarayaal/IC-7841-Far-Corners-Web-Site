@@ -83,7 +83,11 @@ CREATE TABLE events (
         CHECK (status IN ('upcoming', 'current', 'past', 'cancelled')),
     dates_label VARCHAR(255),
     display_order INTEGER NOT NULL DEFAULT 0,
-    is_featured BOOLEAN NOT NULL DEFAULT FALSE
+    is_featured BOOLEAN NOT NULL DEFAULT FALSE,
+    zeffy_url TEXT,
+    paypal_url TEXT,
+    sinpe_phone VARCHAR(50) DEFAULT '7131-7013',
+    payment_methods VARCHAR(255) DEFAULT 'sinpe,zeffy,paypal'
 );
 
 -- Funciones de una misma obra: insertar starts_at con zona horaria explicita,
@@ -209,6 +213,9 @@ CREATE TABLE institutional_content (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT institutional_content_page_section_language_unique UNIQUE (page_slug, section, language),
     subtitle TEXT,
+    subtitle_en TEXT,
+    content_en TEXT,
+    image_url TEXT,
     cta_label VARCHAR(150),
     cta_target TEXT,
     display_order INTEGER NOT NULL DEFAULT 0

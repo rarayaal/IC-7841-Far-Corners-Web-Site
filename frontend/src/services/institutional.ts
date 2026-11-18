@@ -22,7 +22,10 @@ export interface InstitutionalContent {
   language: Language;
   title: string;
   subtitle: string | null;
+  subtitle_en?: string | null;
   content: string;
+  content_en?: string | null;
+  image_url?: string | null;
   cta_label: string | null;
   cta_target: string | null;
   display_order: number;

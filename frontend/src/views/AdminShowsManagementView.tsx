@@ -57,6 +57,10 @@ export interface ShowEvent {
   dates_label: string | null;
   is_published: boolean;
   is_featured: boolean;
+  zeffy_url?: string | null;
+  paypal_url?: string | null;
+  sinpe_phone?: string | null;
+  payment_methods?: string | null;
   performances?: any[];
   cast?: any[];
   media?: any[];
@@ -102,6 +106,16 @@ export const AdminShowsManagementView: React.FC<{ language: Language }> = ({ lan
   // Galería asociada
   const [selectedMediaIds, setSelectedMediaIds] = useState<string[]>([]);
   const [customGalleryPhotos, setCustomGalleryPhotos] = useState<string[]>([]);
+
+  // Pasarelas y métodos de pago por obra
+  const [zeffyUrl, setZeffyUrl] = useState('');
+  const [paypalUrl, setPaypalUrl] = useState('https://www.paypal.com/US/fundraiser/charity/1902778');
+  const [sinpePhone, setSinpePhone] = useState('7131-7013');
+  const [paymentMethods, setPaymentMethods] = useState<{ sinpe: boolean; zeffy: boolean; paypal: boolean }>({
+    sinpe: true,
+    zeffy: true,
+    paypal: true,
+  });
 
   // Diálogo para eliminar
   const [porEliminar, setPorEliminar] = useState<ShowEvent | null>(null);
@@ -188,6 +202,10 @@ export const AdminShowsManagementView: React.FC<{ language: Language }> = ({ lan
     setCast([{ full_name: '', role: '', biography: '', photo_url: '' }]);
     setSelectedMediaIds([]);
     setCustomGalleryPhotos([]);
+    setZeffyUrl('');
+    setPaypalUrl('https://www.paypal.com/US/fundraiser/charity/1902778');
+    setSinpePhone('7131-7013');
+    setPaymentMethods({ sinpe: true, zeffy: true, paypal: true });
     setModalAbierto(true);
   };
 
@@ -248,6 +266,15 @@ export const AdminShowsManagementView: React.FC<{ language: Language }> = ({ lan
       setSelectedMediaIds([]);
     }
     setCustomGalleryPhotos([]);
+    setZeffyUrl(show.zeffy_url || '');
+    setPaypalUrl(show.paypal_url || 'https://www.paypal.com/US/fundraiser/charity/1902778');
+    setSinpePhone(show.sinpe_phone || '7131-7013');
+    const mStr = show.payment_methods || 'sinpe,zeffy,paypal';
+    setPaymentMethods({
+      sinpe: mStr.includes('sinpe'),
+      zeffy: mStr.includes('zeffy'),
+      paypal: mStr.includes('paypal'),
+    });
 
     setModalAbierto(true);
   };
@@ -280,6 +307,13 @@ export const AdminShowsManagementView: React.FC<{ language: Language }> = ({ lan
         banner_url: bannerUrl.trim() || null,
         is_featured: isFeatured,
         is_published: isPublished,
+        zeffy_url: zeffyUrl.trim() || null,
+        paypal_url: paypalUrl.trim() || null,
+        sinpe_phone: sinpePhone.trim() || '7131-7013',
+        payment_methods: Object.entries(paymentMethods)
+          .filter(([_, active]) => active)
+          .map(([method]) => method)
+          .join(',') || 'sinpe,zeffy,paypal',
         performances: performances
           .filter((p) => p.starts_at && p.venue)
           .map((p) => ({
@@ -1021,6 +1055,122 @@ export const AdminShowsManagementView: React.FC<{ language: Language }> = ({ lan
                       : 'No media uploaded in gallery.'}
                   </p>
                 )}
+              </div>
+
+              {/* 5. Métodos de Pago y Pasarelas de Boletería */}
+              <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-white/10">
+                <div>
+                  <h4 className="font-serif text-sm font-bold text-brand-forest dark:text-brand-lime uppercase tracking-wider">
+                    {isEs ? '5. Métodos de Pago y Pasarelas de Boletería' : '5. Payment Gateways & Methods'}
+                  </h4>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    {isEs
+                      ? 'Activa los métodos de pago disponibles para esta obra y define sus enlaces o números específicos.'
+                      : 'Enable payment methods and custom links/numbers for this show.'}
+                  </p>
+                </div>
+
+                {/* Selección de Métodos Activos */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  <label className={`p-3 rounded-xl border flex items-center space-x-2.5 cursor-pointer transition-all ${
+                    paymentMethods.sinpe
+                      ? 'bg-brand-green/15 border-brand-green text-brand-navy dark:text-white font-bold'
+                      : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-400'
+                  }`}>
+                    <input
+                      type="checkbox"
+                      checked={paymentMethods.sinpe}
+                      onChange={(e) => setPaymentMethods((p) => ({ ...p, sinpe: e.target.checked }))}
+                      className="rounded text-brand-green focus:ring-brand-green"
+                    />
+                    <span className="text-xs">SINPE Móvil</span>
+                  </label>
+
+                  <label className={`p-3 rounded-xl border flex items-center space-x-2.5 cursor-pointer transition-all ${
+                    paymentMethods.zeffy
+                      ? 'bg-brand-green/15 border-brand-green text-brand-navy dark:text-white font-bold'
+                      : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-400'
+                  }`}>
+                    <input
+                      type="checkbox"
+                      checked={paymentMethods.zeffy}
+                      onChange={(e) => setPaymentMethods((p) => ({ ...p, zeffy: e.target.checked }))}
+                      className="rounded text-brand-green focus:ring-brand-green"
+                    />
+                    <span className="text-xs">Zeffy (0% com)</span>
+                  </label>
+
+                  <label className={`p-3 rounded-xl border flex items-center space-x-2.5 cursor-pointer transition-all ${
+                    paymentMethods.paypal
+                      ? 'bg-brand-green/15 border-brand-green text-brand-navy dark:text-white font-bold'
+                      : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-400'
+                  }`}>
+                    <input
+                      type="checkbox"
+                      checked={paymentMethods.paypal}
+                      onChange={(e) => setPaymentMethods((p) => ({ ...p, paypal: e.target.checked }))}
+                      className="rounded text-brand-green focus:ring-brand-green"
+                    />
+                    <span className="text-xs">PayPal</span>
+                  </label>
+                </div>
+
+                {/* Enlaces y Datos de cada método activo */}
+                <div className="space-y-3 bg-slate-50 dark:bg-brand-navyDark p-4 rounded-xl border border-slate-200 dark:border-white/10">
+                  {paymentMethods.sinpe && (
+                    <div>
+                      <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">
+                        {isEs ? 'Número Telefónico SINPE Móvil' : 'SINPE Mobile Number'}
+                      </label>
+                      <input
+                        type="text"
+                        value={sinpePhone}
+                        onChange={(e) => setSinpePhone(e.target.value)}
+                        placeholder="7131-7013"
+                        className="w-full px-3 py-2 bg-white dark:bg-brand-navy border border-slate-200 dark:border-white/10 rounded-lg text-brand-navy dark:text-white font-mono text-xs focus:border-brand-green focus:outline-none"
+                      />
+                      <span className="text-[10px] text-slate-400 block mt-0.5">
+                        {isEs ? 'Número al que los clientes transferirán el valor del boleto.' : 'Phone patrons will send money to.'}
+                      </span>
+                    </div>
+                  )}
+
+                  {paymentMethods.zeffy && (
+                    <div>
+                      <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">
+                        {isEs ? 'Enlace de Compra en Zeffy (Ticketing URL)' : 'Zeffy Ticketing Link'}
+                      </label>
+                      <input
+                        type="url"
+                        value={zeffyUrl}
+                        onChange={(e) => setZeffyUrl(e.target.value)}
+                        placeholder="https://www.zeffy.com/ticketing/nombre-obra"
+                        className="w-full px-3 py-2 bg-white dark:bg-brand-navy border border-slate-200 dark:border-white/10 rounded-lg text-brand-navy dark:text-white text-xs focus:border-brand-green focus:outline-none font-mono"
+                      />
+                      <span className="text-[10px] text-slate-400 block mt-0.5">
+                        {isEs ? 'Dejar en blanco para usar la plataforma general de Zeffy.' : 'Leave blank for default.'}
+                      </span>
+                    </div>
+                  )}
+
+                  {paymentMethods.paypal && (
+                    <div>
+                      <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">
+                        {isEs ? 'Enlace de Pago en PayPal (Charity / Fundraiser URL)' : 'PayPal Charity/Payment Link'}
+                      </label>
+                      <input
+                        type="url"
+                        value={paypalUrl}
+                        onChange={(e) => setPaypalUrl(e.target.value)}
+                        placeholder="https://www.paypal.com/US/fundraiser/charity/1902778"
+                        className="w-full px-3 py-2 bg-white dark:bg-brand-navy border border-slate-200 dark:border-white/10 rounded-lg text-brand-navy dark:text-white text-xs focus:border-brand-green focus:outline-none font-mono"
+                      />
+                      <span className="text-[10px] text-slate-400 block mt-0.5">
+                        {isEs ? 'Enlace oficial al que se redirige al comprador al pagar con PayPal.' : 'Official link for PayPal payment.'}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Botones de acción del Modal */}

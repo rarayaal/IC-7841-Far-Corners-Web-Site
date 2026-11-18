@@ -9,6 +9,7 @@ import {
   validarCompraSinpe,
   validarBoletoQr,
   obtenerPdfDeCompra,
+  reenviarCorreoBoletos,
 } from "../repositories/tickets.repository.js";
 
 // GET /api/v1/tickets/events/:eventId
@@ -280,5 +281,35 @@ export async function handleDescargarPdfCompra(req: Request, res: Response) {
     }
     console.error("Error al generar PDF de la compra:", error);
     return res.status(500).json({ error: "Error interno al generar el PDF del boleto." });
+  }
+}
+
+// POST /api/v1/tickets/purchases/:purchaseId/resend-email
+export async function handleReenviarCorreoBoletos(req: Request, res: Response) {
+  try {
+    const purchaseId = String(req.params.purchaseId || '');
+    const { email } = req.body || {};
+
+    if (!purchaseId) {
+      return res.status(400).json({ error: "El parámetro purchaseId es requerido." });
+    }
+
+    const resultado = await reenviarCorreoBoletos(purchaseId, email);
+
+    return res.status(200).json({
+      message: `Correo de boletos reenviado exitosamente a ${resultado.destinatario}.`,
+      destinatario: resultado.destinatario,
+      status: resultado.status,
+      emailResult: resultado.emailResult,
+    });
+  } catch (error: any) {
+    if (error.message === "PURCHASE_NOT_FOUND") {
+      return res.status(404).json({ error: "La compra no existe." });
+    }
+    if (error.message === "NO_EMAIL_PROVIDED") {
+      return res.status(400).json({ error: "Esta compra no posee una dirección de correo válida registrada." });
+    }
+    console.error("Error al reenviar correo de boletos:", error);
+    return res.status(500).json({ error: "Error interno al reenviar el correo de boletos." });
   }
 }

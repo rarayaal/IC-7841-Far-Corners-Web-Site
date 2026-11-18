@@ -20,6 +20,7 @@ import { contactChannelsRouter } from "./routes/contactChannels.routes.js";
 import { newsletterRouter } from './routes/newsletter.routes.js';
 import { formsRouter } from "./routes/forms.routes.js";
 import { eventsRouter } from "./routes/events.routes.js";
+import { dashboardRouter } from "./routes/dashboard.routes.js";
 import { eliminarBorradoresAntiguos } from "./repositories/forms.repository.js";
 
 const app = express();
@@ -50,6 +51,7 @@ app.use("/api/v1/users", usersRouter);
 app.use("/api/v1/forms", formsRouter);
 
 // Rutas de seguridad, administracion y auditoria
+app.use("/api/v1/dashboard", dashboardRouter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/me", profileRouter);
 app.use("/api/v1/admin", adminUsersRouter);

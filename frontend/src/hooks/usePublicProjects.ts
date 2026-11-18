@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import type { ImpactProject, Language } from '../types';
-import { projectsData } from '../data/mockData';
 import { loadPublicContent } from '../services/publicLocalization';
 
 interface ProjectRow {
@@ -15,7 +14,7 @@ interface ProjectRow {
 
 type ProjectCard = Omit<ImpactProject, 'country' | 'participants'> & { country: string; participants: number | null };
 
-/** Public cards use published DB content. Existing bilingual examples remain the fallback. */
+/** Public cards use published DB content only. */
 export function usePublicProjects(language: Language) {
   const [result, setResult] = useState<{ language: Language; projects: ProjectCard[] } | null>(null);
   useEffect(() => {
@@ -31,8 +30,10 @@ export function usePublicProjects(language: Language) {
         impactMetrics: [],
       }));
       setResult({ language, projects });
-    }).catch(() => { /* Keep existing bilingual examples if the API is unavailable. */ });
+    }).catch(() => {
+      setResult({ language, projects: [] });
+    });
     return () => controller.abort();
   }, [language]);
-  return result?.language === language && result.projects.length ? result.projects : projectsData;
+  return result?.language === language ? result.projects : [];
 }

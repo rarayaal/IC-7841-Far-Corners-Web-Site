@@ -217,9 +217,9 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
                       <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-slate-400">
                         <span className="flex items-center space-x-1.5">
                           <ImageIcon className="w-3.5 h-3.5 text-brand-green" />
-                          <span>Galería de Fotos</span>
+                          <span>{es ? 'Galería de Fotos' : 'Photo Gallery'}</span>
                         </span>
-                        <span className="text-[10px] font-mono text-slate-400">{galleryList.length} fotos</span>
+                        <span className="text-[10px] font-mono text-slate-400">{galleryList.length} {es ? 'fotos' : 'photos'}</span>
                       </div>
 
                       <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 no-scrollbar">
@@ -232,7 +232,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
                               setFotoAmpliada({ url: img.url, title: show.title, alt: img.alt_text });
                             }}
                             className="relative w-14 h-10 rounded-lg overflow-hidden shrink-0 border border-slate-200 dark:border-white/10 hover:border-brand-green hover:scale-105 transition-all shadow-sm group/thumb"
-                            title="Ver foto ampliada"
+                            title={es ? 'Ver foto ampliada' : 'View enlarged photo'}
                           >
                             <img src={img.url} alt={img.alt_text || show.title} className="w-full h-full object-cover" />
                             {idx === 3 && galleryList.length > 4 && (
@@ -257,7 +257,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
                   className="text-xs text-slate-600 dark:text-slate-300 hover:text-brand-navy dark:text-white font-medium flex items-center space-x-1"
                 >
                   <Info className="w-3.5 h-3.5 text-brand-blue" />
-                  <span>Ver Ficha</span>
+                  <span>{es ? 'Ver Ficha' : 'View Details'}</span>
                 </button>
 
                 {hasTickets(show) ? (
@@ -317,7 +317,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
                     className="w-full h-full object-cover object-center"
                   />
                   <div className="absolute bottom-2 right-2 px-2.5 py-1 rounded-lg bg-black/75 backdrop-blur-md text-[10px] text-white font-bold border border-white/20">
-                    Póster Horizontal / Banner
+                    {es ? 'Póster Horizontal / Banner' : 'Horizontal Poster / Banner'}
                   </div>
                 </div>
               )}
@@ -333,8 +333,8 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
                     {language === 'es' ? selectedShow.synopsis : selectedShow.synopsisEn}
                   </p>
                   <div className="pt-2 text-xs text-slate-600 dark:text-slate-300 space-y-1">
-                    <p><strong className="text-brand-navy dark:text-white">Teatro / Lugar:</strong> {selectedShow.location}</p>
-                    <p><strong className="text-brand-navy dark:text-white">Dirección:</strong> {selectedShow.director}</p>
+                    <p><strong className="text-brand-navy dark:text-white">{es ? 'Teatro / Lugar:' : 'Venue / Location:'}</strong> {selectedShow.location}</p>
+                    <p><strong className="text-brand-navy dark:text-white">{es ? 'Dirección:' : 'Director:'}</strong> {selectedShow.director}</p>
                   </div>
                 </div>
               </div>
@@ -389,9 +389,9 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
                 <div className="flex items-center justify-between">
                   <h5 className="font-serif text-base font-bold text-brand-navy dark:text-white flex items-center gap-2">
                     <ImageIcon className="w-4 h-4 text-brand-green" />
-                    <span>Galería Fotográfica de la Producción</span>
+                    <span>{es ? 'Galería Fotográfica de la Producción' : 'Production Photo Gallery'}</span>
                   </h5>
-                  <span className="text-[11px] text-slate-500">Toca para ampliar</span>
+                  <span className="text-[11px] text-slate-500">{es ? 'Toca para ampliar' : 'Click to enlarge'}</span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                   {getGalleryForShow(selectedShow).map((img, idx) => (
@@ -412,8 +412,8 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
               {/* Single Price Card */}
               <div className="p-4 rounded-xl bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-white/10 flex items-center justify-between text-xs">
                 <div>
-                  <span className="font-bold text-brand-navy dark:text-white block">Entrada General</span>
-                  <span className="text-slate-600 dark:text-slate-300 text-[11px]">Acceso completo a la función</span>
+                  <span className="font-bold text-brand-navy dark:text-white block">{es ? 'Entrada General' : 'General Admission'}</span>
+                  <span className="text-slate-600 dark:text-slate-300 text-[11px]">{es ? 'Acceso completo a la función' : 'Full access to the performance'}</span>
                 </div>
                 <span className="font-mono text-base font-bold text-brand-forest dark:text-brand-lime">₡10,000 CRC</span>
               </div>
@@ -425,7 +425,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
                 onClick={() => setSelectedShow(null)}
                 className="px-5 py-2.5 rounded-xl bg-white/10 text-brand-navy dark:text-white text-xs font-semibold"
               >
-                Cerrar
+                {es ? 'Cerrar' : 'Close'}
               </button>
               {hasTickets(selectedShow) ? (
                 <button
@@ -437,7 +437,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
                   className="px-6 py-2.5 rounded-xl btn-green text-brand-navy hover:text-brand-navy dark:text-white text-xs font-extrabold shadow-glow-green flex items-center space-x-2 uppercase tracking-wider"
                 >
                   <Ticket className="w-4 h-4 text-brand-navy fill-current" />
-                  <span>Adquirir Boletos</span>
+                  <span>{es ? 'Adquirir Boletos' : 'Buy Tickets'}</span>
                 </button>
               ) : (
                 selectedShow.programUrl && (
@@ -448,7 +448,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
                     className="px-6 py-2.5 rounded-xl bg-slate-50 dark:bg-brand-navyCard border border-brand-blue/60 text-brand-blue hover:text-brand-navy dark:text-white text-xs font-bold flex items-center space-x-2 uppercase tracking-wider"
                   >
                     <FileText className="w-4 h-4" />
-                    <span>Ver programa de mano</span>
+                    <span>{es ? 'Ver programa de mano' : 'View playbill / program'}</span>
                   </a>
                 )
               )}
@@ -470,7 +470,13 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
 
             <div className="w-24 h-24 mx-auto rounded-full overflow-hidden border-2 border-brand-green shadow-glow-green mb-4 bg-slate-100 dark:bg-brand-navyDark flex items-center justify-center">
               {actorDetalle.photo ? (
-                <img src={actorDetalle.photo} alt={actorDetalle.name} className="w-full h-full object-cover" />
+                <img
+                  key={`${actorDetalle.name}-${actorDetalle.photo}`}
+                  src={actorDetalle.photo}
+                  alt={actorDetalle.name}
+                  className="w-full h-full object-cover animate-fadeIn"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
               ) : (
                 <User className="w-12 h-12 text-slate-400" />
               )}
@@ -484,7 +490,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
             </span>
 
             <div className="mt-4 p-4 rounded-2xl bg-[#F8F8F2] dark:bg-brand-navyDark text-xs text-slate-600 dark:text-slate-300 text-left leading-relaxed max-h-44 overflow-y-auto border border-slate-200 dark:border-white/5">
-              <p className="font-bold mb-1 text-slate-500 uppercase text-[10px]">Semblanza / Biografía:</p>
+              <p className="font-bold mb-1 text-slate-500 uppercase text-[10px]">{es ? 'Semblanza / Biografía:' : 'Biography / Background:'}</p>
               <p>
                 {actorDetalle.biography || (language === 'es' ? 'Integrante destacado del elenco artístico de Far Corners Community Theatre.' : 'Featured cast member of Far Corners Community Theatre.')}
               </p>
@@ -494,7 +500,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
               onClick={() => setActorDetalle(null)}
               className="mt-5 w-full py-2.5 bg-brand-navy dark:bg-white text-white dark:text-brand-navy font-bold text-xs rounded-xl"
             >
-              Cerrar
+              {es ? 'Cerrar' : 'Close'}
             </button>
           </div>
         </div>
@@ -511,7 +517,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-3.5 bg-black/50 border-b border-white/10 flex items-center justify-between text-white text-xs">
-              <span className="font-bold truncate">{fotoAmpliada.title} - {fotoAmpliada.alt || 'Fotografía de Producción'}</span>
+              <span className="font-bold truncate">{fotoAmpliada.title} - {fotoAmpliada.alt || (es ? 'Fotografía de Producción' : 'Production Photograph')}</span>
               <button
                 onClick={() => setFotoAmpliada(null)}
                 className="p-1 rounded-lg hover:bg-white/10 text-white/80 hover:text-white"

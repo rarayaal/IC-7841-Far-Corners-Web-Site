@@ -27,7 +27,10 @@ export interface DatosContenidoInstitucional {
   language: IdiomaInstitucional;
   title: string;
   subtitle: string | null;
+  subtitle_en?: string | null;
   content: string;
+  content_en?: string | null;
+  image_url?: string | null;
   cta_label: string | null;
   cta_target: string | null;
   display_order: number;
@@ -41,13 +44,115 @@ const COLUMNAS = `
   language,
   title,
   subtitle,
+  subtitle_en,
   content,
+  content_en,
+  image_url,
   cta_label,
   cta_target,
   display_order,
   is_published,
   updated_at
 `;
+
+let institutionalColumnsEnsured = false;
+async function ensureInstitutionalColumns() {
+  if (institutionalColumnsEnsured) return;
+  try {
+    // 1. Asegurar que el constraint de sección permita 'board' y 'production'
+    await pool.query(`
+      ALTER TABLE institutional_content DROP CONSTRAINT IF EXISTS institutional_content_section_check;
+      ALTER TABLE institutional_content ADD CONSTRAINT institutional_content_section_check CHECK (section IN (
+        'history', 'impact', 'future', 'students', 'volunteers',
+        'internships', 'communities', 'donations', 'contact',
+        'hero', 'intro', 'cta', 'camp', 'values', 'team', 'schedule',
+        'payment_instructions', 'footer', 'board', 'production', 'gallery'
+      ));
+    `).catch(() => {});
+
+    // 2. Asegurar columnas adicionales
+    await pool.query(`
+      ALTER TABLE institutional_content ADD COLUMN IF NOT EXISTS image_url TEXT;
+      ALTER TABLE institutional_content ADD COLUMN IF NOT EXISTS content_en TEXT;
+      ALTER TABLE institutional_content ADD COLUMN IF NOT EXISTS subtitle_en TEXT;
+    `).catch(() => {});
+
+    // 3. Asegurar usuario base para la llave foránea updated_by
+    await pool.query(`
+      INSERT INTO users (
+        id, full_name, email, password_hash, role, status
+      ) VALUES (
+        'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+        'Administrador General Far Corners',
+        'admin@farcornerscr.org',
+        '$2b$12$tCIZuiLE8m5WKsu39TJdmeLliZmMWnPDsuQXo8aevwtW98XgtOFOW',
+        'admin',
+        'active'
+      ) ON CONFLICT (email) DO NOTHING;
+    `).catch(() => {});
+
+    // 4. Sembrado automático de Junta Directiva inicial si la sección está vacía
+    await pool.query(`
+      INSERT INTO institutional_content (
+        page_slug, section, language, title, subtitle, subtitle_en, content, content_en, image_url, display_order, is_published, updated_by
+      )
+      SELECT
+        v.slug, 'board', 'es', v.title, v.subtitle, v.subtitle_en, v.content, v.content_en, v.img, v.ord, TRUE,
+        COALESCE((SELECT id FROM users WHERE role = 'admin' LIMIT 1), (SELECT id FROM users LIMIT 1), 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'::uuid)
+      FROM (VALUES
+        ('jose-pablo-arias', 'José Pablo Arias Mora', 'Presidente', 'President', 'Líder comunitario y gestor cultural con amplia trayectoria en el desarrollo del teatro musical y proyectos comunitarios en Monteverde.', 'Community leader and cultural manager with extensive experience developing musical theatre and community initiatives in Monteverde.', '/recursos/IMG_2908.PNG', 1),
+        ('isaac-matamoros', 'Isaac Matamoros Trejos', 'Vicepresidente', 'Vice President', 'Comprometido con la formación artística de jóvenes y el fortalecimiento de la educación escénica accesible.', 'Dedicated to artistic youth development and strengthening accessible performing arts education.', '/recursos/IMG_2909.PNG', 2),
+        ('luis-dario-villalobos', 'Luis Dario Villalobos Castro', 'Tesorero', 'Treasurer', 'Especialista en administración financiera y gestión de fondos transparentes para organizaciones sin fines de lucro.', 'Specialist in financial administration and transparent non-profit fund management.', '/recursos/IMG_2910.PNG', 3),
+        ('stacy-ohrt', 'Stacy Ohrt-Billingslea', 'Vocal', 'Board member', 'Impulsora de vínculos internacionales y programas de intercambio para jóvenes talentos escénicos.', 'Promoter of international partnerships and exchange programs for young stage talent.', '/recursos/IMG_2911.PNG', 4),
+        ('susu-gray', 'Susu Gray', 'Vocal', 'Board member', 'Promotora de las artes escénicas en comunidades rurales y conservación de la memoria histórica comunitaria.', 'Advocate for performing arts in rural communities and community historic preservation.', '/recursos/IMG_2912.PNG', 5),
+        ('shanae-wise', 'Shanae Wise', 'Vocal', 'Board member', 'Gestora de voluntariado, alianzas con centros educativos y proyectos de inclusión comunitaria.', 'Coordinator of volunteering, educational partnerships, and community inclusion initiatives.', '/recursos/IMG_2913.PNG', 6)
+      ) AS v(slug, title, subtitle, subtitle_en, content, content_en, img, ord)
+      WHERE NOT EXISTS (SELECT 1 FROM institutional_content WHERE section = 'board');
+
+      -- Sembrado automático de Equipo de Producción si está vacío
+      INSERT INTO institutional_content (
+        page_slug, section, language, title, subtitle, subtitle_en, content, content_en, image_url, display_order, is_published, updated_by
+      )
+      SELECT
+        v.slug, 'production', 'es', v.title, v.subtitle, v.subtitle_en, v.content, v.content_en, v.img, v.ord, TRUE,
+        COALESCE((SELECT id FROM users WHERE role = 'admin' LIMIT 1), (SELECT id FROM users LIMIT 1), 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'::uuid)
+      FROM (VALUES
+        ('direccion-general', 'Dirección Escénica', 'Dirección general', 'General direction', 'Liderazgo artístico, conceptualización de montajes y guía interpretativa para el elenco comunitario.', 'Artistic leadership, show conceptualization, and performance guidance for the community cast.', '/recursos/IMG_2914.PNG', 1),
+        ('direccion-musical', 'Dirección Musical', 'Dirección musical', 'Music direction', 'Preparación vocal, ensamble coral y coordinación de instrumentación en vivo para las temporadas.', 'Vocal coaching, choral arrangement, and live orchestration coordination for our production seasons.', '/recursos/IMG_2916.PNG', 2),
+        ('coreografia', 'Coreografía y Danza', 'Coreografía', 'Choreography', 'Diseño de rutinas de baile adaptadas a todas las edades y niveles de experiencia escénica.', 'Designing dance routines tailored to all age groups and experience levels.', '/recursos/IMG_2917.PNG', 3),
+        ('produccion-tecnica', 'Producción Técnica', 'Producción técnica y escenografía', 'Technical production & stage design', 'Iluminación, diseño sonoro, escenografía e infraestructura teatral comunitaria.', 'Lighting, sound design, set construction, and theatre technical infrastructure.', '/recursos/IMG_2918.PNG', 4)
+      ) AS v(slug, title, subtitle, subtitle_en, content, content_en, img, ord)
+      WHERE NOT EXISTS (SELECT 1 FROM institutional_content WHERE section = 'production');
+
+      -- Actualizar fotos oficiales en filas ya existentes si image_url está vacía
+      UPDATE institutional_content SET image_url = '/recursos/IMG_2908.PNG' WHERE page_slug = 'jose-pablo-arias' AND (image_url IS NULL OR image_url = '');
+      UPDATE institutional_content SET image_url = '/recursos/IMG_2909.PNG' WHERE page_slug = 'isaac-matamoros' AND (image_url IS NULL OR image_url = '');
+      UPDATE institutional_content SET image_url = '/recursos/IMG_2910.PNG' WHERE page_slug = 'luis-dario-villalobos' AND (image_url IS NULL OR image_url = '');
+      UPDATE institutional_content SET image_url = '/recursos/IMG_2911.PNG' WHERE page_slug = 'stacy-ohrt' AND (image_url IS NULL OR image_url = '');
+      UPDATE institutional_content SET image_url = '/recursos/IMG_2912.PNG' WHERE page_slug = 'susu-gray' AND (image_url IS NULL OR image_url = '');
+      UPDATE institutional_content SET image_url = '/recursos/IMG_2913.PNG' WHERE page_slug = 'shanae-wise' AND (image_url IS NULL OR image_url = '');
+
+      UPDATE institutional_content SET image_url = '/recursos/IMG_2914.PNG' WHERE page_slug = 'direccion-general' AND (image_url IS NULL OR image_url = '');
+      UPDATE institutional_content SET image_url = '/recursos/IMG_2916.PNG' WHERE page_slug = 'direccion-musical' AND (image_url IS NULL OR image_url = '');
+      UPDATE institutional_content SET image_url = '/recursos/IMG_2917.PNG' WHERE page_slug = 'coreografia' AND (image_url IS NULL OR image_url = '');
+      UPDATE institutional_content SET image_url = '/recursos/IMG_2918.PNG' WHERE page_slug = 'produccion-tecnica' AND (image_url IS NULL OR image_url = '');
+
+      -- Sembrado automático de Historia si está vacío
+      INSERT INTO institutional_content (
+        page_slug, section, language, title, subtitle, content, display_order, is_published, updated_by
+      )
+      SELECT
+        'about', 'history', 'es', 'Nuestra Historia y Misión', 'Dos décadas de arte, comunidad y transformación social',
+        'Far Corners Community Musical Theatre nació como un proyecto comunitario enfocado en unir culturas y personas a través de las artes escénicas. Desde nuestras primeras producciones en Monteverde, hemos brindado oportunidades a cientos de jóvenes y adultos para descubrir su talento, aprender inglés y crear vínculos para toda la vida.',
+        1, TRUE,
+        COALESCE((SELECT id FROM users WHERE role = 'admin' LIMIT 1), (SELECT id FROM users LIMIT 1), 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'::uuid)
+      WHERE NOT EXISTS (SELECT 1 FROM institutional_content WHERE section = 'history');
+    `);
+    institutionalColumnsEnsured = true;
+  } catch (err) {
+    console.error('[institutional.repository] ensureInstitutionalColumns error:', err);
+  }
+}
 
 // Imágenes asociadas al contenido (galería, CU-22), listas para mostrarse.
 const IMAGENES_PUBLICAS = `
@@ -69,6 +174,7 @@ export async function obtenerContenidoPublicado(
   section: SeccionInstitucional,
   language: IdiomaInstitucional
 ) {
+  await ensureInstitutionalColumns();
   const resultado = await pool.query(
     `
       SELECT DISTINCT ON (page_slug) ${COLUMNAS}, ${IMAGENES_PUBLICAS}
@@ -89,7 +195,8 @@ export async function obtenerContenidoPublicado(
 }
 
 export async function obtenerContenidoAdmin(section: SeccionInstitucional) {
-  const resultado = await pool.query(
+  await ensureInstitutionalColumns();
+  let resultado = await pool.query(
     `
       SELECT ${COLUMNAS}
       FROM institutional_content
@@ -98,6 +205,20 @@ export async function obtenerContenidoAdmin(section: SeccionInstitucional) {
     `,
     [section]
   );
+
+  if (resultado.rows.length === 0 && (section === 'board' || section === 'production')) {
+    institutionalColumnsEnsured = false;
+    await ensureInstitutionalColumns();
+    resultado = await pool.query(
+      `
+        SELECT ${COLUMNAS}
+        FROM institutional_content
+        WHERE section = $1
+        ORDER BY display_order ASC, page_slug ASC, language ASC
+      `,
+      [section]
+    );
+  }
 
   return resultado.rows;
 }
@@ -108,6 +229,7 @@ export async function crearContenido(
   userId: string,
   ip: string | null
 ) {
+  await ensureInstitutionalColumns();
   const client = await pool.connect();
 
   try {
@@ -116,10 +238,10 @@ export async function crearContenido(
     const resultado = await client.query(
       `
         INSERT INTO institutional_content (
-          page_slug, section, language, title, subtitle, content,
+          page_slug, section, language, title, subtitle, subtitle_en, content, content_en, image_url,
           cta_label, cta_target, display_order, is_published, updated_by
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
         RETURNING ${COLUMNAS}
       `,
       [
@@ -128,7 +250,10 @@ export async function crearContenido(
         datos.language,
         datos.title,
         datos.subtitle,
+        datos.subtitle_en || null,
         datos.content,
+        datos.content_en || null,
+        datos.image_url || null,
         datos.cta_label,
         datos.cta_target,
         datos.display_order,
@@ -166,6 +291,7 @@ export async function actualizarContenido(
   userId: string,
   ip: string | null
 ) {
+  await ensureInstitutionalColumns();
   const client = await pool.connect();
 
   try {
@@ -194,12 +320,15 @@ export async function actualizarContenido(
           language = $4,
           title = $5,
           subtitle = $6,
-          content = $7,
-          cta_label = $8,
-          cta_target = $9,
-          display_order = $10,
-          is_published = $11,
-          updated_by = $12
+          subtitle_en = $7,
+          content = $8,
+          content_en = $9,
+          image_url = $10,
+          cta_label = $11,
+          cta_target = $12,
+          display_order = $13,
+          is_published = $14,
+          updated_by = $15
         WHERE id = $1 AND section = $2
         RETURNING ${COLUMNAS}
       `,
@@ -210,7 +339,10 @@ export async function actualizarContenido(
         datos.language,
         datos.title,
         datos.subtitle,
+        datos.subtitle_en || null,
         datos.content,
+        datos.content_en || null,
+        datos.image_url || null,
         datos.cta_label,
         datos.cta_target,
         datos.display_order,
@@ -220,6 +352,18 @@ export async function actualizarContenido(
     );
 
     const actualizado = resultado.rows[0];
+
+    // Propagar image_url a todas las versiones de idioma de este slug en la sección
+    if (datos.image_url !== undefined) {
+      await client.query(
+        `
+          UPDATE institutional_content
+          SET image_url = $1
+          WHERE page_slug = $2 AND section = $3 AND id != $4
+        `,
+        [datos.image_url || null, datos.page_slug, section, id]
+      );
+    }
 
     await registrarAuditoria(client, {
       userId,

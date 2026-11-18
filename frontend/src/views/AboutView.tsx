@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePublicProjects } from '../hooks/usePublicProjects';
 import { Language, PageView } from '../types';
-import { Globe, Heart, Users, Lightbulb, Feather } from 'lucide-react';
+import { Globe, Heart, Users, Lightbulb, Feather, X } from 'lucide-react';
 import { useInstitutionalContent } from '../hooks/useInstitutionalContent';
 import { ContentParagraphs } from '../components/ContentParagraphs';
 import { getTranslations } from '../lib/i18n';
@@ -27,43 +27,152 @@ interface PersonCardData {
   photo?: GalleryImage;
 }
 
-const PersonCard: React.FC<{ person: PersonCardData }> = ({ person }) => (
-  <div className="bg-white dark:bg-brand-navy p-5 rounded-2xl border border-slate-200 dark:border-brand-border hover:border-brand-blue/60 transition-all space-y-2">
-    {person.photo ? (
-      <img
-        src={person.photo.url}
-        alt={person.photo.alt ?? person.name}
-        loading="lazy"
-        className="w-16 h-16 rounded-full object-cover border border-brand-green/40"
-      />
-    ) : (
-      <div className="w-16 h-16 rounded-full bg-brand-green/20 text-brand-forest dark:text-brand-green flex items-center justify-center font-serif font-bold text-xl border border-brand-green/40">
-        {person.name.charAt(0)}
-      </div>
-    )}
-    <h3 className="font-serif text-base font-bold text-brand-navy dark:text-white">{person.name}</h3>
-    {person.role && (
-      <p className="text-xs text-brand-forest dark:text-brand-lime font-bold">{person.role}</p>
-    )}
-    {person.bio && (
-      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line">
-        {person.bio}
-      </p>
-    )}
-  </div>
-);
+const PersonCard: React.FC<{
+  person: PersonCardData;
+  language: Language;
+  onSelect: (person: PersonCardData) => void;
+}> = ({ person, language, onSelect }) => {
+  const es = language === 'es';
+  const [imgError, setImgError] = useState(false);
 
-/** Convierte filas de contenido institucional (una por persona) en tarjetas. */
-function toPeople(items: InstitutionalContent[]): PersonCardData[] {
-  return items.map((item) => ({
-    key: item.id,
-    name: item.title,
-    role: item.subtitle,
-    bio: item.content,
-    photo: item.images?.[0]
-      ? { url: item.images[0].url, alt: item.images[0].alt_text ?? item.title }
-      : undefined,
-  }));
+  useEffect(() => {
+    setImgError(false);
+  }, [person.key, person.photo?.url]);
+
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => onSelect(person)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect(person);
+        }
+      }}
+      className="bg-white dark:bg-brand-navy p-5 rounded-2xl border border-slate-200 dark:border-brand-border hover:border-brand-green hover:shadow-lg transition-all space-y-3 cursor-pointer group flex flex-col justify-between"
+    >
+      <div className="space-y-2">
+        {person.photo && !imgError ? (
+          <img
+            key={`${person.key}-${person.photo.url}`}
+            src={person.photo.url}
+            alt={person.photo.alt ?? person.name}
+            onError={() => setImgError(true)}
+            loading="lazy"
+            className="w-16 h-16 rounded-full object-cover border-2 border-brand-green/40 group-hover:scale-105 transition-transform"
+          />
+        ) : (
+          <div className="w-16 h-16 rounded-full bg-brand-green/20 text-brand-forest dark:text-brand-green flex items-center justify-center font-serif font-bold text-xl border-2 border-brand-green/40 group-hover:scale-105 transition-transform">
+            {person.name.charAt(0)}
+          </div>
+        )}
+        <h3 className="font-serif text-base font-bold text-brand-navy dark:text-white group-hover:text-brand-forest dark:group-hover:text-brand-lime transition-colors">
+          {person.name}
+        </h3>
+        {person.role && (
+          <p className="text-xs text-brand-forest dark:text-brand-lime font-bold">
+            {person.role}
+          </p>
+        )}
+      </div>
+
+      <div className="pt-2 text-[11px] font-bold text-brand-blue group-hover:text-brand-forest dark:group-hover:text-brand-lime flex items-center space-x-1 border-t border-slate-100 dark:border-white/5">
+        <span>{es ? 'Ver reseña completa' : 'View full biography'}</span>
+        <span>→</span>
+      </div>
+    </div>
+  );
+};
+
+const PersonDetailModal: React.FC<{
+  person: PersonCardData;
+  language: Language;
+  onClose: () => void;
+}> = ({ person, language, onClose }) => {
+  const es = language === 'es';
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [person.key, person.photo?.url]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn"
+      onClick={onClose}
+    >
+      <div
+        key={person.key}
+        className="bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border w-full max-w-lg rounded-3xl shadow-2xl p-6 sm:p-8 space-y-6 relative max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-5 right-5 p-2 rounded-full bg-slate-100 dark:bg-white/10 text-slate-500 hover:text-brand-navy dark:hover:text-white transition-colors"
+          aria-label={es ? 'Cerrar' : 'Close'}
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-5 text-center sm:text-left">
+          {person.photo && !imgError ? (
+            <img
+              key={`${person.key}-${person.photo.url}`}
+              src={person.photo.url}
+              alt={person.photo.alt ?? person.name}
+              onError={() => setImgError(true)}
+              className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-2 border-brand-green shadow-md shrink-0 animate-fadeIn"
+            />
+          ) : (
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-brand-green/20 text-brand-forest dark:text-brand-green flex items-center justify-center font-serif font-black text-4xl border-2 border-brand-green shrink-0 shadow-sm">
+              {person.name.charAt(0)}
+            </div>
+          )}
+
+          <div className="space-y-1.5 min-w-0">
+            <h3 className="font-serif text-2xl sm:text-3xl font-bold text-brand-navy dark:text-white leading-tight">
+              {person.name}
+            </h3>
+            {person.role && (
+              <span className="inline-block px-3 py-1 rounded-full bg-brand-green/20 text-brand-forest dark:text-brand-lime text-xs font-bold border border-brand-green/40">
+                {person.role}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="pt-4 border-t border-slate-200 dark:border-white/10 space-y-2">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-brand-forest dark:text-brand-lime block">
+            {es ? 'Reseña y Trayectoria' : 'Biography & Background'}
+          </span>
+          <p className="text-sm sm:text-base text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-line font-sans">
+            {person.bio || (es ? 'Sin descripción disponible.' : 'No description available.')}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/** Convierte filas de contenido institucional (una por persona) en tarjetas, usando el idioma seleccionado y fotos de respaldo. */
+function toPeople(items: InstitutionalContent[], language: Language, defaults: PersonCardData[]): PersonCardData[] {
+  const isEn = language === 'en';
+  const defaultMap = new Map(defaults.map((d) => [d.key, d]));
+
+  return items.map((item) => {
+    const fallback = defaultMap.get(item.page_slug) || defaultMap.get(item.id);
+    const photoUrl = item.image_url || item.images?.[0]?.url || fallback?.photo?.url;
+
+    return {
+      key: item.page_slug || item.id,
+      name: item.title,
+      role: (isEn && item.subtitle_en) ? item.subtitle_en : (item.subtitle || fallback?.role || null),
+      bio: (isEn && item.content_en) ? item.content_en : (item.content || fallback?.bio || ''),
+      photo: photoUrl ? { url: photoUrl, alt: item.title } : undefined,
+    };
+  });
 }
 
 export const AboutView: React.FC<AboutViewProps> = ({
@@ -79,6 +188,7 @@ export const AboutView: React.FC<AboutViewProps> = ({
   const { items: boardItems } = useInstitutionalContent('board', language);
   const { items: productionItems } = useInstitutionalContent('production', language);
   const [gallery, setGallery] = useState<{ title: string; images: GalleryImage[] } | null>(null);
+  const [selectedPersonKey, setSelectedPersonKey] = useState<string | null>(null);
 
   const history = historyItems[0];
   const futureVision = futureItems[0];
@@ -132,25 +242,107 @@ export const AboutView: React.FC<AboutViewProps> = ({
     },
   ];
 
-  // Respaldo mientras la sección «Junta directiva» del panel no tenga filas publicadas.
+  // Respaldo con fotografías oficiales mientras la sección del panel no tenga filas publicadas.
   const defaultBoard: PersonCardData[] = [
-    { key: 'presidente', name: 'José Pablo Arias Mora', role: es ? 'Presidente' : 'President' },
-    { key: 'vicepresidente', name: 'Isaac Matamoros Trejos', role: es ? 'Vicepresidente' : 'Vice President' },
-    { key: 'tesorero', name: 'Luis Dario Villalobos Castro', role: es ? 'Tesorero' : 'Treasurer' },
-    { key: 'vocal-1', name: 'Stacy Ohrt-Billingslea', role: es ? 'Vocal' : 'Board member' },
-    { key: 'vocal-2', name: 'Susu Gray', role: es ? 'Vocal' : 'Board member' },
-    { key: 'vocal-3', name: 'Shanae Wise', role: es ? 'Vocal' : 'Board member' },
+    {
+      key: 'jose-pablo-arias',
+      name: 'José Pablo Arias Mora',
+      role: es ? 'Presidente' : 'President',
+      photo: { url: '/recursos/IMG_2908.PNG', alt: 'José Pablo Arias Mora' },
+      bio: es
+        ? 'Líder comunitario y gestor cultural con amplia trayectoria en el desarrollo del teatro musical y proyectos comunitarios en Monteverde.'
+        : 'Community leader and cultural manager with extensive experience developing musical theatre and community initiatives in Monteverde.',
+    },
+    {
+      key: 'isaac-matamoros',
+      name: 'Isaac Matamoros Trejos',
+      role: es ? 'Vicepresidente' : 'Vice President',
+      photo: { url: '/recursos/IMG_2909.PNG', alt: 'Isaac Matamoros Trejos' },
+      bio: es
+        ? 'Comprometido con la formación artística de jóvenes y el fortalecimiento de la educación escénica accesible.'
+        : 'Dedicated to artistic youth development and strengthening accessible performing arts education.',
+    },
+    {
+      key: 'luis-dario-villalobos',
+      name: 'Luis Dario Villalobos Castro',
+      role: es ? 'Tesorero' : 'Treasurer',
+      photo: { url: '/recursos/IMG_2910.PNG', alt: 'Luis Dario Villalobos Castro' },
+      bio: es
+        ? 'Especialista en administración financiera y gestión de fondos transparentes para organizaciones sin fines de lucro.'
+        : 'Specialist in financial administration and transparent non-profit fund management.',
+    },
+    {
+      key: 'stacy-ohrt',
+      name: 'Stacy Ohrt-Billingslea',
+      role: es ? 'Vocal' : 'Board member',
+      photo: { url: '/recursos/IMG_2911.PNG', alt: 'Stacy Ohrt-Billingslea' },
+      bio: es
+        ? 'Impulsora de vínculos internacionales y programas de intercambio para jóvenes talentos escénicos.'
+        : 'Promoter of international partnerships and exchange programs for young stage talent.',
+    },
+    {
+      key: 'susu-gray',
+      name: 'Susu Gray',
+      role: es ? 'Vocal' : 'Board member',
+      photo: { url: '/recursos/IMG_2912.PNG', alt: 'Susu Gray' },
+      bio: es
+        ? 'Promotora de las artes escénicas en comunidades rurales y conservación de la memoria histórica comunitaria.'
+        : 'Advocate for performing arts in rural communities and community historic preservation.',
+    },
+    {
+      key: 'shanae-wise',
+      name: 'Shanae Wise',
+      role: es ? 'Vocal' : 'Board member',
+      photo: { url: '/recursos/IMG_2913.PNG', alt: 'Shanae Wise' },
+      bio: es
+        ? 'Gestora de voluntariado, alianzas con centros educativos y proyectos de inclusión comunitaria.'
+        : 'Coordinator of volunteering, educational partnerships, and community inclusion initiatives.',
+    },
   ];
 
-  const boardPeople = boardItems.length > 0 ? toPeople(boardItems) : defaultBoard;
-  // Datos de relleno hasta que la sección «Producción» del panel tenga filas publicadas.
   const defaultProduction: PersonCardData[] = [
-    { key: 'direccion', name: 'Persona Ejemplo', role: es ? 'Dirección general' : 'General direction' },
-    { key: 'musica', name: 'Persona Ejemplo', role: es ? 'Dirección musical' : 'Music direction' },
-    { key: 'coreografia', name: 'Persona Ejemplo', role: es ? 'Coreografía' : 'Choreography' },
-    { key: 'tecnica', name: 'Persona Ejemplo', role: es ? 'Producción técnica' : 'Technical production' },
+    {
+      key: 'direccion-general',
+      name: 'Dirección Escénica',
+      role: es ? 'Dirección general' : 'General direction',
+      photo: { url: '/recursos/IMG_2914.PNG', alt: 'Dirección Escénica' },
+      bio: es
+        ? 'Liderazgo artístico, conceptualización de montajes y guía interpretativa para el elenco comunitario.'
+        : 'Artistic leadership, show conceptualization, and performance guidance for the community cast.',
+    },
+    {
+      key: 'direccion-musical',
+      name: 'Dirección Musical',
+      role: es ? 'Dirección musical' : 'Music direction',
+      photo: { url: '/recursos/IMG_2916.PNG', alt: 'Dirección Musical' },
+      bio: es
+        ? 'Preparación vocal, ensamble coral y coordinación de instrumentación en vivo para las temporadas.'
+        : 'Vocal coaching, choral arrangement, and live orchestration coordination for our production seasons.',
+    },
+    {
+      key: 'coreografia',
+      name: 'Coreografía y Danza',
+      role: es ? 'Coreografía' : 'Choreography',
+      photo: { url: '/recursos/IMG_2917.PNG', alt: 'Coreografía y Danza' },
+      bio: es
+        ? 'Diseño de rutinas de baile adaptadas a todas las edades y niveles de experiencia escénica.'
+        : 'Designing dance routines tailored to all age groups and experience levels.',
+    },
+    {
+      key: 'produccion-tecnica',
+      name: 'Producción Técnica',
+      role: es ? 'Producción técnica y escenografía' : 'Technical production & stage design',
+      photo: { url: '/recursos/IMG_2918.PNG', alt: 'Producción Técnica' },
+      bio: es
+        ? 'Iluminación, diseño sonoro, escenografía e infraestructura teatral comunitaria.'
+        : 'Lighting, sound design, set construction, and theatre technical infrastructure.',
+    },
   ];
-  const productionPeople = productionItems.length > 0 ? toPeople(productionItems) : defaultProduction;
+
+  const boardPeople = boardItems.length > 0 ? toPeople(boardItems, language, defaultBoard) : defaultBoard;
+  const productionPeople = productionItems.length > 0 ? toPeople(productionItems, language, defaultProduction) : defaultProduction;
+  const allPeople = [...boardPeople, ...productionPeople];
+  const selectedPerson = allPeople.find((p) => p.key === selectedPersonKey) ?? null;
 
   const openGallery = (title: string, images: GalleryImage[]) => setGallery({ title, images });
 
@@ -384,7 +576,12 @@ export const AboutView: React.FC<AboutViewProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {boardPeople.map((person) => (
-            <PersonCard key={person.key} person={person} />
+            <PersonCard
+              key={person.key}
+              person={person}
+              language={language}
+              onSelect={(p) => setSelectedPersonKey(p.key)}
+            />
           ))}
         </div>
       </div>
@@ -403,10 +600,24 @@ export const AboutView: React.FC<AboutViewProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {productionPeople.map((person) => (
-              <PersonCard key={person.key} person={person} />
+              <PersonCard
+                key={person.key}
+                person={person}
+                language={language}
+                onSelect={(p) => setSelectedPersonKey(p.key)}
+              />
             ))}
           </div>
         </div>
+      )}
+
+      {/* Modal / Ficha Desplegada de Persona Ampliada */}
+      {selectedPerson && (
+        <PersonDetailModal
+          person={selectedPerson}
+          language={language}
+          onClose={() => setSelectedPersonKey(null)}
+        />
       )}
 
       {gallery && (

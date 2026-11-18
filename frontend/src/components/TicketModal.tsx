@@ -58,13 +58,28 @@ export const TicketModal: React.FC<TicketModalProps> = ({
   const t = getTranslations(language).modals.ticket;
   const { usuario } = useSesion();
 
+  // Métodos de pago activos para esta obra específica
+  const activePaymentMethods: ('sinpe' | 'zeffy' | 'paypal')[] =
+    show?.paymentMethods && show.paymentMethods.length > 0
+      ? show.paymentMethods
+      : ['sinpe', 'zeffy', 'paypal'];
+
   // Estados del formulario unificado (estilo donaciones)
   const [currency, setCurrency] = useState<'CRC' | 'USD'>('CRC');
   const [selectedPerformanceId, setSelectedPerformanceId] = useState<string>('');
   const [quantity, setQuantity] = useState(2);
-  const [paymentMethod, setPaymentMethod] = useState<'sinpe' | 'zeffy' | 'paypal'>('sinpe');
+  const [paymentMethod, setPaymentMethod] = useState<'sinpe' | 'zeffy' | 'paypal'>(
+    activePaymentMethods[0] || 'sinpe'
+  );
   const [sinpeRef, setSinpeRef] = useState('');
   const [sinpeFileName, setSinpeFileName] = useState('');
+
+  // Sincronizar método activo si cambia la obra
+  useEffect(() => {
+    if (activePaymentMethods.length > 0 && !activePaymentMethods.includes(paymentMethod)) {
+      setPaymentMethod(activePaymentMethods[0]);
+    }
+  }, [show?.id]);
 
   // Rate limit / Enfriamiento de 30 segundos
   const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
@@ -328,7 +343,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
               <div className="bg-[#F8F8F2] dark:bg-brand-navyDark p-5 rounded-2xl border border-brand-green/50 text-left relative overflow-hidden shadow-xl">
                 <div className="absolute right-3 top-3 text-brand-forest dark:text-brand-lime flex items-center space-x-1 text-[10px] bg-brand-green/20 px-2 py-0.5 rounded border border-brand-green/40 font-bold">
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Boletería Oficial FC</span>
+                  <span>{isEs ? 'Boletería Oficial FC' : 'Official FC Box Office'}</span>
                 </div>
 
                 <div className="border-b border-slate-200 dark:border-white/10 pb-3 mb-3">
@@ -341,25 +356,29 @@ export const TicketModal: React.FC<TicketModalProps> = ({
 
                 <div className="grid grid-cols-2 gap-2 text-xs mb-4">
                   <div>
-                    <span className="text-slate-500 block text-[10px]">Titular:</span>
-                    <span className="font-semibold text-brand-navy dark:text-white">{name || 'Asistente'}</span>
+                    <span className="text-slate-500 block text-[10px]">{isEs ? 'Titular:' : 'Patron:'}</span>
+                    <span className="font-semibold text-brand-navy dark:text-white">{name || (isEs ? 'Asistente' : 'Attendee')}</span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block text-[10px]">Asientos Asignados:</span>
-                    <span className="font-bold text-brand-navy dark:text-white">{quantity} {quantity === 1 ? 'asiento general' : 'asientos generales'}</span>
+                    <span className="text-slate-500 block text-[10px]">{isEs ? 'Asientos Asignados:' : 'Allocated Seats:'}</span>
+                    <span className="font-bold text-brand-navy dark:text-white">
+                      {quantity} {quantity === 1 ? (isEs ? 'asiento general' : 'general seat') : (isEs ? 'asientos generales' : 'general seats')}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block text-[10px]">Total:</span>
+                    <span className="text-slate-500 block text-[10px]">{isEs ? 'Total:' : 'Total:'}</span>
                     <span className="font-mono font-bold text-brand-forest dark:text-brand-lime">
                       {currency === 'CRC' ? `₡${totalPrice.toLocaleString()} CRC` : `$${totalPrice.toLocaleString()} USD`}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block text-[10px]">Estado del Pago:</span>
+                    <span className="text-slate-500 block text-[10px]">{isEs ? 'Estado del Pago:' : 'Payment Status:'}</span>
                     <span className={`font-bold uppercase text-[11px] ${
                       purchaseResult.purchase.status === 'paid' ? 'text-emerald-500' : 'text-amber-500'
                     }`}>
-                      {purchaseResult.purchase.status === 'paid' ? 'PAGADO / ACTIVO' : 'PENDIENTE DE VALIDACIÓN'}
+                      {purchaseResult.purchase.status === 'paid'
+                        ? (isEs ? 'PAGADO / ACTIVO' : 'PAID / ACTIVE')
+                        : (isEs ? 'PENDIENTE DE VALIDACIÓN' : 'PENDING VALIDATION')}
                     </span>
                   </div>
                 </div>
@@ -368,7 +387,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                 {purchaseResult.purchase.status === 'paid' ? (
                   <div className="space-y-2">
                     <span className="block text-[11px] font-mono text-slate-500 dark:text-slate-300 font-bold">
-                      Códigos QR por Asiento:
+                      {isEs ? 'Códigos QR por Asiento:' : 'QR Codes per Seat:'}
                     </span>
                     {purchaseResult.tickets.map((tItem, i) => (
                       <div
@@ -379,7 +398,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                           <QrCode className="w-8 h-8 text-brand-green" />
                           <div className="text-[10px]">
                             <span className="block text-brand-navy dark:text-white font-mono font-bold">
-                              Boleto #{i + 1} de {quantity}
+                              {isEs ? `Boleto #${i + 1} de ${quantity}` : `Ticket #${i + 1} of ${quantity}`}
                             </span>
                             <span className="font-mono text-brand-forest dark:text-brand-lime">{tItem.qr_code}</span>
                           </div>
@@ -392,10 +411,18 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                     <Lock className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
                     <div className="space-y-1 text-slate-700 dark:text-slate-300">
                       <span className="font-bold text-amber-600 dark:text-amber-300 block text-xs">
-                        Códigos QR protegidos hasta validación
+                        {isEs ? 'Códigos QR protegidos hasta validación' : 'QR Codes protected until verification'}
                       </span>
                       <p className="text-[11px] leading-relaxed">
-                        Se asignaron <strong>{quantity} {quantity === 1 ? 'asiento' : 'asientos'}</strong> a tu nombre. Tan pronto la administración apruebe el comprobante, tus códigos QR y boletos quedarán activos y te llegará la copia en PDF a <strong>{email}</strong>.
+                        {isEs ? (
+                          <>
+                            Se asignaron <strong>{quantity} {quantity === 1 ? 'asiento' : 'asientos'}</strong> a tu nombre. Tan pronto la administración apruebe el comprobante, tus códigos QR y boletos quedarán activos y te llegará la copia en PDF a <strong>{email}</strong>.
+                          </>
+                        ) : (
+                          <>
+                            Allocated <strong>{quantity} {quantity === 1 ? 'seat' : 'seats'}</strong> under your name. Once administration verifies your payment, your tickets and QR codes will activate and a PDF copy will be emailed to <strong>{email}</strong>.
+                          </>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -437,7 +464,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                 {loadingInventory ? (
                   <div className="p-4 text-center text-xs text-slate-400">
                     <Loader2 className="w-4 h-4 animate-spin inline mr-2 text-brand-green" />
-                    <span>Cargando funciones...</span>
+                    <span>{isEs ? 'Cargando funciones...' : 'Loading performances...'}</span>
                   </div>
                 ) : performancesList.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -523,7 +550,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
 
                 <div className="flex items-center justify-between pt-1">
                   <div>
-                    <span className="text-xs text-slate-500 block">Tarifa por boleto:</span>
+                    <span className="text-xs text-slate-500 block">{isEs ? 'Tarifa por boleto:' : 'Price per ticket:'}</span>
                     <span className="font-mono text-base font-bold text-brand-forest dark:text-brand-lime">
                       {currency === 'CRC' ? `₡${pricePerTicket.toLocaleString()} CRC` : `$${pricePerTicket} USD`}
                     </span>
@@ -551,7 +578,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
 
                 {/* Total */}
                 <div className="pt-2 border-t border-slate-200 dark:border-white/10 flex items-center justify-between text-xs">
-                  <span className="font-semibold text-slate-600 dark:text-slate-300">Total a Pagar:</span>
+                  <span className="font-semibold text-slate-600 dark:text-slate-300">{isEs ? 'Total a Pagar:' : 'Total to Pay:'}</span>
                   <span className="font-mono text-xl font-extrabold text-brand-forest dark:text-brand-lime">
                     {currency === 'CRC' ? `₡${totalPrice.toLocaleString()} CRC` : `$${totalPrice.toLocaleString()} USD`}
                   </span>
@@ -603,67 +630,83 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                   {isEs ? '4. Método de Pago' : '4. Payment Method'}
                 </span>
 
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('sinpe')}
-                    className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-center ${
-                      paymentMethod === 'sinpe'
-                        ? 'bg-brand-green border-brand-lime text-brand-navy shadow-glow-green font-extrabold'
-                        : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300'
-                    }`}
-                  >
-                    SINPE Móvil
-                  </button>
+                <div className="flex flex-wrap gap-2">
+                  {activePaymentMethods.includes('sinpe') && (
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('sinpe')}
+                      className={`flex-1 min-w-[100px] p-2.5 rounded-xl border text-xs font-bold transition-all text-center ${
+                        paymentMethod === 'sinpe'
+                          ? 'bg-brand-green border-brand-lime text-brand-navy shadow-glow-green font-extrabold'
+                          : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300'
+                      }`}
+                    >
+                      SINPE Móvil
+                    </button>
+                  )}
 
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('zeffy')}
-                    className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-center ${
-                      paymentMethod === 'zeffy'
-                        ? 'bg-brand-green border-brand-lime text-brand-navy shadow-glow-green font-extrabold'
-                        : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300'
-                    }`}
-                  >
-                    Zeffy (0% com)
-                  </button>
+                  {activePaymentMethods.includes('zeffy') && (
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('zeffy')}
+                      className={`flex-1 min-w-[100px] p-2.5 rounded-xl border text-xs font-bold transition-all text-center ${
+                        paymentMethod === 'zeffy'
+                          ? 'bg-brand-green border-brand-lime text-brand-navy shadow-glow-green font-extrabold'
+                          : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300'
+                      }`}
+                    >
+                      Zeffy (0% com)
+                    </button>
+                  )}
 
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('paypal')}
-                    className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-center ${
-                      paymentMethod === 'paypal'
-                        ? 'bg-brand-green border-brand-lime text-brand-navy shadow-glow-green font-extrabold'
-                        : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300'
-                    }`}
-                  >
-                    PayPal
-                  </button>
+                  {activePaymentMethods.includes('paypal') && (
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('paypal')}
+                      className={`flex-1 min-w-[100px] p-2.5 rounded-xl border text-xs font-bold transition-all text-center ${
+                        paymentMethod === 'paypal'
+                          ? 'bg-brand-green border-brand-lime text-brand-navy shadow-glow-green font-extrabold'
+                          : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300'
+                      }`}
+                    >
+                      PayPal
+                    </button>
+                  )}
                 </div>
 
                 {/* Instrucciones SINPE con número y comprobante */}
                 {paymentMethod === 'sinpe' && (
                   <div className="p-4 bg-brand-green/10 border border-brand-green/30 rounded-2xl space-y-3 text-xs">
                     <div className="flex items-center justify-between pb-2 border-b border-brand-green/20">
-                      <span className="font-semibold text-brand-navy dark:text-white">Número SINPE Móvil:</span>
+                      <span className="font-semibold text-brand-navy dark:text-white">
+                        {isEs ? 'Número SINPE Móvil:' : 'SINPE Mobile Number:'}
+                      </span>
                       <span className="font-mono font-bold text-sm bg-white dark:bg-brand-navy px-2.5 py-1 rounded-lg border border-brand-green/40 text-brand-forest dark:text-brand-lime">
-                        8888-0000
+                        {show.sinpePhone || '7131-7013'}
                       </span>
                     </div>
                     <p className="text-slate-600 dark:text-slate-300">
-                      Transfiere el monto de <strong>{currency === 'CRC' ? `₡${totalPrice.toLocaleString()} CRC` : `$${totalPrice.toLocaleString()} USD`}</strong> a nombre de <strong>Asociación Far Corners</strong> y digita el número de comprobante abajo.
+                      {isEs ? (
+                        <>
+                          Transfiere el monto de <strong>{currency === 'CRC' ? `₡${totalPrice.toLocaleString()} CRC` : `$${totalPrice.toLocaleString()} USD`}</strong> a nombre de <strong>Asociación Far Corners</strong> y digita el número de comprobante abajo.
+                        </>
+                      ) : (
+                        <>
+                          Transfer <strong>{currency === 'CRC' ? `₡${totalPrice.toLocaleString()} CRC` : `$${totalPrice.toLocaleString()} USD`}</strong> to <strong>Asociación Far Corners</strong> and enter the transaction reference number below.
+                        </>
+                      )}
                     </p>
 
                     <div>
                       <label className="block text-[11px] font-bold text-brand-navy dark:text-white mb-1">
-                        Número de Comprobante / Referencia SINPE *
+                        {isEs ? 'Número de Comprobante / Referencia SINPE *' : 'SINPE Reference / Confirmation Number *'}
                       </label>
                       <input
                         type="text"
                         required
                         value={sinpeRef}
                         onChange={(e) => setSinpeRef(e.target.value)}
-                        placeholder="Ej. REF-839201"
+                        placeholder={isEs ? 'Ej. REF-839201' : 'e.g. REF-839201'}
                         className="w-full px-3 py-2 bg-white dark:bg-brand-navy border border-brand-green/50 rounded-xl text-xs font-mono font-bold text-brand-navy dark:text-white focus:outline-none"
                       />
                     </div>
@@ -675,11 +718,11 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                   <div className="p-4 bg-slate-50 dark:bg-brand-navyDark border border-slate-200 dark:border-white/10 rounded-2xl space-y-3 text-xs">
                     <p className="text-slate-600 dark:text-slate-300">
                       {isEs
-                        ? 'Plataforma oficial 100% gratuita para el Teatro Comunitario Far Corners. Haz clic abajo para ir a pagar a Zeffy:'
-                        : 'Free non-profit platform. Click below to pay on Zeffy:'}
+                        ? 'Plataforma oficial 100% gratuita para el Teatro Comunitario Far Corners. Haz clic abajo para ir a comprar tus boletos en Zeffy:'
+                        : 'Free non-profit platform. Click below to buy tickets on Zeffy:'}
                     </p>
                     <a
-                      href="https://www.zeffy.com/ticketing"
+                      href={show.zeffyUrl || 'https://www.zeffy.com/ticketing'}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-full py-2.5 px-4 bg-[#75267A] hover:bg-[#8D2E94] text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-2 transition-colors shadow-sm"
@@ -689,13 +732,13 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                     </a>
                     <div>
                       <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">
-                        Número de Confirmación / Referencia Zeffy:
+                        {isEs ? 'Número de Confirmación / Referencia Zeffy:' : 'Zeffy Confirmation / Reference Number:'}
                       </label>
                       <input
                         type="text"
                         value={sinpeRef}
                         onChange={(e) => setSinpeRef(e.target.value)}
-                        placeholder="Ej. ZEFFY-928172"
+                        placeholder={isEs ? 'Ej. ZEFFY-928172' : 'e.g. ZEFFY-928172'}
                         className="w-full px-3 py-2 bg-white dark:bg-brand-navy border border-slate-300 dark:border-white/10 rounded-xl text-xs font-mono font-bold text-brand-navy dark:text-white focus:outline-none"
                       />
                     </div>
@@ -711,23 +754,23 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                         : 'Pay securely with PayPal. Click below to proceed:'}
                     </p>
                     <a
-                      href="https://www.paypal.com"
+                      href={show.paypalUrl || 'https://www.paypal.com/US/fundraiser/charity/1902778'}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-full py-2.5 px-4 bg-[#0070BA] hover:bg-[#005ea6] text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-2 transition-colors shadow-sm"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
-                      <span>{isEs ? 'Ir a PayPal' : 'Open PayPal'}</span>
+                      <span>{isEs ? 'Ir a donar / pagar en PayPal' : 'Open PayPal'}</span>
                     </a>
                     <div>
                       <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">
-                        ID de Transacción / Correo PayPal:
+                        {isEs ? 'ID de Transacción / Correo PayPal:' : 'Transaction ID / PayPal Email:'}
                       </label>
                       <input
                         type="text"
                         value={sinpeRef}
                         onChange={(e) => setSinpeRef(e.target.value)}
-                        placeholder="Ej. 9X928172PP o tu correo PayPal"
+                        placeholder={isEs ? 'Ej. 9X928172PP o tu correo PayPal' : 'e.g. 9X928172PP or your PayPal email'}
                         className="w-full px-3 py-2 bg-white dark:bg-brand-navy border border-slate-300 dark:border-white/10 rounded-xl text-xs font-mono font-bold text-brand-navy dark:text-white focus:outline-none"
                       />
                     </div>
@@ -769,7 +812,9 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                   </span>
                 ) : (
                   <span>
-                    {isEs ? `Adquirir ${quantity} ${quantity === 1 ? 'Boleto' : 'Boletos'} (${currency === 'CRC' ? '₡' : '$'}${totalPrice.toLocaleString()})` : `Buy ${quantity} Tickets`}
+                    {isEs
+                      ? `Adquirir ${quantity} ${quantity === 1 ? 'Boleto' : 'Boletos'} (${currency === 'CRC' ? '₡' : '$'}${totalPrice.toLocaleString()})`
+                      : `Buy ${quantity} ${quantity === 1 ? 'Ticket' : 'Tickets'} (${currency === 'CRC' ? '₡' : '$'}${totalPrice.toLocaleString()})`}
                   </span>
                 )}
               </button>
