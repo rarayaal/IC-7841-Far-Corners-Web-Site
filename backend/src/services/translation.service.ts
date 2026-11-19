@@ -203,12 +203,17 @@ export class MyMemoryTranslator {
             if (this.email) url.searchParams.set('de', this.email);
             const response = await this.fetchImpl(url, { signal: AbortSignal.timeout(8000) });
             if (response.status === 429) {
+              console.warn('[translation] MyMemory respondió HTTP 429');
               this.data.blockedUntil = this.now() + 24 * 60 * 60 * 1000;
               await this.persist();
               return;
             }
             const body = await response.json() as { responseStatus?: number | string; quotaFinished?: boolean; responseData?: { translatedText?: unknown } };
             if (Number(body.responseStatus) === 403 || body.quotaFinished) {
+              console.warn('[translation] MyMemory rechazó la traducción', {
+                responseStatus: body.responseStatus,
+                quotaFinished: body.quotaFinished,
+              });
               this.data.blockedUntil = this.now() + 24 * 60 * 60 * 1000;
               await this.persist();
               return;
@@ -228,10 +233,22 @@ export class MyMemoryTranslator {
         }
         this.put(key, translated.join(''));
         await this.persist();
-      } catch {
+      } catch (error) {
+        console.warn('[translation] Falló la traducción', {
+          errorType: error instanceof Error ? error.name : 'UnknownError',
+        });
+
         // A short circuit-breaker avoids retry storms. Error messages never replace site content.
-        this.data.blockedUntil = Math.max(this.data.blockedUntil, this.now() + 60000);
-        try { if (this.writable) await this.persist(); } catch { /* original text remains available */ }
+        this.data.blockedUntil = Math.max(
+          this.data.blockedUntil,
+          this.now() + 60000
+        );
+
+        try {
+          if (this.writable) await this.persist();
+        } catch {
+          /* original text remains available */
+        }
       } finally {
         this.pending.delete(key);
       }
