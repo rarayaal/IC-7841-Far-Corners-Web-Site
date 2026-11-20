@@ -1,8 +1,14 @@
 import type { Language } from '../types';
 
 const es = {
+  generalUsers: {
+    title: 'Usuarios generales',
+    subtitle: 'Gestión de cuentas sin acceso al panel administrativo.',
+    createBtn: 'Crear usuario',
+    refreshBtn: 'Actualizar',
+  },
   tabs: {
-    content: 'Contenido',
+    content: 'Junta Directiva y Equipo',
     media: 'Galería',
     retirement: 'Retirar contenido',
     communities: 'Comunidades',
@@ -186,8 +192,8 @@ const es = {
     },
   },
   institutional: {
-    title: 'Contenido institucional',
-    subtitle: 'Administra la historia, el impacto, la visión de futuro, el pie de página, la junta directiva y el equipo de producción que se muestran en el sitio.',
+    title: 'Junta Directiva y Equipo de Producción',
+    subtitle: 'Administra las personas que integran la Junta Directiva y el Equipo de Producción de Far Corners.',
     sections: {
       history: 'Historia',
       impact: 'Impacto',
@@ -228,7 +234,7 @@ const es = {
         title: 'Nombre de la obra o proyecto *',
         subtitle: 'Año o fechas',
         content: 'Descripción de la galería *',
-        hint: 'Identificador = id de la obra/proyecto (addams-family-2026, mamma-mia-2024, jesus-christ-superstar-2022, into-the-woods, fiddler-on-the-roof-2017, in-the-heights-2013, urinetown-2009, guys-and-dolls-2005, proj-cr). Las fotos se suben en «Galería multimedia» asociadas a este contenido; reemplazan a las fotos locales.',
+        hint: 'Identificador = nombre de la obra o proyecto en minúsculas y con guiones, sin tildes (ej.: the-addams-family-musical, mamma-mia). También sirve el id del evento. Las fotos se suben en «Galería multimedia» asociadas a este contenido; reemplazan a las fotos locales.',
       },
     },
     personSlug: 'Identificador *',
@@ -758,8 +764,14 @@ const es = {
 export type AdminTexts = typeof es;
 
 const en: AdminTexts = {
+  generalUsers: {
+    title: 'General users',
+    subtitle: 'Manage accounts without access to the administration panel.',
+    createBtn: 'Create user',
+    refreshBtn: 'Refresh',
+  },
   tabs: {
-    content: 'Content',
+    content: 'Board & Production Team',
     media: 'Gallery',
     retirement: 'Withdraw content',
     communities: 'Communities',
@@ -941,8 +953,8 @@ const en: AdminTexts = {
     },
   },
   institutional: {
-    title: 'Institutional content',
-    subtitle: 'Manage the history, impact, vision for the future, footer, board of directors and production team shown on the site.',
+    title: 'Board of Directors & Production Team',
+    subtitle: 'Manage the people on the Board of Directors and the Production Team of Far Corners.',
     sections: {
       history: 'History',
       impact: 'Impact',
@@ -982,7 +994,7 @@ const en: AdminTexts = {
         title: 'Play or project name *',
         subtitle: 'Year or dates',
         content: 'Gallery description *',
-        hint: 'Identifier = play/project id (addams-family-2026, mamma-mia-2024, jesus-christ-superstar-2022, into-the-woods, fiddler-on-the-roof-2017, in-the-heights-2013, urinetown-2009, guys-and-dolls-2005, proj-cr). Upload photos in "Media gallery" attached to this content; they replace the local photos.',
+        hint: 'Identifier = play or project name in lowercase with hyphens, no accents (e.g.: the-addams-family-musical, mamma-mia). The event id also works (addams-family-2026, mamma-mia-2024, jesus-christ-superstar-2022, into-the-woods, fiddler-on-the-roof-2017, in-the-heights-2013, urinetown-2009, guys-and-dolls-2005, proj-cr). Upload photos in "Media gallery" attached to this content; they replace the local photos.',
       },
     },
     personSlug: 'Identifier *',

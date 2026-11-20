@@ -17,7 +17,7 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
     contactos,
     cargando: cargandoContactos,
     error: errorContactos,
-  } = useContactChannels();
+  } = useContactChannels(language);
 
   // Textos editables desde el panel de administración (sección «Pie de página»).
   // Si aún no hay contenido publicado se usan los textos por defecto.

@@ -40,9 +40,9 @@ export async function insertarUser(req: Request, res: Response) {
       return;
     }
 
-    if (contrasenia.length < 10 || contrasenia.length > 128) {
+    if (contrasenia.length < 6 || contrasenia.length > 128) {
       res.status(400).json({
-        message: 'La contraseña debe tener entre 15 y 128 caracteres.',
+        message: 'La contraseña debe tener al menos 6 caracteres.',
       });
       return;
     }
@@ -64,7 +64,35 @@ export async function insertarUser(req: Request, res: Response) {
       return;
     }
 
-    res.status(201).json(insertado);
+    const userPayload = {
+      id: insertado.id,
+      full_name: insertado.full_name,
+      email: insertado.email,
+      role: insertado.role,
+      status: insertado.status,
+      permissions: [],
+    };
+
+    const token = jwt.sign(
+      {
+        id: insertado.id,
+        email: insertado.email,
+        role: insertado.role,
+        full_name: insertado.full_name,
+      },
+      authConfig.secret,
+      {
+        expiresIn: authConfig.expiresInSeconds,
+      }
+    );
+
+    res.status(201).json({
+      message: 'Cuenta creada e inicio de sesión exitoso.',
+      data: {
+        token,
+        user: userPayload,
+      },
+    });
   } catch (error) {
     console.error('Error al registrar el usuario:', error);
 

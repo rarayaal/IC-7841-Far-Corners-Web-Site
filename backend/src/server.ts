@@ -19,14 +19,18 @@ import { contactMessagesRouter } from "./routes/contactMessages.routes.js";
 import { contactChannelsRouter } from "./routes/contactChannels.routes.js";
 import { newsletterRouter } from './routes/newsletter.routes.js';
 import { formsRouter } from "./routes/forms.routes.js";
+import { eventsRouter } from "./routes/events.routes.js";
+import { dashboardRouter } from "./routes/dashboard.routes.js";
 import { eliminarBorradoresAntiguos } from "./repositories/forms.repository.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 3000);
 
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // Rutas de contenido y modulos publicos
+app.use("/api/v1/events", eventsRouter);
 app.use("/api/v1/projects", projectsRouter);
 app.use("/api/v1/communities", communitiesRouter);
 app.use("/api/v1/students", studentsRouter);
@@ -37,6 +41,7 @@ app.use("/api/v1/institutional", institutionalRouter);
 app.use("/api/v1/media", mediaRouter);
 app.use("/api/v1/content-retirement", retirementRouter);
 app.use("/api/v1/tickets", ticketsRouter);
+app.use("/api/v1/purchases", ticketsRouter);
 app.use("/api/v1/donations", donationsRouter);
 app.use("/api/v1/contact-messages", contactMessagesRouter);
 app.use("/api/v1/contact-channels", contactChannelsRouter);
@@ -46,6 +51,7 @@ app.use("/api/v1/users", usersRouter);
 app.use("/api/v1/forms", formsRouter);
 
 // Rutas de seguridad, administracion y auditoria
+app.use("/api/v1/dashboard", dashboardRouter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/me", profileRouter);
 app.use("/api/v1/admin", adminUsersRouter);

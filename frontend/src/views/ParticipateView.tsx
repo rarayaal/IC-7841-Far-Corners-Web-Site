@@ -18,39 +18,48 @@ export const ParticipateView: React.FC<ParticipateViewProps> = ({
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
-    let activo = true;
-
-    (async () => {
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let attempts = 0;
+    setCargando(true);
+    async function cargar() {
       try {
         const datos = await apiAdminJson<PublicForm[]>(
-          '/api/v1/forms/published',
-          {},
+          `/api/v1/forms/published?lang=${language}`,
+          { signal: controller.signal },
           { tokenOpcional: true }
         );
-        if (activo) setFormularios(Array.isArray(datos) ? datos : []);
+        if (controller.signal.aborted) return;
+        const lista = Array.isArray(datos) ? datos : [];
+        const pending = lista.some(form => form.localization?.state === 'pending');
+        const keepPolling = pending && ++attempts < 60;
+        setFormularios(pending && !keepPolling ? lista.map(form => form.localization?.state === 'pending'
+          ? { ...form, localization: { ...form.localization, state: 'unavailable' as const } } : form) : lista);
+        if (keepPolling) {
+          timer = setTimeout(cargar, 3000);
+        }
       } catch {
-        if (activo) setFormularios([]);
+        if (!controller.signal.aborted && attempts === 0) setFormularios([]);
       } finally {
-        if (activo) setCargando(false);
+        if (!controller.signal.aborted) setCargando(false);
       }
-    })();
-
-    return () => {
-      activo = false;
-    };
-  }, []);
+    }
+    void cargar();
+    return () => { controller.abort(); clearTimeout(timer); };
+  }, [language]);
 
   // El destacado se elige desde el admin de Formularios; si no hay ninguno
   // publicado, la tarjeta grande no se muestra.
   const destacado = formularios.find((f) => f.is_featured) ?? null;
 
   const titulo = (form: PublicForm) =>
-    language === 'es' ? form.title : form.title_en || form.title;
+    form.localization?.language === language ? form.localization.title : language === 'es' ? form.title : form.title_en || form.title;
   const descripcion = (form: PublicForm) =>
-    language === 'es' ? form.description : form.description_en || form.description;
+    form.localization?.language === language ? form.localization.description : language === 'es' ? form.description : form.description_en || form.description;
   const periodo = (form: PublicForm) =>
-    language === 'es' ? form.period : form.period_en || form.period;
-  const requisitos = (form: PublicForm) => form.requirements?.[language] ?? [];
+    form.localization?.language === language ? form.localization.period : language === 'es' ? form.period : form.period_en || form.period;
+  const requisitos = (form: PublicForm) => form.localization?.language === language
+    ? form.localization.requirements : form.requirements?.[language] ?? [];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-12 sm:space-y-16 animate-fadeIn">
@@ -66,6 +75,12 @@ export const ParticipateView: React.FC<ParticipateViewProps> = ({
           {t.desc}
         </p>
       </div>
+
+      {formularios.some(form => form.localization?.language === language && form.localization.state === 'pending') && (
+        <p role="status" className="text-center text-xs text-slate-500 dark:text-slate-400">
+          {language === 'es' ? 'Preparando traducción. Los textos se actualizarán automáticamente.' : 'Preparing translation. Texts will update automatically.'}
+        </p>
+      )}
 
       {/* Tarjeta principal: el formulario marcado como destacado en el admin */}
       {destacado && (

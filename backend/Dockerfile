@@ -24,6 +24,9 @@ RUN npm ci --omit=dev
 
 COPY --from=build /app/dist ./dist
 
+RUN mkdir -p /home/node/.cache/farcorners-mymemory \
+    && chown -R node:node /home/node/.cache
+
 USER node
 
 EXPOSE 3000

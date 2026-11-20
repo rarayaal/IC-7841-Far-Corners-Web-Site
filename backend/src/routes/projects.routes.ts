@@ -1,3 +1,4 @@
+import { publicLocalization } from '../middlewares/public-localization.middleware.js';
 import { Router } from "express";
 import {
   listarProyectos,
@@ -12,8 +13,8 @@ import { requireRoles } from "../middlewares/rbac.middleware.js";
 export const projectsRouter = Router();
 
 // Consulta publica
-projectsRouter.get("/", listarProyectos);
-projectsRouter.get("/:id", consultarProyecto);
+projectsRouter.get("/", publicLocalization("projects"), listarProyectos);
+projectsRouter.get("/:id", publicLocalization("projects"), consultarProyecto);
 
 // Gestion administrativa de proyectos (CU-04 / RF-04)
 projectsRouter.post(

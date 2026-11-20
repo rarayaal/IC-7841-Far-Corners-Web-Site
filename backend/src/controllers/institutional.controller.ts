@@ -63,7 +63,10 @@ function validarCuerpo(
     language,
     title,
     subtitle,
+    subtitle_en,
     content,
+    content_en,
+    image_url,
     cta_label,
     cta_target,
     display_order,
@@ -157,7 +160,10 @@ function validarCuerpo(
       language,
       title: title.trim(),
       subtitle: subtitulo,
+      subtitle_en: textoOpcional(subtitle_en),
       content: content.trim(),
+      content_en: textoOpcional(content_en),
+      image_url: textoOpcional(image_url),
       cta_label: etiquetaBoton,
       cta_target: destinoBoton,
       display_order: orden,
@@ -191,6 +197,7 @@ export async function consultarContenidoPublico(
   }
 
   try {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.status(200).json(await obtenerContenidoPublicado(section, idioma));
   } catch (error) {
     console.error('Error al consultar contenido institucional:', error);

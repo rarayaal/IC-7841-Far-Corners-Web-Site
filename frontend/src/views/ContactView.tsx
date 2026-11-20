@@ -15,7 +15,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ language }) => {
   contactos,
   cargando: cargandoContactos,
   error: errorContactos,
-} = useContactChannels();
+} = useContactChannels(language);
 
 const contactosDePagina = contactos.filter((contacto) =>
   [

@@ -1,3 +1,4 @@
+import { publicLocalization } from '../middlewares/public-localization.middleware.js';
 import { Router } from "express";
 import {
   listarComunidades,
@@ -11,7 +12,7 @@ import { requireRoles } from "../middlewares/rbac.middleware.js";
 export const communitiesRouter = Router();
 
 // Consulta publica de comunidades
-communitiesRouter.get("/", listarComunidades);
+communitiesRouter.get("/", publicLocalization("communities"), listarComunidades);
 
 // Gestion administrativa de comunidades (CU-07)
 communitiesRouter.post("/", authenticateToken, requireRoles(["admin", "manager"]), registrarComunidad);

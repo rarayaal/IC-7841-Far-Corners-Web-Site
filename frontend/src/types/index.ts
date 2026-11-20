@@ -1,5 +1,13 @@
 export type Language = 'es' | 'en';
 
+export type TranslationState = 'ready' | 'pending' | 'limited' | 'unavailable';
+
+export interface FormTextLocalization {
+  language: Language;
+  texts: Record<string, string>;
+  state: TranslationState;
+}
+
 export type PageView = 'home' | 'about' | 'shows' | 'participate' | 'donate' | 'contact' | 'admin' | 'register' | 'login' | 'profile';
 
 export interface Show {
@@ -21,9 +29,23 @@ export interface Show {
   /** PDF del programa de mano; se usa cuando la obra no tiene boletería. */
   programUrl?: string;
   /** Actores y personajes que participan en la obra. Vacío = elenco por anunciar. */
-  cast: { name: string; role: string; photo?: string }[];
+  cast: { name: string; role: string; photo?: string; biography?: string }[];
   /** Fotos de la obra para la galería (URLs). */
   gallery?: string[];
+  /** Configuración de pagos personalizada por obra / programa */
+  zeffyUrl?: string;
+  paypalUrl?: string;
+  sinpePhone?: string;
+  paymentMethods?: ('sinpe' | 'zeffy' | 'paypal')[];
+  performances?: {
+    id: string;
+    starts_at: string;
+    ends_at?: string;
+    venue: string;
+    max_capacity: number;
+    status: string;
+    inventory?: any[];
+  }[];
 }
 
 export interface ImpactProject {
@@ -91,6 +113,15 @@ export interface PublicForm {
   requirements: { es?: string[]; en?: string[] } | null;
   is_featured: boolean;
   image_url: string | null;
+  /** Presentation only; the original fields above retain the database values. */
+  localization?: {
+    language: Language;
+    title: string;
+    description: string | null;
+    period: string | null;
+    requirements: string[];
+    state: TranslationState;
+  };
 }
 
 export interface Form extends PublicForm {
