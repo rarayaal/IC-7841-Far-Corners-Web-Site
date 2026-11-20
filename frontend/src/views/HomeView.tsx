@@ -4,10 +4,20 @@ import { Language, Show, PageView } from '../types';
 import { Ticket, Users, Sparkles, ChevronRight, Star, FileText } from 'lucide-react';
 import { CountUp } from '../components/CountUp';
 import { ShowsCarousel } from '../components/ShowsCarousel';
+import { HeroBackground } from '../components/HeroBackground';
 import { hasTickets, openProgram, mapearEventoAShow } from '../lib/shows';
 import { getTranslations } from '../lib/i18n';
 import { useGalleries } from '../hooks/useGalleries';
 import { GalleryButton, GalleryLightbox, toGalleryImages } from '../components/GalleryLightbox';
+
+/** Fotos de escena (public/obras) para el fondo del hero. */
+const HERO_IMAGES = [
+  '/obras/addams-2026/addams-2026-02.jpg',
+  '/obras/mamma-mia-2024/mamma-mia-2024-02.jpg',
+  '/obras/jcs-2022/jcs-2022-02.jpg',
+  '/obras/fiddler-2017/fiddler-2017-02.jpg',
+  '/obras/in-the-heights-2013/in-the-heights-2013-02.jpg',
+];
 
 interface HomeViewProps {
   language: Language;
@@ -66,19 +76,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
       {/* Brand Hero Section */}
       <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-radial-gradient">
         {/* Background stage image & gradient overlay */}
-        <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
-          <img
-            src="/recursos/IMG_2903_COLOR.PNG"
-            alt="Far Corners Background"
-            className="w-[85%] max-w-4xl h-auto object-contain opacity-20 dark:hidden"
-          />
-          <img
-            src={currentShow?.banner || '/recursos/IMG_2903.PNG'}
-            alt="Theater Stage"
-            className="hidden dark:block w-[85%] max-w-4xl h-auto object-contain opacity-20 brightness-90"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#F8F8F2] via-transparent to-transparent dark:from-brand-navyDark dark:via-transparent dark:to-transparent"></div>
-        </div>
+        <HeroBackground images={HERO_IMAGES} />
 
         {/* Hero Content */}
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-12 pb-20">
@@ -312,7 +310,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       </span>
                     )}
                     <GalleryButton
-                      count={galleryFor(proj.id, proj.gallery).length}
+                      count={galleryFor(proj.id, proj.gallery, proj.title).length}
                       language={language}
                       onClick={() => setGalleryProject(proj)}
                       className="absolute bottom-3 right-3"
@@ -352,7 +350,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
       {galleryProject && (
         <GalleryLightbox
           title={language === 'es' ? galleryProject.title : galleryProject.titleEn}
-          images={toGalleryImages(galleryFor(galleryProject.id, galleryProject.gallery), galleryProject.title)}
+          images={toGalleryImages(galleryFor(galleryProject.id, galleryProject.gallery, galleryProject.title), galleryProject.title)}
           language={language}
           onClose={() => setGalleryProject(null)}
         />

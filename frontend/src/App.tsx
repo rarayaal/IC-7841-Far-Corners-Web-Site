@@ -25,7 +25,29 @@ import { showsData } from './data/mockData';
 export function App() {
   const { theme, toggleTheme } = useTheme();
   const [currentPage, setCurrentPage] = useState<PageView>('home');
-  const [language, setLanguage] = useState<Language>('es');
+  const [language, setLanguageState] = useState<Language>(() => {
+    try {
+      const guardado = localStorage.getItem('fc-language');
+      if (guardado === 'es' || guardado === 'en') return guardado;
+    } catch {
+      /* sin almacenamiento: se usa la detección del navegador */
+    }
+    return navigator.language?.toLowerCase().startsWith('en') ? 'en' : 'es';
+  });
+
+  const setLanguage = (lang: Language) => {
+    setLanguageState(lang);
+    try {
+      localStorage.setItem('fc-language', lang);
+    } catch {
+      /* ignorar */
+    }
+  };
+
+  // Mantiene <html lang> coherente con el idioma elegido (lectores de pantalla).
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
   const [isAdminMode, setIsAdminMode] = useState<boolean>(false);
 
   const { usuario, verificandoSesion } = useSesion();

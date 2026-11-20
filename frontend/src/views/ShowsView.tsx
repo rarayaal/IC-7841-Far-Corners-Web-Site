@@ -25,7 +25,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
   const { galleryFor } = useGalleries();
 
   const getGalleryForShow = (show: Show): { url: string; alt_text?: string }[] => {
-    const urls = galleryFor(show.id, show.gallery);
+    const urls = galleryFor(show.id, show.gallery, show.title);
     if (urls && urls.length > 0) {
       return urls.map((item, i) => {
         const url = typeof item === 'string' ? item : item.url;
@@ -171,7 +171,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
                 </span>
 
                 <GalleryButton
-                  count={galleryFor(show.id, show.gallery).length}
+                  count={galleryFor(show.id, show.gallery, show.title).length}
                   language={language}
                   onClick={() => setGalleryShow(show)}
                   className="absolute bottom-3 left-3"
@@ -286,7 +286,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
       {galleryShow && (
         <GalleryLightbox
           title={`${galleryShow.title} (${galleryShow.year})`}
-          images={toGalleryImages(galleryFor(galleryShow.id, galleryShow.gallery), galleryShow.title)}
+          images={toGalleryImages(galleryFor(galleryShow.id, galleryShow.gallery, galleryShow.title), galleryShow.title)}
           language={language}
           onClose={() => setGalleryShow(null)}
         />

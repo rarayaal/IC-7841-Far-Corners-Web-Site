@@ -29,6 +29,31 @@ const contactosDePagina = contactos.filter((contacto) =>
     'social',
   ].includes(contacto.channel_type)
 );
+  const motivos =
+    language === 'es'
+      ? [
+          'Quiero participar en una producción',
+          'Me interesa ser voluntario/a',
+          'Quiero conocer los programas y talleres',
+          'Me interesa realizar una pasantía',
+          'Quiero apoyar o realizar una donación',
+          'Me gustaría proponer una alianza o colaboración',
+          'Tengo una consulta general',
+          'Otro motivo',
+        ]
+      : [
+          'I want to take part in a production',
+          "I'm interested in volunteering",
+          'I want to learn about the programs and workshops',
+          "I'm interested in an internship",
+          'I want to support or make a donation',
+          "I'd like to propose a partnership or collaboration",
+          'I have a general question',
+          'Other reason',
+        ];
+  // Se guarda el índice para conservar la elección al cambiar de idioma.
+  const [motivo, setMotivo] = useState('');
+  const esOtroMotivo = motivo === String(motivos.length - 1);
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -56,7 +81,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       body: JSON.stringify({
         name: formData.name.trim(),
         email: formData.email.trim(),
-        subject: formData.subject.trim(),
+        subject: motivos[Number(motivo)] ?? '',
         message: formData.message.trim(),
       }),
     });
@@ -177,15 +202,21 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">{t.subjectLabel} *</label>
-                  <input
-                    type="text"
+                  <select
                     required
-                    maxLength={255}
-                    value={formData.subject}
-                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    placeholder={t.subjectPlaceholder}
-                    className="w-full px-3.5 py-2.5 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded-lg text-xs text-brand-navy dark:text-white focus:border-brand-green focus:outline-none"
-                  />
+                    value={motivo}
+                    onChange={(e) => setMotivo(e.target.value)}
+                    className="fc-select w-full px-3.5 py-2.5 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded-lg text-xs text-brand-navy dark:text-white focus:border-brand-green focus:outline-none"
+                  >
+                    <option value="" disabled>
+                      {language === 'es' ? 'Selecciona un motivo…' : 'Select a reason…'}
+                    </option>
+                    {motivos.map((m, i) => (
+                      <option key={m} value={String(i)}>
+                        {m}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
@@ -196,7 +227,13 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                     maxLength={10000}
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    placeholder={t.messagePlaceholder}
+                    placeholder={
+                      esOtroMotivo
+                        ? language === 'es'
+                          ? 'Cuéntanos cuál es el motivo de tu contacto…'
+                          : 'Tell us the reason for your message…'
+                        : t.messagePlaceholder
+                    }
                     className="w-full px-3.5 py-2.5 bg-[#F8F8F2] dark:bg-brand-navyDark border border-slate-200 dark:border-brand-border rounded-lg text-xs text-brand-navy dark:text-white focus:border-brand-green focus:outline-none"
                   ></textarea>
                 </div>
@@ -243,6 +280,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                       subject: '',
                       message: '',
                     });
+                    setMotivo('');
                     setErrorEnvio('');
                     setSubmitted(false);
                   }}

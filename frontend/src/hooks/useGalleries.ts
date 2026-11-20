@@ -2,6 +2,15 @@ import { useCallback, useEffect, useState } from 'react';
 import type { GalleryImage } from '../components/GalleryLightbox';
 import { fetchInstitutionalContent } from '../services/institutional';
 
+function slugify(texto: string): string {
+  return texto
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 /**
  * Galerías de obras y proyectos publicadas desde el panel (sección «gallery»,
  * fotos en R2). `galleryFor(id, respaldo)` devuelve las fotos del bucket si
@@ -37,9 +46,11 @@ export function useGalleries() {
     return () => controller.abort();
   }, []);
 
+  // Una galería se enlaza por el id de la obra/proyecto o por su nombre
+  // («The Addams Family» -> the-addams-family), lo que resulte más cómodo.
   const galleryFor = useCallback(
-    (id: string, respaldo?: string[]): (string | GalleryImage)[] =>
-      byId[id] ?? respaldo ?? [],
+    (id: string, respaldo?: string[], titulo?: string): (string | GalleryImage)[] =>
+      byId[id] ?? (titulo ? byId[slugify(titulo)] : undefined) ?? respaldo ?? [],
     [byId]
   );
 

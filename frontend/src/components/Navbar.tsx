@@ -76,15 +76,12 @@ export const Navbar: React.FC<NavbarProps> = ({
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const toggleLanguage = () => {
-    setLanguage(language === 'es' ? 'en' : 'es');
-  };
 
   return (
     <header
       className={`sticky top-0 z-40 border-b ${
         scrolled
-          ? 'bg-[#F8F8F2]/95 text-brand-navy border-slate-300/60 shadow-md dark:bg-brand-navyDark/95 dark:text-brand-cream dark:border-white/10 dark:shadow-glow-navy'
+          ? 'bg-[#F8F8F2]/70 backdrop-blur-lg backdrop-saturate-150 text-brand-navy border-slate-300/60 shadow-md dark:bg-brand-navyDark/70 dark:text-brand-cream dark:border-white/10 dark:shadow-glow-navy'
           : 'bg-[#F8F8F2] text-brand-navy border-slate-200 dark:bg-brand-navyDark dark:text-brand-cream dark:border-brand-border'
       }`}
     >
@@ -107,15 +104,30 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <div className="flex flex-wrap items-center gap-2">
             {/* Language Selector */}
-            <button
-              onClick={toggleLanguage}
-              className="flex min-h-10 items-center space-x-1.5 px-3 py-1 rounded bg-white hover:bg-slate-200/70 text-brand-navy border border-slate-200 shadow-sm dark:border-transparent dark:shadow-none dark:bg-white/10 dark:hover:bg-white/20 dark:text-brand-cream transition-colors"
-              title={t.selectLanguage}
-              aria-label={t.switchLanguage}
+            <div
+              role="group"
+              aria-label={t.selectLanguage}
+              className="flex min-h-10 items-center gap-1 rounded bg-white border border-slate-200 px-2 shadow-sm dark:border-transparent dark:shadow-none dark:bg-white/10"
             >
-              <Globe className="w-3.5 h-3.5 text-brand-forest dark:text-brand-green" />
-              <span className="font-semibold text-xs">{language.toUpperCase()}</span>
-            </button>
+              <Globe className="w-3.5 h-3.5 text-brand-forest dark:text-brand-green" aria-hidden="true" />
+              {(['es', 'en'] as const).map((lang) => (
+                <button
+                  key={lang}
+                  type="button"
+                  lang={lang}
+                  onClick={() => setLanguage(lang)}
+                  aria-pressed={language === lang}
+                  aria-label={lang === 'es' ? 'Español' : 'English'}
+                  className={`min-h-8 min-w-9 rounded px-2 text-xs font-bold transition-colors ${
+                    language === lang
+                      ? 'bg-brand-green text-brand-navy'
+                      : 'text-brand-navy/70 hover:bg-black/5 dark:text-brand-cream/80 dark:hover:bg-white/10'
+                  }`}
+                >
+                  {lang.toUpperCase()}
+                </button>
+              ))}
+            </div>
             {/* Theme Toggle Button */}
             <button
               onClick={toggleTheme}
