@@ -191,6 +191,21 @@ export const AboutView: React.FC<AboutViewProps> = ({
   const [selectedPersonKey, setSelectedPersonKey] = useState<string | null>(null);
 
   const history = historyItems[0];
+
+  // Fotos de la sección «Nuestra historia»: las subidas desde el panel tienen
+  // prioridad; si no hay, se usan fotos reales de producciones de 2005 a 2024.
+  const historyFallback: GalleryImage[] = [
+    { url: '/obras/mamma-mia-2024/mamma-mia-2024-03.jpg', alt: 'Mamma Mia! (2024)' },
+    { url: '/obras/guys-and-dolls-2005/guys-and-dolls-2005-03.jpg', alt: 'Guys & Dolls (2005)' },
+    { url: '/obras/urinetown-2009/urinetown-2009-03.jpg', alt: 'Urinetown (2009)' },
+    { url: '/obras/fiddler-2017/fiddler-2017-03.jpg', alt: 'Fiddler on the Roof (2017)' },
+    { url: '/obras/jcs-2022/jcs-2022-03.jpg', alt: 'Jesus Christ Superstar (2022)' },
+  ];
+  const historyUploaded = toGalleryImages(
+    history?.images?.map((img) => ({ url: img.url, alt: img.alt_text })),
+    history?.title ?? ''
+  );
+  const historyPhotos = historyUploaded.length > 0 ? historyUploaded : historyFallback;
   const futureVision = futureItems[0];
 
   // Las rutas internas del botón (/donate) usan la navegación del sitio; el resto son enlaces.
@@ -411,14 +426,38 @@ export const AboutView: React.FC<AboutViewProps> = ({
           </div>
         </div>
 
+        {/* Fotos de la historia: las del panel (si hay) o fotos reales de las producciones */}
         <div className="relative">
-          <div className="aspect-[4/3] rounded-2xl overflow-hidden border border-brand-green/50 shadow-2xl group">
-            <img
-              src={history?.images?.[0]?.url ?? '/recursos/IMG_2904.PNG'}
-              alt={history?.images?.[0]?.alt_text ?? 'Ensayo Far Corners'}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          {historyPhotos.length > 0 && (
+            <div className="grid grid-cols-3 grid-rows-2 gap-2 sm:gap-3 aspect-[4/3]">
+              {historyPhotos.slice(0, 5).map((photo, i) => (
+                <button
+                  key={`${photo.url}-${i}`}
+                  type="button"
+                  onClick={() => openGallery(history?.title ?? t.originsTitle, historyPhotos)}
+                  aria-label={`${es ? 'Ver fotos de nuestra historia' : 'View photos of our history'} (${i + 1}/${historyPhotos.length})`}
+                  className={`group relative overflow-hidden rounded-2xl border border-brand-green/50 shadow-lg ${
+                    i === 0 ? 'col-span-2 row-span-2' : ''
+                  }`}
+                >
+                  <img
+                    src={photo.url}
+                    alt={photo.alt ?? ''}
+                    loading={i === 0 ? 'eager' : 'lazy'}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+          {historyPhotos.length > 1 && (
+            <GalleryButton
+              count={historyPhotos.length}
+              language={language}
+              onClick={() => openGallery(history?.title ?? t.originsTitle, historyPhotos)}
+              className="absolute bottom-3 right-3"
             />
-          </div>
+          )}
         </div>
       </div>
 
