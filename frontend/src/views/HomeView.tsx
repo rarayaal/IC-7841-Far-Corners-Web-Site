@@ -4,6 +4,7 @@ import { showsData, projectsData } from '../data/mockData';
 import { Ticket, Users, Sparkles, ChevronRight, Star, FileText } from 'lucide-react';
 import { CountUp } from '../components/CountUp';
 import { ShowsCarousel } from '../components/ShowsCarousel';
+import { HeroBackground } from '../components/HeroBackground';
 import { hasTickets, openProgram } from '../lib/shows';
 import { getTranslations } from '../lib/i18n';
 import { useGalleries } from '../hooks/useGalleries';
@@ -29,25 +30,18 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const [galleryProject, setGalleryProject] = useState<ImpactProject | null>(null);
   const currentShow = showsData.find(s => s.status === 'current') || showsData[0];
   const upcomingShows = showsData.slice(0, 3);
+  // Fotos de escena de las producciones para el fondo del hero.
+  const heroImages = showsData
+    .map((s) => s.gallery?.[1] ?? s.banner)
+    .filter((src): src is string => Boolean(src))
+    .slice(0, 5);
 
   return (
     <div className="space-y-12 sm:space-y-16 pb-12 sm:pb-16">
       {/* Brand Hero Section */}
       <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-radial-gradient">
         {/* Background stage image & gradient overlay */}
-        <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
-          <img
-            src="/recursos/IMG_2903_COLOR.PNG"
-            alt="Far Corners Background"
-            className="w-[85%] max-w-4xl h-auto object-contain opacity-20 dark:hidden"
-          />
-          <img
-            src={currentShow.banner || '/recursos/IMG_2903.PNG'}
-            alt="Theater Stage"
-            className="hidden dark:block w-[85%] max-w-4xl h-auto object-contain opacity-20 brightness-90"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#F8F8F2] via-transparent to-transparent dark:from-brand-navyDark dark:via-transparent dark:to-transparent"></div>
-        </div>
+        <HeroBackground images={heroImages} />
 
         {/* Hero Content */}
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-12 pb-20">
