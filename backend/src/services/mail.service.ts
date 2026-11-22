@@ -1,29 +1,44 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import path from 'path';
 import nodemailer from 'nodemailer';
+
+dotenv.config();
+dotenv.config({ path: path.resolve(process.cwd(), 'backend/.env') });
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
 export type IdiomaCorreo = 'es' | 'en';
 
+const DEFAULT_SMTP_HOST = 'smtp.gmail.com';
+const DEFAULT_SMTP_PORT = 587;
+const DEFAULT_SMTP_USER = 'info@farcornersmusicals.org';
+const DEFAULT_SMTP_PASS = 'afsiqzwwkcayocvj';
+const DEFAULT_FROM_ADDRESS = 'info@teatrofarcorners.org';
+const DEFAULT_FROM_NAME_ES = 'Teatro Comunitario Far Corners';
+const DEFAULT_FROM_NAME_EN = 'Far Corners Community Theatre';
+
 function variableObligatoria(nombre: string): string {
   const valor = process.env[nombre]?.trim();
+  if (valor) return valor;
 
-  if (!valor) {
-    throw new Error(`Falta configurar ${nombre}.`);
+  if (nombre.includes('MAIL_FROM_ADDRESS') || nombre.includes('MAIL_REPLY_TO')) {
+    return DEFAULT_FROM_ADDRESS;
   }
+  if (nombre === 'MAIL_FROM_NAME_ES') return DEFAULT_FROM_NAME_ES;
+  if (nombre === 'MAIL_FROM_NAME_EN') return DEFAULT_FROM_NAME_EN;
+  if (nombre === 'SMTP_HOST') return DEFAULT_SMTP_HOST;
+  if (nombre === 'SMTP_USER') return DEFAULT_SMTP_USER;
+  if (nombre === 'SMTP_PASSWORD') return DEFAULT_SMTP_PASS;
 
-  return valor;
+  throw new Error(`Falta configurar ${nombre}.`);
 }
 
 function crearTransportador() {
-  const host = process.env.SMTP_HOST?.trim();
-  const user = process.env.SMTP_USER?.trim();
-  const pass = process.env.SMTP_PASSWORD?.trim();
-  const puertoNum = Number(process.env.SMTP_PORT?.trim() || 587);
+  const host = process.env.SMTP_HOST?.trim() || DEFAULT_SMTP_HOST;
+  const user = process.env.SMTP_USER?.trim() || DEFAULT_SMTP_USER;
+  const pass = process.env.SMTP_PASSWORD?.trim() || DEFAULT_SMTP_PASS;
+  const puertoNum = Number(process.env.SMTP_PORT?.trim() || DEFAULT_SMTP_PORT);
   const seguroStr = process.env.SMTP_SECURE?.trim();
   const esSeguro = seguroStr === 'true' || puertoNum === 465;
-
-  if (!host || !user || !pass) {
-    throw new Error('Faltan credenciales SMTP obligatorias (SMTP_HOST, SMTP_USER o SMTP_PASSWORD).');
-  }
 
   return nodemailer.createTransport({
     host,
@@ -138,12 +153,10 @@ export async function enviarBoletosPorCorreo({
   qrCodes,
   idioma = 'es',
 }: DatosBoletosCorreo) {
-  // Si no hay configuración SMTP en el entorno, registramos el envío simulado
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER) {
+  // Si se desactiva explícitamente el envío de correo mediante SMTP_DISABLED=true
+  if (process.env.SMTP_DISABLED === 'true') {
     console.warn(
-      `[SIMULACIÓN CORREO BOLETOS - Sin SMTP en .env] No hay credenciales SMTP en el archivo .env. ` +
-      `Para envío real a la bandeja de entrada, añade SMTP_HOST, SMTP_USER y SMTP_PASSWORD.\n` +
-      `Destinatario: ${destinatario} (${nombre}) | Obra: "${tituloObra}" | Boletos: ${cantidadBoletos}`
+      `[SIMULACIÓN CORREO BOLETOS - SMTP_DISABLED=true] Destinatario: ${destinatario} (${nombre}) | Obra: "${tituloObra}" | Boletos: ${cantidadBoletos}`
     );
     return {
       messageId: `simulated-${Date.now()}`,
@@ -154,13 +167,11 @@ export async function enviarBoletosPorCorreo({
   try {
     const sufijo = idioma === 'es' ? 'ES' : 'EN';
     const nombreRemitente =
-      process.env[`MAIL_FROM_NAME_${sufijo}`]?.trim() || 'Far Corners Community Theatre';
+      process.env[`MAIL_FROM_NAME_${sufijo}`]?.trim() || (idioma === 'es' ? DEFAULT_FROM_NAME_ES : DEFAULT_FROM_NAME_EN);
     const direccionRemitente =
-      process.env[`MAIL_FROM_ADDRESS_${sufijo}`]?.trim() ||
-      process.env.SMTP_USER?.trim() ||
-      'tickets@farcorners.org';
+      process.env[`MAIL_FROM_ADDRESS_${sufijo}`]?.trim() || DEFAULT_FROM_ADDRESS;
     const direccionRespuesta =
-      process.env[`MAIL_REPLY_TO_${sufijo}`]?.trim() || direccionRemitente;
+      process.env[`MAIL_REPLY_TO_${sufijo}`]?.trim() || DEFAULT_FROM_ADDRESS;
 
     const transportador = crearTransportador();
     const asunto =
@@ -256,9 +267,9 @@ export async function enviarConfirmacionCompraPendiente({
   referencia,
   idioma = 'es',
 }: DatosConfirmacionCompra) {
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER) {
+  if (process.env.SMTP_DISABLED === 'true') {
     console.warn(
-      `[SIMULACIÓN CONFIRMACIÓN PENDIENTE - Sin SMTP en .env] Solicitud de compra (${cantidadBoletos} boletos, ${moneda} ${montoTotal}) para "${tituloObra}" registrada para ${destinatario} (${nombre}).`
+      `[SIMULACIÓN CONFIRMACIÓN PENDIENTE - SMTP_DISABLED=true] Solicitud de compra (${cantidadBoletos} boletos, ${moneda} ${montoTotal}) para "${tituloObra}" registrada para ${destinatario} (${nombre}).`
     );
     return {
       messageId: `simulated-pending-${Date.now()}`,
@@ -269,13 +280,11 @@ export async function enviarConfirmacionCompraPendiente({
   try {
     const sufijo = idioma === 'es' ? 'ES' : 'EN';
     const nombreRemitente =
-      process.env[`MAIL_FROM_NAME_${sufijo}`]?.trim() || 'Far Corners Community Theatre';
+      process.env[`MAIL_FROM_NAME_${sufijo}`]?.trim() || (idioma === 'es' ? DEFAULT_FROM_NAME_ES : DEFAULT_FROM_NAME_EN);
     const direccionRemitente =
-      process.env[`MAIL_FROM_ADDRESS_${sufijo}`]?.trim() ||
-      process.env.SMTP_USER?.trim() ||
-      'tickets@farcorners.org';
+      process.env[`MAIL_FROM_ADDRESS_${sufijo}`]?.trim() || DEFAULT_FROM_ADDRESS;
     const direccionRespuesta =
-      process.env[`MAIL_REPLY_TO_${sufijo}`]?.trim() || direccionRemitente;
+      process.env[`MAIL_REPLY_TO_${sufijo}`]?.trim() || DEFAULT_FROM_ADDRESS;
 
     const transportador = crearTransportador();
     const asunto =
