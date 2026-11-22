@@ -249,12 +249,9 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
 
     async function cargar() {
       try {
-        let datos = await api<InstitutionalContent[]>(
+        const datos = await api<InstitutionalContent[]>(
           `/api/v1/institutional/${seccion}/admin`
         );
-        if (datos.length === 0) {
-          datos = await sembrarSiVacio(seccion);
-        }
         if (activo) setItems(datos);
       } catch (e) {
         if (activo) {
@@ -387,7 +384,7 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
         const frescos = await api<InstitutionalContent[]>(
           `/api/v1/institutional/${seccion}/admin`
         );
-        if (frescos && frescos.length > 0) {
+        if (Array.isArray(frescos)) {
           setItems(frescos);
         }
       } catch {

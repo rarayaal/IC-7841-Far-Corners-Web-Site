@@ -156,20 +156,28 @@ const PersonDetailModal: React.FC<{
   );
 };
 
-/** Convierte filas de contenido institucional (una por persona) en tarjetas, usando el idioma seleccionado y fotos de respaldo. */
-function toPeople(items: InstitutionalContent[], language: Language, defaults: PersonCardData[]): PersonCardData[] {
+/** Convierte filas de contenido institucional (una por persona) en tarjetas, usando el idioma seleccionado. */
+function toPeople(items: InstitutionalContent[], language: Language, defaults?: PersonCardData[]): PersonCardData[] {
   const isEn = language === 'en';
-  const defaultMap = new Map(defaults.map((d) => [d.key, d]));
+  const defaultMap = defaults ? new Map(defaults.map((d) => [d.key, d])) : null;
 
   return items.map((item) => {
-    const fallback = defaultMap.get(item.page_slug) || defaultMap.get(item.id);
+    const fallback = defaultMap ? (defaultMap.get(item.page_slug) || defaultMap.get(item.id)) : null;
     const photoUrl = item.image_url || item.images?.[0]?.url || fallback?.photo?.url;
+
+    const role = isEn
+      ? (item.subtitle_en ?? (item.subtitle || fallback?.role || null))
+      : (item.subtitle ?? fallback?.role ?? null);
+
+    const bio = isEn
+      ? (item.content_en ?? (item.content || fallback?.bio || ''))
+      : (item.content ?? fallback?.bio ?? '');
 
     return {
       key: item.page_slug || item.id,
       name: item.title,
-      role: (isEn && item.subtitle_en) ? item.subtitle_en : (item.subtitle || fallback?.role || null),
-      bio: (isEn && item.content_en) ? item.content_en : (item.content || fallback?.bio || ''),
+      role: role || null,
+      bio: bio || '',
       photo: photoUrl ? { url: photoUrl, alt: item.title } : undefined,
     };
   });
@@ -185,8 +193,8 @@ export const AboutView: React.FC<AboutViewProps> = ({
   const { items: historyItems } = useInstitutionalContent('history', language);
   const { items: impactItems } = useInstitutionalContent('impact', language);
   const { items: futureItems } = useInstitutionalContent('future', language);
-  const { items: boardItems } = useInstitutionalContent('board', language);
-  const { items: productionItems } = useInstitutionalContent('production', language);
+  const { items: boardItems, loading: loadingBoard } = useInstitutionalContent('board', language);
+  const { items: productionItems, loading: loadingProduction } = useInstitutionalContent('production', language);
   const [gallery, setGallery] = useState<{ title: string; images: GalleryImage[] } | null>(null);
   const [selectedPersonKey, setSelectedPersonKey] = useState<string | null>(null);
 
@@ -339,8 +347,8 @@ export const AboutView: React.FC<AboutViewProps> = ({
     },
   ];
 
-  const boardPeople = boardItems.length > 0 ? toPeople(boardItems, language, defaultBoard) : defaultBoard;
-  const productionPeople = productionItems.length > 0 ? toPeople(productionItems, language, defaultProduction) : defaultProduction;
+  const boardPeople = loadingBoard && boardItems.length === 0 ? defaultBoard : toPeople(boardItems, language);
+  const productionPeople = loadingProduction && productionItems.length === 0 ? defaultProduction : toPeople(productionItems, language);
   const allPeople = [...boardPeople, ...productionPeople];
   const selectedPerson = allPeople.find((p) => p.key === selectedPersonKey) ?? null;
 
@@ -564,27 +572,29 @@ export const AboutView: React.FC<AboutViewProps> = ({
       )}
 
       {/* Junta directiva */}
-      <div className="space-y-8">
-        <div className="text-center max-w-2xl mx-auto">
-          <span className="text-xs font-bold text-brand-green uppercase tracking-wider block mb-1">
-            {es ? 'Liderazgo' : 'Leadership'}
-          </span>
-          <h2 className="font-serif text-3xl font-bold text-brand-navy dark:text-white">
-            {es ? 'Junta Directiva' : 'Board of Directors'}
-          </h2>
-        </div>
+      {boardPeople.length > 0 && (
+        <div className="space-y-8">
+          <div className="text-center max-w-2xl mx-auto">
+            <span className="text-xs font-bold text-brand-green uppercase tracking-wider block mb-1">
+              {es ? 'Liderazgo' : 'Leadership'}
+            </span>
+            <h2 className="font-serif text-3xl font-bold text-brand-navy dark:text-white">
+              {es ? 'Junta Directiva' : 'Board of Directors'}
+            </h2>
+          </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {boardPeople.map((person) => (
-            <PersonCard
-              key={person.key}
-              person={person}
-              language={language}
-              onSelect={(p) => setSelectedPersonKey(p.key)}
-            />
-          ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {boardPeople.map((person) => (
+              <PersonCard
+                key={person.key}
+                person={person}
+                language={language}
+                onSelect={(p) => setSelectedPersonKey(p.key)}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Equipo de producción (aparece cuando hay personas publicadas) */}
       {productionPeople.length > 0 && (
