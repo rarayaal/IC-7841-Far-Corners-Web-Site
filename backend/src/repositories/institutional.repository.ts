@@ -1,5 +1,6 @@
 import { pool } from '../db.js';
 import { registrarAuditoria } from './audit.repository.js';
+import { urlVigente } from '../services/storage.service.js';
 
 // CU-01 historia, CU-02 impacto y CU-03 visión de futuro comparten la tabla
 // institutional_content y se distinguen por la columna section. También se
@@ -158,7 +159,7 @@ async function ensureInstitutionalColumns() {
 const IMAGENES_PUBLICAS = `
   COALESCE((
     SELECT json_agg(
-      json_build_object('id', m.id, 'url', m.url, 'alt_text', m.alt_text)
+      json_build_object('id', m.id, 'url', m.url, 'key', m.storage_key, 'alt_text', m.alt_text)
       ORDER BY m.uploaded_at, m.id
     )
     FROM media m
@@ -167,6 +168,21 @@ const IMAGENES_PUBLICAS = `
       AND m.is_published
   ), '[]'::json) AS images
 `;
+
+// Calcula la URL de cada imagen con el dominio vigente y no expone la llave interna.
+function conImagenesVigentes<T extends { images?: unknown }>(fila: T) {
+  if (!Array.isArray(fila.images)) return fila;
+
+  const images = fila.images.map(
+    (img: { id: string; url: string; key?: string | null; alt_text: string | null }) => ({
+      id: img.id,
+      url: urlVigente(img.url, img.key),
+      alt_text: img.alt_text,
+    })
+  );
+
+  return { ...fila, images };
+}
 
 // Devuelve el contenido publicado de una sección. Si una página no tiene
 // traducción al idioma pedido se usa la otra versión publicada.
@@ -187,11 +203,13 @@ export async function obtenerContenidoPublicado(
     [section, language]
   );
 
-  return resultado.rows.sort(
-    (a, b) =>
-      a.display_order - b.display_order ||
-      a.page_slug.localeCompare(b.page_slug)
-  );
+  return resultado.rows
+    .map(conImagenesVigentes)
+    .sort(
+      (a, b) =>
+        a.display_order - b.display_order ||
+        a.page_slug.localeCompare(b.page_slug)
+    );
 }
 
 export async function obtenerContenidoAdmin(section: SeccionInstitucional) {

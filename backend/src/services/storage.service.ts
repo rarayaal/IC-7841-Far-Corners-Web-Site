@@ -36,6 +36,15 @@ interface ConfiguracionAlmacenamiento {
 
 let configuracion: ConfiguracionAlmacenamiento | null | undefined;
 
+// Quita las barras finales sin usar expresiones regulares (evita retroceso excesivo).
+function sinBarrasFinales(texto: string) {
+  let fin = texto.length;
+
+  while (fin > 0 && texto[fin - 1] === '/') fin -= 1;
+
+  return texto.slice(0, fin);
+}
+
 // Se lee de forma diferida para que la API arranque aunque R2 no esté
 // configurado; solo los endpoints de multimedia responden 503.
 function obtenerConfiguracion() {
@@ -69,7 +78,7 @@ function obtenerConfiguracion() {
 
   configuracion = {
     bucket: R2_BUCKET,
-    publicUrl: R2_PUBLIC_URL.replace(/\/+$/, ''),
+    publicUrl: sinBarrasFinales(R2_PUBLIC_URL),
     cliente: new S3Client({
       region: 'auto',
       endpoint,
@@ -122,6 +131,16 @@ export function generarLlave(mime: string) {
   const anio = new Date().getUTCFullYear();
 
   return `media/${anio}/${crypto.randomUUID()}.${EXTENSION_POR_MIME[mime]}`;
+}
+
+// La URL se calcula al leer, con el dominio público vigente, para que un cambio
+// de R2_PUBLIC_URL no deje enlaces obsoletos en los registros ya guardados.
+export function urlVigente(urlGuardada: string, llave: string | null | undefined) {
+  if (!llave) return urlGuardada;
+
+  const config = obtenerConfiguracion();
+
+  return config ? `${config.publicUrl}/${llave}` : urlGuardada;
 }
 
 export function urlPublica(llave: string) {
