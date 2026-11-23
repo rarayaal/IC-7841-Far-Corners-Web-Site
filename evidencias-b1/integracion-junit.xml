@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+	<testcase name="TC-B1-01-I01 crear historia → 201 y fila persistida con autor y estado" time="0.507582" classname="test" file="C:\Users\User\Documents\TEC\Proyecto de Software\IC-7841-Far-Corners-Web-Site\pruebas-b1\integracion\b1-integracion.test.mjs"/>
+	<testcase name="TC-B1-01-I02 la lectura pública devuelve lo publicado y oculta lo no publicado" time="0.030119" classname="test" file="C:\Users\User\Documents\TEC\Proyecto de Software\IC-7841-Far-Corners-Web-Site\pruebas-b1\integracion\b1-integracion.test.mjs"/>
+	<testcase name="TC-B1-01-I03 duplicado (misma página, sección e idioma) → 409 sin insertar otra fila" time="0.008708" classname="test" file="C:\Users\User\Documents\TEC\Proyecto de Software\IC-7841-Far-Corners-Web-Site\pruebas-b1\integracion\b1-integracion.test.mjs"/>
+	<testcase name="TC-B1-01-I04 editar → 200, la fila cambia y la bitácora registra la actualización" time="0.039525" classname="test" file="C:\Users\User\Documents\TEC\Proyecto de Software\IC-7841-Far-Corners-Web-Site\pruebas-b1\integracion\b1-integracion.test.mjs"/>
+	<testcase name="TC-B1-01-I05 sin sesión → 401 y con usuario sin permisos → 403, sin cambios en la BD" time="0.022273" classname="test" file="C:\Users\User\Documents\TEC\Proyecto de Software\IC-7841-Far-Corners-Web-Site\pruebas-b1\integracion\b1-integracion.test.mjs"/>
+	<testcase name="TC-B1-01-I06 contenido inválido → 400 y no se crea ninguna fila" time="0.023556" classname="test" file="C:\Users\User\Documents\TEC\Proyecto de Software\IC-7841-Far-Corners-Web-Site\pruebas-b1\integracion\b1-integracion.test.mjs"/>
+	<testcase name="TC-B1-02-I07 la BD acepta las secciones footer, board, production, gallery, impact y future" time="0.087813" classname="test" file="C:\Users\User\Documents\TEC\Proyecto de Software\IC-7841-Far-Corners-Web-Site\pruebas-b1\integracion\b1-integracion.test.mjs"/>
+	<testcase name="TC-B1-01-I08 eliminar → 200, la fila desaparece y la bitácora lo registra" time="0.019731" classname="test" file="C:\Users\User\Documents\TEC\Proyecto de Software\IC-7841-Far-Corners-Web-Site\pruebas-b1\integracion\b1-integracion.test.mjs"/>
+	<testcase name="TC-B1-22-I09 subir imagen (presign → PUT a R2 → confirm) → 201, fila en media y URL pública idéntica" time="1.393666" classname="test" file="C:\Users\User\Documents\TEC\Proyecto de Software\IC-7841-Far-Corners-Web-Site\pruebas-b1\integracion\b1-integracion.test.mjs"/>
+	<testcase name="TC-B1-22-I10 la imagen aparece en la lectura pública del contenido asociado" time="0.007702" classname="test" file="C:\Users\User\Documents\TEC\Proyecto de Software\IC-7841-Far-Corners-Web-Site\pruebas-b1\integracion\b1-integracion.test.mjs"/>
+	<testcase name="TC-B1-22-I11 confirmar una llave que no se subió → 422 y sin fila en media" time="0.180716" classname="test" file="C:\Users\User\Documents\TEC\Proyecto de Software\IC-7841-Far-Corners-Web-Site\pruebas-b1\integracion\b1-integracion.test.mjs"/>
+	<testcase name="TC-B1-22-I12 registrar dos veces la misma llave → 409 sin duplicar la fila" time="0.008586" classname="test" file="C:\Users\User\Documents\TEC\Proyecto de Software\IC-7841-Far-Corners-Web-Site\pruebas-b1\integracion\b1-integracion.test.mjs"/>
+	<testcase name="TC-B1-22-I13 confirmar sin declarar autorización de uso → 400" time="0.001973" classname="test" file="C:\Users\User\Documents\TEC\Proyecto de Software\IC-7841-Far-Corners-Web-Site\pruebas-b1\integracion\b1-integracion.test.mjs"/>
+	<testcase name="TC-B1-22-I14 sin sesión → 401 y usuario sin permiso → 403 en presign, confirm y listado" time="0.003867" classname="test" file="C:\Users\User\Documents\TEC\Proyecto de Software\IC-7841-Far-Corners-Web-Site\pruebas-b1\integracion\b1-integracion.test.mjs"/>
+	<testcase name="TC-B1-22-I15 un archivo de formato no permitido o de 10 MB + 1 byte se rechaza antes de subir" time="0.004201" classname="test" file="C:\Users\User\Documents\TEC\Proyecto de Software\IC-7841-Far-Corners-Web-Site\pruebas-b1\integracion\b1-integracion.test.mjs"/>
+	<testcase name="TC-B1-24-I16 consultar consecuencias de retirar → 200 con listas de bloqueos y advertencias" time="0.006626" classname="test" file="C:\Users\User\Documents\TEC\Proyecto de Software\IC-7841-Far-Corners-Web-Site\pruebas-b1\integracion\b1-integracion.test.mjs"/>
+	<testcase name="TC-B1-24-I17 retirar → 200, is_published = FALSE, no se borra y desaparece de lo público" time="0.016492" classname="test" file="C:\Users\User\Documents\TEC\Proyecto de Software\IC-7841-Far-Corners-Web-Site\pruebas-b1\integracion\b1-integracion.test.mjs"/>
+	<testcase name="TC-B1-24-I18 retirar lo ya retirado → 409 (sin cambio)" time="0.008841" classname="test" file="C:\Users\User\Documents\TEC\Proyecto de Software\IC-7841-Far-Corners-Web-Site\pruebas-b1\integracion\b1-integracion.test.mjs"/>
+	<testcase name="TC-B1-24-I19 restaurar → 200, is_published = TRUE y vuelve a mostrarse" time="0.015652" classname="test" file="C:\Users\User\Documents\TEC\Proyecto de Software\IC-7841-Far-Corners-Web-Site\pruebas-b1\integracion\b1-integracion.test.mjs"/>
+	<testcase name="TC-B1-24-I20 retirar una imagen la oculta de lo público sin borrarla; restaurarla la devuelve" time="0.031185" classname="test" file="C:\Users\User\Documents\TEC\Proyecto de Software\IC-7841-Far-Corners-Web-Site\pruebas-b1\integracion\b1-integracion.test.mjs"/>
+	<testcase name="TC-B1-24-I21 tipo inexistente → 404, id no UUID → 400 y sin permisos → 403/401" time="0.017677" classname="test" file="C:\Users\User\Documents\TEC\Proyecto de Software\IC-7841-Far-Corners-Web-Site\pruebas-b1\integracion\b1-integracion.test.mjs"/>
+	<testcase name="TC-B1-22-I22 eliminar la imagen → 200, la fila se borra y el objeto deja de existir en R2" time="0.627631" classname="test" file="C:\Users\User\Documents\TEC\Proyecto de Software\IC-7841-Far-Corners-Web-Site\pruebas-b1\integracion\b1-integracion.test.mjs"/>
+	<!-- tests 22 -->
+	<!-- suites 0 -->
+	<!-- pass 22 -->
+	<!-- fail 0 -->
+	<!-- cancelled 0 -->
+	<!-- skipped 0 -->
+	<!-- todo 0 -->
+	<!-- duration_ms 8342.9341 -->
+</testsuites>

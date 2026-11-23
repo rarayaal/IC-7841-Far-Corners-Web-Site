@@ -1,0 +1,18 @@
+✔ TC-B1-SEG-01 un token alterado, firmado con otra clave o con alg «none» se rechaza con 401 (342.74ms)
+✔ TC-B1-SEG-02 un token expirado se rechaza con 401 (3.305ms)
+✔ TC-B1-SEG-03 los parámetros con intentos de inyección SQL no alteran la base ni filtran datos (72.6963ms)
+✔ TC-B1-SEG-04 el contenido con HTML o script se guarda como texto y se devuelve sin interpretarse (44.1389ms)
+✔ TC-B1-SEG-05 la lectura pública no expone datos internos (autor, llaves de almacenamiento, correos) (15.4213ms)
+✔ TC-B1-SEG-06 el listado público no incluye contenido no publicado (67.1378ms)
+✔ TC-B1-SEG-07 la URL prefirmada rechaza un archivo de tamaño o tipo distinto al validado (572.4499ms)
+✔ TC-B1-SEG-08 la URL prefirmada de otra llave no sirve para subir a una llave distinta (74.6816ms)
+CABECERAS {"x-powered-by (debería ocultarse)":"Express","x-content-type-options":"ausente","content-security-policy":"ausente","strict-transport-security":"ausente","x-frame-options":"ausente"}
+✔ TC-B1-SEG-09 [informativo] cabeceras de seguridad de las respuestas del API (3.5228ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1321.973
