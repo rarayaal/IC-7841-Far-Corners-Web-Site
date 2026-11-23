@@ -195,7 +195,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, langu
                     <div className="flex items-center justify-between">
                       <h4 className="font-serif text-sm font-bold text-brand-navy dark:text-white">{proyecto.title}</h4>
                       {proyecto.country && (
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-brand-green/20 text-brand-forest dark:text-brand-lime font-bold">
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-brand-green/20 text-brand-greenText dark:text-brand-lime font-bold">
                           {proyecto.country}
                         </span>
                       )}

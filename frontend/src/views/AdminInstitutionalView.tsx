@@ -819,7 +819,7 @@ export const AdminInstitutionalView = ({ language }: { language: Language }) => 
                           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                         />
                       ) : (
-                        <div className="w-10 h-10 rounded-xl bg-brand-green/20 text-brand-forest dark:text-brand-lime flex items-center justify-center font-bold text-sm shrink-0 border border-brand-green/30">
+                        <div className="w-10 h-10 rounded-xl bg-brand-green/20 text-brand-greenText dark:text-brand-lime flex items-center justify-center font-bold text-sm shrink-0 border border-brand-green/30">
                           {item.title.charAt(0)}
                         </div>
                       )}
