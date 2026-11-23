@@ -117,7 +117,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   lang={lang}
                   onClick={() => setLanguage(lang)}
                   aria-pressed={language === lang}
-                  aria-label={lang === 'es' ? 'Español' : 'English'}
+                  aria-label={lang === 'es' ? 'ES, Español' : 'EN, English'}
                   className={`min-h-8 min-w-9 rounded px-2 text-xs font-bold transition-colors ${
                     language === lang
                       ? 'bg-brand-green text-brand-navy'
@@ -133,7 +133,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={toggleTheme}
               className="flex min-h-10 items-center space-x-1.5 px-3 py-1 rounded bg-white hover:bg-slate-200/70 text-brand-navy border border-slate-200 shadow-sm dark:border-transparent dark:shadow-none dark:bg-white/10 dark:hover:bg-white/20 dark:text-brand-cream transition-colors"
               title={theme === 'dark' ? (language === 'es' ? 'Cambiar a modo claro' : 'Switch to light mode') : (language === 'es' ? 'Cambiar a modo oscuro' : 'Switch to dark mode')}
-              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              aria-label={theme === 'dark' ? (language === 'es' ? 'Cambiar a modo claro' : 'Switch to light mode') : (language === 'es' ? 'Cambiar a modo oscuro' : 'Switch to dark mode')}
             >
               {theme === 'dark' ? (
                 <Sun className="w-3.5 h-3.5 text-brand-lime" />
@@ -197,7 +197,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Logo Brand Header */}
           <button
             type="button"
-            aria-label={t.goToHome}
+            title={t.goToHome}
             onClick={() => {
               setIsAdminMode(false);
               setCurrentPage('home');
@@ -207,7 +207,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 shadow-sm dark:bg-gradient-to-br dark:from-brand-navy dark:to-brand-navyDark dark:border-brand-green/50 dark:shadow-glow-green p-1 group-hover:scale-105 transition-transform flex items-center justify-center">
               <img
                 src={theme === 'dark' ? '/recursos/IMG_2903.PNG' : '/recursos/IMG_2903_COLOR.PNG'}
-                alt="Far Corners Logo"
+                alt=""
                 className="w-full h-full object-contain"
                 onError={(e) => {
                   (e.target as HTMLElement).style.display = 'none';
@@ -218,7 +218,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="block font-serif text-xl sm:text-2xl font-bold tracking-tight text-brand-navy dark:text-white group-hover:text-brand-green transition-colors">
                 Far Corners
               </span>
-              <span className="block text-[10px] uppercase tracking-widest text-brand-blue font-bold">
+              <span className="block text-[10px] uppercase tracking-widest text-brand-blueText dark:text-brand-blue font-bold">
                 {t.brandSubtitle}
               </span>
             </div>
@@ -280,7 +280,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={onOpenSearch}
               aria-label={t.search}
-              className="flex h-11 w-11 items-center justify-center text-brand-navy bg-black/5 dark:text-slate-200 dark:bg-white/10 rounded-lg"            >
+              className="flex sm:hidden h-11 w-11 items-center justify-center text-brand-navy bg-black/5 dark:text-slate-200 dark:bg-white/10 rounded-lg"            >
               <Search className="w-5 h-5 text-brand-blue" />
             </button>
             <button

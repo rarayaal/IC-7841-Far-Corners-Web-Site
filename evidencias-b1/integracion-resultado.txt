@@ -1,0 +1,32 @@
+✔ TC-B1-01-I01 crear historia → 201 y fila persistida con autor y estado (551.5422ms)
+✔ TC-B1-01-I02 la lectura pública devuelve lo publicado y oculta lo no publicado (22.4454ms)
+✔ TC-B1-01-I03 duplicado (misma página, sección e idioma) → 409 sin insertar otra fila (7.5834ms)
+✔ TC-B1-01-I04 editar → 200, la fila cambia y la bitácora registra la actualización (27.6829ms)
+✔ TC-B1-01-I05 sin sesión → 401 y con usuario sin permisos → 403, sin cambios en la BD (19.6486ms)
+✔ TC-B1-01-I06 contenido inválido → 400 y no se crea ninguna fila (24.9099ms)
+✔ TC-B1-02-I07 la BD acepta las secciones footer, board, production, gallery, impact y future (123.4534ms)
+✔ TC-B1-01-I08 eliminar → 200, la fila desaparece y la bitácora lo registra (27.2054ms)
+✔ TC-B1-22-I09 subir imagen (presign → PUT a R2 → confirm) → 201, fila en media y URL pública idéntica (1380.7541ms)
+✔ TC-B1-22-I10 la imagen aparece en la lectura pública del contenido asociado (11.0869ms)
+✔ TC-B1-01-I23 la imagen del contenido: una URL https se guarda y javascript: se rechaza sin guardar nada (30.7089ms)
+✔ TC-B1-22-I24 la URL de las imágenes usa el dominio público vigente y no expone la llave de almacenamiento (42.4457ms)
+✔ TC-B1-22-I11 confirmar una llave que no se subió → 422 y sin fila en media (177.9339ms)
+✔ TC-B1-22-I12 registrar dos veces la misma llave → 409 sin duplicar la fila (10.4525ms)
+✔ TC-B1-22-I13 confirmar sin declarar autorización de uso → 400 (6.0357ms)
+✔ TC-B1-22-I14 sin sesión → 401 y usuario sin permiso → 403 en presign, confirm y listado (16.3687ms)
+✔ TC-B1-22-I15 un archivo de formato no permitido o de 10 MB + 1 byte se rechaza antes de subir (9.6465ms)
+✔ TC-B1-24-I16 consultar consecuencias de retirar → 200 con listas de bloqueos y advertencias (9.9614ms)
+✔ TC-B1-24-I17 retirar → 200, is_published = FALSE, no se borra y desaparece de lo público (28.5484ms)
+✔ TC-B1-24-I18 retirar lo ya retirado → 409 (sin cambio) (4.1694ms)
+✔ TC-B1-24-I19 restaurar → 200, is_published = TRUE y vuelve a mostrarse (20.0126ms)
+✔ TC-B1-24-I20 retirar una imagen la oculta de lo público sin borrarla; restaurarla la devuelve (41.8555ms)
+✔ TC-B1-24-I21 tipo inexistente → 404, id no UUID → 400 y sin permisos → 403/401 (28.254ms)
+✔ TC-B1-22-I22 eliminar la imagen → 200, la fila se borra y el objeto deja de existir en R2 (588.3915ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8356.1705

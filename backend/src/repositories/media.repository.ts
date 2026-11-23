@@ -1,6 +1,7 @@
 import type { PoolClient } from 'pg';
 import { pool } from '../db.js';
 import { registrarAuditoria } from './audit.repository.js';
+import { urlVigente } from '../services/storage.service.js';
 
 export interface AsociacionMedia {
   project_id: string | null;
@@ -29,6 +30,7 @@ const CONSULTA_BASE = `
     m.id,
     m.filename,
     m.url,
+    m.storage_key,
     m.alt_text,
     m.mime_type,
     m.size_bytes::integer AS size_bytes,
@@ -44,6 +46,13 @@ const CONSULTA_BASE = `
   LEFT JOIN events e ON e.id = m.event_id
   LEFT JOIN institutional_content ic ON ic.id = m.content_id
 `;
+
+// Calcula la URL con el dominio vigente y no expone la llave de almacenamiento.
+function conUrlVigente<T extends { url: string; storage_key?: string | null }>(fila: T) {
+  const { storage_key, ...resto } = fila;
+
+  return { ...resto, url: urlVigente(fila.url, storage_key) };
+}
 
 export async function listarMedia(filtros: FiltrosMedia) {
   const condiciones: string[] = [];
@@ -67,13 +76,14 @@ export async function listarMedia(filtros: FiltrosMedia) {
     valores
   );
 
-  return resultado.rows;
+  return resultado.rows.map(conUrlVigente);
 }
 
 export async function obtenerMedia(id: string) {
   const resultado = await pool.query(`${CONSULTA_BASE} WHERE m.id = $1`, [id]);
+  const fila = resultado.rows[0];
 
-  return resultado.rows[0];
+  return fila ? conUrlVigente(fila) : fila;
 }
 
 export async function existeLlave(llave: string) {
@@ -89,8 +99,9 @@ async function obtenerPorId(client: PoolClient, id: string) {
   const resultado = await client.query(`${CONSULTA_BASE} WHERE m.id = $1`, [
     id,
   ]);
+  const fila = resultado.rows[0];
 
-  return resultado.rows[0];
+  return fila ? conUrlVigente(fila) : fila;
 }
 
 export async function registrarMedia(

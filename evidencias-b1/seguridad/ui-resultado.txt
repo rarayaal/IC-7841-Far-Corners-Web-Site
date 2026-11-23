@@ -1,0 +1,6 @@
+
+Running 1 test using 1 worker
+
+  ok 1 [escritorio-1366] › sistema\b1-seguridad-ui.spec.mjs:5:1 › TC-B1-SEG-10 un script guardado como contenido institucional se muestra como texto y no se ejecuta (1.2m)
+
+  1 passed (1.2m)

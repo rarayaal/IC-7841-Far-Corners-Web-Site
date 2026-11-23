@@ -367,7 +367,7 @@ export const AdminFormsView: React.FC<{ language: Language }> = ({ language }) =
                     <span
                       className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${
                         form.is_published
-                          ? 'bg-brand-green/20 text-brand-forest dark:text-brand-lime'
+                          ? 'bg-brand-green/20 text-brand-greenText dark:text-brand-lime'
                           : 'bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400'
                       }`}
                     >
@@ -1051,7 +1051,7 @@ const EditorFormulario: React.FC<EditorFormularioProps> = ({ form, onVolver, onG
           <span className="text-xs font-bold text-brand-navy dark:text-white uppercase tracking-wider flex-1">{txt.publicCard}</span>
           <span
             className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${
-              form.is_published ? 'bg-brand-green/20 text-brand-forest dark:text-brand-lime' : 'bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400'
+              form.is_published ? 'bg-brand-green/20 text-brand-greenText dark:text-brand-lime' : 'bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400'
             }`}
           >
             {form.is_published ? txt.published : txt.hidden}

@@ -111,7 +111,7 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
       <div className="border-b border-slate-200 dark:border-brand-border bg-slate-100 dark:bg-brand-navy py-12 px-4 sm:px-6 lg:px-8 transition-colors">
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-8">
           <div className="max-w-xl text-center lg:text-left">
-            <span className="inline-block px-3 py-1 rounded-full bg-brand-green/20 text-brand-forest dark:text-brand-lime text-xs font-bold uppercase tracking-wider mb-2 border border-brand-green/50">
+            <span className="inline-block px-3 py-1 rounded-full bg-brand-green/20 text-brand-greenText dark:text-brand-lime text-xs font-bold uppercase tracking-wider mb-2 border border-brand-green/50">
               {t.newsletterBadge}
             </span>
             <h3 className="font-serif text-2xl sm:text-3xl font-bold text-brand-navy dark:text-white tracking-tight">
@@ -242,7 +242,7 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
             </div>
             <div>
               <span className="font-serif text-xl font-bold text-brand-navy dark:text-white tracking-tight">Far Corners</span>
-              <span className="block text-[9px] uppercase tracking-widest text-brand-blue font-bold">{language === 'es' ? 'Teatro Comunitario' : 'Community Theatre'}</span>
+              <span className="block text-[9px] uppercase tracking-widest text-brand-blueText dark:text-brand-blue font-bold">{language === 'es' ? 'Teatro Comunitario' : 'Community Theatre'}</span>
             </div>
           </div>
           <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
@@ -348,7 +348,7 @@ export const Footer: React.FC<FooterProps> = ({ language, setCurrentPage }) => {
       </div>
 
       {/* Bottom Bar */}
-      <div className="bg-slate-200/70 dark:bg-brand-navyDeep border-t border-slate-200 dark:border-brand-border py-6 px-4 sm:px-6 lg:px-8 text-xs text-center text-slate-500 dark:text-slate-400">
+      <div className="bg-slate-200/70 dark:bg-brand-navyDeep border-t border-slate-200 dark:border-brand-border py-6 px-4 sm:px-6 lg:px-8 text-xs text-center text-slate-600 dark:text-slate-400">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <p>{t.copyright}</p>
           <p className="text-[11px] text-slate-600 dark:text-slate-300">

@@ -15,6 +15,7 @@ import { AdminStudentsView } from './AdminStudentsView';
 import { AdminCampsView } from './AdminCampsView';
 import { AdminVolunteersView } from './AdminVolunteersView';
 import { AdminInstitutionalView } from './AdminInstitutionalView';
+import { AdminContentView } from './AdminContentView';
 import { AdminMediaView } from './AdminMediaView';
 import { AdminRetirementView, canRetireSomething } from './AdminRetirementView';
 import { AdminUsersManagementView } from './AdminUsersManagementView';
@@ -30,7 +31,7 @@ import { AdminFormsView } from './AdminFormsView';
 import { AdminApplicantsView } from './AdminApplicantsView';
 
 type AdminTab =
-  | 'kpi' | 'shows' | 'donations' | 'projects' | 'ticketing' | 'content' | 'media'
+  | 'kpi' | 'shows' | 'donations' | 'projects' | 'ticketing' | 'content' | 'institutional' | 'media'
   | 'retirement' | 'applicants' | 'audit' | 'messages' | 'contacts'
   | 'communities' | 'students' | 'volunteers' | 'camps' | 'users' | 'newsletter' | 'forms';
 
@@ -197,6 +198,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
     {
       label: txt.sidebar.content,
       items: [
+        { key: 'institutional', label: language === 'es' ? 'Contenido institucional' : 'Institutional content', icon: FileText, visible: puedeGestionarContenido },
         { key: 'content', label: txt.tabs.content, icon: PenLine, visible: puedeGestionarContenido },
         { key: 'media', label: txt.tabs.media, icon: Image, visible: puedeGestionarMedia },
         { key: 'retirement', label: txt.tabs.retirement, icon: Archive, visible: puedeRetirarContenido },
@@ -517,6 +519,11 @@ export const AdminView: React.FC<AdminViewProps> = ({ language }) => {
       {/* TAB 3: INSTITUTIONAL CONTENT MANAGEMENT (CU-01, CU-02, CU-03) */}
       {activeTab === 'content' && puedeGestionarContenido && (
         <AdminInstitutionalView language={language} />
+      )}
+
+      {/* HISTORIA, IMPACTO, VISIÓN, PIE DE PÁGINA Y GALERÍAS (CU-01, CU-02, CU-03) */}
+      {activeTab === 'institutional' && puedeGestionarContenido && (
+        <AdminContentView language={language} />
       )}
 
       {/* MULTIMEDIA GALLERY (CU-22) */}
