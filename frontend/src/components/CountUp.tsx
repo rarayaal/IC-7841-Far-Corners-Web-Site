@@ -7,13 +7,31 @@ interface CountUpProps {
   durationMs?: number;
 }
 
-const formato = /^(\D*)([\d.,]+)(\D*)$/;
+const esDigito = (c: string) => c >= '0' && c <= '9';
+
+/** Separa prefijo, número y sufijo ("+5,000" -> "+", "5,000", ""). Sin expresiones regulares con retroceso. */
+function partirValor(valor: string): [string, string, string, string] | null {
+  const inicio = [...valor].findIndex(esDigito);
+
+  if (inicio < 0) return null;
+
+  let fin = inicio;
+  while (fin < valor.length && (esDigito(valor[fin]) || valor[fin] === '.' || valor[fin] === ',')) {
+    fin += 1;
+  }
+
+  const sufijo = valor.slice(fin);
+
+  if ([...sufijo].some(esDigito)) return null;
+
+  return [valor, valor.slice(0, inicio), valor.slice(inicio, fin), sufijo];
+}
 
 /** Cuenta desde 0 hasta el valor cuando entra en pantalla; sin animación si se reduce el movimiento. */
 export const CountUp: React.FC<CountUpProps> = ({ value, className, durationMs = 1400 }) => {
-  const partes = formato.exec(value);
-  const objetivo = partes ? Number(partes[2].replace(/,/g, '')) : NaN;
-  const [actual, setActual] = useState(Number.isFinite(objetivo) ? 0 : NaN);
+  const partes = partirValor(value);
+  const objetivo = partes ? Number(partes[2].replace(/,/g, '')) : Number.NaN;
+  const [actual, setActual] = useState(Number.isFinite(objetivo) ? 0 : Number.NaN);
   const nodo = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
@@ -53,7 +71,9 @@ export const CountUp: React.FC<CountUpProps> = ({ value, className, durationMs =
   if (!partes) return <span className={className}>{value}</span>;
 
   return (
-    <span ref={nodo} className={className} aria-label={value}>
+    <span ref={nodo} className={className}>
+      {/* El valor final se anuncia a los lectores de pantalla; la cifra animada se oculta. */}
+      <span className="sr-only">{value}</span>
       <span aria-hidden="true">
         {partes[1]}
         {actual.toLocaleString('en-US')}

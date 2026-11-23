@@ -2,13 +2,24 @@ import { useCallback, useEffect, useState } from 'react';
 import type { GalleryImage } from '../components/GalleryLightbox';
 import { fetchInstitutionalContent } from '../services/institutional';
 
+function recortarGuiones(texto: string): string {
+  let inicio = 0;
+  let fin = texto.length;
+
+  while (inicio < fin && texto[inicio] === '-') inicio += 1;
+  while (fin > inicio && texto[fin - 1] === '-') fin -= 1;
+
+  return texto.slice(inicio, fin);
+}
+
 function slugify(texto: string): string {
-  return texto
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+  return recortarGuiones(
+    texto
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+  );
 }
 
 /**
@@ -24,7 +35,10 @@ export function useGalleries() {
 
     Promise.all(
       (['es', 'en'] as const).map((lang) =>
-        fetchInstitutionalContent('gallery', lang, controller.signal).catch(() => [])
+        fetchInstitutionalContent('gallery', lang, controller.signal).catch((error) => {
+          if (!controller.signal.aborted) console.warn('No se pudieron cargar las galerías:', error);
+          return [];
+        })
       )
     ).then((listas) => {
       const mapa: Record<string, GalleryImage[]> = {};
@@ -41,6 +55,8 @@ export function useGalleries() {
       }
 
       if (!controller.signal.aborted) setById(mapa);
+    }).catch((error) => {
+      if (!controller.signal.aborted) console.warn('Error al preparar las galerías:', error);
     });
 
     return () => controller.abort();

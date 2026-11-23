@@ -113,7 +113,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-12 sm:space-y-16 animate-fadeIn">
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto space-y-3">
-        <span className="inline-block px-4 py-1.5 rounded-full bg-brand-green/20 text-brand-forest dark:text-brand-lime text-xs font-bold uppercase tracking-wider border border-brand-green/40">
+        <span className="inline-block px-4 py-1.5 rounded-full bg-brand-green/20 text-brand-greenText dark:text-brand-lime text-xs font-bold uppercase tracking-wider border border-brand-green/40">
           {t.channelsTitle}
         </span>
         <h1 className="font-serif text-4xl sm:text-5xl font-bold text-brand-navy dark:text-white tracking-tight">

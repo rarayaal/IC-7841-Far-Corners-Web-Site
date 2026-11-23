@@ -63,7 +63,7 @@ const PersonCard: React.FC<{
             className="w-16 h-16 rounded-full object-cover border-2 border-brand-green/40 group-hover:scale-105 transition-transform"
           />
         ) : (
-          <div className="w-16 h-16 rounded-full bg-brand-green/20 text-brand-forest dark:text-brand-green flex items-center justify-center font-serif font-bold text-xl border-2 border-brand-green/40 group-hover:scale-105 transition-transform">
+          <div className="w-16 h-16 rounded-full bg-brand-green/20 text-brand-greenText dark:text-brand-green flex items-center justify-center font-serif font-bold text-xl border-2 border-brand-green/40 group-hover:scale-105 transition-transform">
             {person.name.charAt(0)}
           </div>
         )}
@@ -77,7 +77,7 @@ const PersonCard: React.FC<{
         )}
       </div>
 
-      <div className="pt-2 text-[11px] font-bold text-brand-blue group-hover:text-brand-forest dark:group-hover:text-brand-lime flex items-center space-x-1 border-t border-slate-100 dark:border-white/5">
+      <div className="pt-2 text-[11px] font-bold text-brand-blueText dark:text-brand-blue group-hover:text-brand-forest dark:group-hover:text-brand-lime flex items-center space-x-1 border-t border-slate-100 dark:border-white/5">
         <span>{es ? 'Ver reseña completa' : 'View full biography'}</span>
         <span>→</span>
       </div>
@@ -99,13 +99,17 @@ const PersonDetailModal: React.FC<{
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={person.name}
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn"
-      onClick={onClose}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div
         key={person.key}
         className="bg-white dark:bg-brand-navy border border-slate-200 dark:border-brand-border w-full max-w-lg rounded-3xl shadow-2xl p-6 sm:p-8 space-y-6 relative max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
       >
         <button
           type="button"
@@ -126,7 +130,7 @@ const PersonDetailModal: React.FC<{
               className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-2 border-brand-green shadow-md shrink-0 animate-fadeIn"
             />
           ) : (
-            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-brand-green/20 text-brand-forest dark:text-brand-green flex items-center justify-center font-serif font-black text-4xl border-2 border-brand-green shrink-0 shadow-sm">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-brand-green/20 text-brand-greenText dark:text-brand-green flex items-center justify-center font-serif font-black text-4xl border-2 border-brand-green shrink-0 shadow-sm">
               {person.name.charAt(0)}
             </div>
           )}
@@ -136,7 +140,7 @@ const PersonDetailModal: React.FC<{
               {person.name}
             </h3>
             {person.role && (
-              <span className="inline-block px-3 py-1 rounded-full bg-brand-green/20 text-brand-forest dark:text-brand-lime text-xs font-bold border border-brand-green/40">
+              <span className="inline-block px-3 py-1 rounded-full bg-brand-green/20 text-brand-greenText dark:text-brand-lime text-xs font-bold border border-brand-green/40">
                 {person.role}
               </span>
             )}
@@ -369,7 +373,7 @@ export const AboutView: React.FC<AboutViewProps> = ({
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-12 sm:space-y-16 animate-fadeIn">
       {/* Header Banner */}
       <div className="text-center max-w-4xl mx-auto space-y-4">
-        <span className="inline-block px-4 py-1.5 rounded-full bg-brand-green/20 text-brand-forest dark:text-brand-lime text-xs font-bold uppercase tracking-wider border border-brand-green/40">
+        <span className="inline-block px-4 py-1.5 rounded-full bg-brand-green/20 text-brand-greenText dark:text-brand-lime text-xs font-bold uppercase tracking-wider border border-brand-green/40">
           {t.badge}
         </span>
         <h1 className="font-serif text-4xl sm:text-6xl font-bold text-brand-navy dark:text-white tracking-tight">
@@ -393,7 +397,10 @@ export const AboutView: React.FC<AboutViewProps> = ({
           </div>
 
           {history ? (
-            <ContentParagraphs text={history.content} />
+            <ContentParagraphs
+              text={history.content}
+              className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed"
+            />
           ) : (
             <>
               <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
@@ -412,7 +419,7 @@ export const AboutView: React.FC<AboutViewProps> = ({
 
           <div className="grid grid-cols-2 gap-4 pt-2">
             <div className="bg-white dark:bg-brand-navy p-4 rounded-xl border border-slate-200 dark:border-brand-border">
-              <span className="font-mono text-2xl font-bold text-brand-green block">100%</span>
+              <span className="font-mono text-2xl font-bold text-brand-greenText dark:text-brand-green block">100%</span>
               <span className="text-xs text-slate-600 dark:text-slate-300">
                 {es ? 'Acceso comunitario libre para participantes locales' : 'Free community access for local participants'}
               </span>
@@ -467,7 +474,7 @@ export const AboutView: React.FC<AboutViewProps> = ({
           <h2 className="font-serif text-3xl font-bold text-brand-navy dark:text-white">
             {es ? 'Nuestra Esencia & Valores de Marca' : 'Our Essence & Brand Values'}
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+          <p className="text-xs text-slate-600 dark:text-slate-400 mt-2">
             {es
               ? 'Valores institucionales definidos en la Guía de Marca oficial de Far Corners.'
               : 'Institutional values defined in the official Far Corners Brand Guide.'}
@@ -605,7 +612,7 @@ export const AboutView: React.FC<AboutViewProps> = ({
       {/* Junta directiva */}
       <div className="space-y-8">
         <div className="text-center max-w-2xl mx-auto">
-          <span className="text-xs font-bold text-brand-green uppercase tracking-wider block mb-1">
+          <span className="text-xs font-bold text-brand-greenText dark:text-brand-green uppercase tracking-wider block mb-1">
             {es ? 'Liderazgo' : 'Leadership'}
           </span>
           <h2 className="font-serif text-3xl font-bold text-brand-navy dark:text-white">
@@ -629,7 +636,7 @@ export const AboutView: React.FC<AboutViewProps> = ({
       {productionPeople.length > 0 && (
         <div className="space-y-8">
           <div className="text-center max-w-2xl mx-auto">
-            <span className="text-xs font-bold text-brand-green uppercase tracking-wider block mb-1">
+            <span className="text-xs font-bold text-brand-greenText dark:text-brand-green uppercase tracking-wider block mb-1">
               {es ? 'Detrás del escenario' : 'Behind the stage'}
             </span>
             <h2 className="font-serif text-3xl font-bold text-brand-navy dark:text-white">
