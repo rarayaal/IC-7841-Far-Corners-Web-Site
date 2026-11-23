@@ -1,0 +1,16 @@
+{
+  "name": "pruebas-b1",
+  "private": true,
+  "type": "module",
+  "description": "Pruebas de integración del bloque B1 (Ani). Ambiente local, datos sintéticos.",
+  "scripts": {
+    "test:integracion": "node --test --test-concurrency=1 integracion/*.test.mjs"
+  },
+  "dependencies": {
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.65.1"
+  }
+}
