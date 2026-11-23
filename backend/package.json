@@ -7,7 +7,8 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "test:translation": "npm run build && node --test tests/*.test.mjs",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "test:b1": "npm run build && node --test --experimental-test-coverage tests/b1-*.test.mjs"
   },
   "keywords": [],
   "author": "",
