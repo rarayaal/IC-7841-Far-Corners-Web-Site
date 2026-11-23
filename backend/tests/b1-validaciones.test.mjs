@@ -224,6 +224,22 @@ test('TC-B1-01-V11 modificar y borrar con identificador no UUID → 400/404 sin 
   assert.ok([400, 404].includes(b.statusCode), String(b.statusCode));
 });
 
+test('TC-B1-01-V12 la imagen del contenido solo admite rutas del sitio o URL http(s) de hasta 2048 caracteres', async () => {
+  const invalidas = [
+    'javascript:alert(1)',
+    'data:image/png;base64,AAAA',
+    'ftp://ejemplo.org/a.png',
+    '//evil.com/a.png',
+    'sin-protocolo',
+    'https://ejemplo.org/' + 'a'.repeat(2048),
+    42,
+  ];
+  for (const image_url of invalidas) {
+    const r = await registrar('history', { ...valido, image_url });
+    assert.equal(r.statusCode, 400, String(image_url).slice(0, 40));
+  }
+});
+
 // ---------------------------------------------------------------- CU-24
 test('TC-B1-24-V01 solo son retirables institucional, proyecto, evento y multimedia', () => {
   for (const tipo of ['institutional', 'project', 'event', 'media']) {

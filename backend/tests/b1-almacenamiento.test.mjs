@@ -7,7 +7,7 @@ process.env.R2_ACCOUNT_ID = '00000000000000000000000000000000';
 process.env.R2_ACCESS_KEY_ID = 'AKIAFAKEFAKEFAKEFAKE';
 process.env.R2_SECRET_ACCESS_KEY = 'fake-secret-key-for-unit-tests-only';
 process.env.R2_BUCKET = 'bucket-de-prueba';
-process.env.R2_PUBLIC_URL = 'https://pub-prueba.r2.dev';
+process.env.R2_PUBLIC_URL = 'https://pub-prueba.r2.dev///';
 
 const storage = await import('../dist/services/storage.service.js');
 
@@ -85,4 +85,16 @@ test('TC-B1-22-U11 la firma obliga a usar el tipo y tamaño validados', async ()
 
   assert.ok(firmados.includes('content-type'));
   assert.ok(firmados.includes('content-length'));
+});
+
+test('TC-B1-22-U12 urlVigente usa el dominio público actual y la llave aunque la URL guardada sea de otro dominio', () => {
+  assert.equal(
+    storage.urlVigente('https://dominio-anterior.example/media/2026/a.jpg', 'media/2026/a.jpg'),
+    'https://pub-prueba.r2.dev/media/2026/a.jpg'
+  );
+});
+
+test('TC-B1-22-U13 urlVigente conserva la URL guardada cuando el recurso no tiene llave (recursos heredados)', () => {
+  assert.equal(storage.urlVigente('/recursos/IMG_2903.PNG', null), '/recursos/IMG_2903.PNG');
+  assert.equal(storage.urlVigente('/recursos/IMG_2903.PNG', undefined), '/recursos/IMG_2903.PNG');
 });

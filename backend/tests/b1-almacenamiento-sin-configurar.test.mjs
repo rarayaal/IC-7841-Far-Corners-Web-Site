@@ -29,3 +29,7 @@ test('TC-B1-22-U02 sin variables R2, urlPublica lanza AlmacenamientoNoConfigurad
     storage.AlmacenamientoNoConfiguradoError
   );
 });
+
+test('TC-B1-22-U14 sin variables R2, urlVigente conserva la URL guardada', () => {
+  assert.equal(storage.urlVigente('https://guardada.example/media/2026/a.jpg', 'media/2026/a.jpg'), 'https://guardada.example/media/2026/a.jpg');
+});
