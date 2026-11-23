@@ -395,7 +395,7 @@ export async function validarCompraSinpe(purchaseId: string) {
   try {
     await client.query("BEGIN");
 
-    const purchaseRes = await client.query(
+    let purchaseRes = await client.query(
       `
       UPDATE purchases
       SET status = 'paid', updated_at = NOW()
@@ -406,10 +406,23 @@ export async function validarCompraSinpe(purchaseId: string) {
     );
 
     if (purchaseRes.rows.length === 0) {
-      throw new Error("PURCHASE_NOT_FOUND_OR_ALREADY_PAID");
+      // Si ya estaba pagada, la obtenemos para permitir despachar el correo
+      purchaseRes = await client.query(
+        `SELECT * FROM purchases WHERE id = $1`,
+        [purchaseId]
+      );
+      if (purchaseRes.rows.length === 0) {
+        throw new Error("PURCHASE_NOT_FOUND");
+      }
     }
 
     const purchase = purchaseRes.rows[0];
+
+    // Asegurar que los boletos estén marcados como activos
+    await client.query(
+      `UPDATE tickets SET status = 'active' WHERE purchase_id = $1 AND status != 'used'`,
+      [purchaseId]
+    );
 
     // Obtener los boletos asociados
     const ticketsRes = await client.query(
@@ -439,34 +452,49 @@ export async function validarCompraSinpe(purchaseId: string) {
 
     // Generar PDF y enviar correo
     if (tickets.length > 0) {
-      const pdfItems: TicketPdfItem[] = tickets.map((t, idx) => ({
-        ticketNumber: idx + 1,
-        totalTickets: tickets.length,
-        qrCode: t.qr_code,
-        showTitle: t.show_title,
-        seasonYear: t.season_year,
-        venue: t.venue,
-        startsAt: new Date(t.starts_at).toISOString(),
-        patronName: purchase.buyer_name || 'Asistente Far Corners',
-        patronEmail: purchase.buyer_email || '',
-        price: t.price,
-        currency: t.currency,
-        purchaseId: purchase.id,
-        status: 'paid',
-      }));
-
       try {
+        const pdfItems: TicketPdfItem[] = tickets.map((t, idx) => {
+          let startsAtIso = new Date().toISOString();
+          if (t.starts_at) {
+            const d = new Date(t.starts_at);
+            if (!isNaN(d.getTime())) {
+              startsAtIso = d.toISOString();
+            }
+          }
+
+          return {
+            ticketNumber: idx + 1,
+            totalTickets: tickets.length,
+            qrCode: t.qr_code,
+            showTitle: t.show_title || 'Obra Teatral Far Corners',
+            seasonYear: t.season_year || new Date().getFullYear(),
+            venue: t.venue || 'Teatro Far Corners',
+            startsAt: startsAtIso,
+            patronName: purchase.buyer_name || 'Asistente Far Corners',
+            patronEmail: purchase.buyer_email || '',
+            price: t.price || 0,
+            currency: t.currency || 'CRC',
+            purchaseId: purchase.id,
+            status: 'paid',
+          };
+        });
+
         const pdfBuffer = generarPdfBoletos(pdfItems);
-        if (purchase.buyer_email) {
+        const recipientEmail = (purchase.buyer_email || '').trim();
+
+        if (recipientEmail) {
           const qrCodesList = tickets.map((t: any) => String(t.qr_code));
-          await enviarBoletosPorCorreo({
-            destinatario: purchase.buyer_email,
+          const sendRes = await enviarBoletosPorCorreo({
+            destinatario: recipientEmail,
             nombre: purchase.buyer_name || 'Espectador',
-            tituloObra: tickets[0].show_title,
+            tituloObra: tickets[0]?.show_title || 'Obra Teatral',
             cantidadBoletos: tickets.length,
             pdfBuffer,
             qrCodes: qrCodesList,
           });
+          console.log(`[validarCompraSinpe] Correo despachado a ${recipientEmail}:`, sendRes);
+        } else {
+          console.warn(`[validarCompraSinpe] La compra ${purchaseId} no tiene buyer_email.`);
         }
       } catch (err) {
         console.error("Error al generar PDF o despachar correo con QR:", err);
@@ -536,21 +564,30 @@ export async function reenviarCorreoBoletos(purchaseId: string, emailOpcional?: 
   const showTitle = tickets[0]?.show_title || "Obra Teatral";
 
   if (purchase.status === 'paid' && tickets.length > 0) {
-    const pdfItems: TicketPdfItem[] = tickets.map((t, idx) => ({
-      ticketNumber: idx + 1,
-      totalTickets: tickets.length,
-      qrCode: t.qr_code,
-      showTitle: t.show_title,
-      seasonYear: t.season_year,
-      venue: t.venue,
-      startsAt: new Date(t.starts_at).toISOString(),
-      patronName: purchase.buyer_name || 'Asistente Far Corners',
-      patronEmail: destinatario,
-      price: t.price,
-      currency: t.currency,
-      purchaseId: purchase.id,
-      status: 'paid',
-    }));
+    const pdfItems: TicketPdfItem[] = tickets.map((t, idx) => {
+      let startsAtIso = new Date().toISOString();
+      if (t.starts_at) {
+        const d = new Date(t.starts_at);
+        if (!isNaN(d.getTime())) {
+          startsAtIso = d.toISOString();
+        }
+      }
+      return {
+        ticketNumber: idx + 1,
+        totalTickets: tickets.length,
+        qrCode: t.qr_code,
+        showTitle: t.show_title || 'Obra Teatral Far Corners',
+        seasonYear: t.season_year || new Date().getFullYear(),
+        venue: t.venue || 'Teatro Far Corners',
+        startsAt: startsAtIso,
+        patronName: purchase.buyer_name || 'Asistente Far Corners',
+        patronEmail: destinatario,
+        price: t.price || 0,
+        currency: t.currency || 'CRC',
+        purchaseId: purchase.id,
+        status: 'paid',
+      };
+    });
 
     const pdfBuffer = generarPdfBoletos(pdfItems);
     const qrCodesList = tickets.map((t: any) => String(t.qr_code));

@@ -1,3 +1,10 @@
+import dotenv from "dotenv";
+import path from "path";
+
+dotenv.config();
+dotenv.config({ path: path.resolve(process.cwd(), "backend/.env") });
+dotenv.config({ path: path.resolve(process.cwd(), ".env") });
+
 import express from "express";
 import { pool } from "./db.js";
 import { projectsRouter } from "./routes/projects.routes.js";

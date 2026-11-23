@@ -125,20 +125,7 @@ async function ensureInstitutionalColumns() {
       ) AS v(slug, title, subtitle, subtitle_en, content, content_en, img, ord)
       WHERE NOT EXISTS (SELECT 1 FROM institutional_content WHERE section = 'production');
 
-      -- Actualizar fotos oficiales en filas ya existentes si image_url está vacía
-      UPDATE institutional_content SET image_url = '/recursos/IMG_2908.PNG' WHERE page_slug = 'jose-pablo-arias' AND (image_url IS NULL OR image_url = '');
-      UPDATE institutional_content SET image_url = '/recursos/IMG_2909.PNG' WHERE page_slug = 'isaac-matamoros' AND (image_url IS NULL OR image_url = '');
-      UPDATE institutional_content SET image_url = '/recursos/IMG_2910.PNG' WHERE page_slug = 'luis-dario-villalobos' AND (image_url IS NULL OR image_url = '');
-      UPDATE institutional_content SET image_url = '/recursos/IMG_2911.PNG' WHERE page_slug = 'stacy-ohrt' AND (image_url IS NULL OR image_url = '');
-      UPDATE institutional_content SET image_url = '/recursos/IMG_2912.PNG' WHERE page_slug = 'susu-gray' AND (image_url IS NULL OR image_url = '');
-      UPDATE institutional_content SET image_url = '/recursos/IMG_2913.PNG' WHERE page_slug = 'shanae-wise' AND (image_url IS NULL OR image_url = '');
-
-      UPDATE institutional_content SET image_url = '/recursos/IMG_2914.PNG' WHERE page_slug = 'direccion-general' AND (image_url IS NULL OR image_url = '');
-      UPDATE institutional_content SET image_url = '/recursos/IMG_2916.PNG' WHERE page_slug = 'direccion-musical' AND (image_url IS NULL OR image_url = '');
-      UPDATE institutional_content SET image_url = '/recursos/IMG_2917.PNG' WHERE page_slug = 'coreografia' AND (image_url IS NULL OR image_url = '');
-      UPDATE institutional_content SET image_url = '/recursos/IMG_2918.PNG' WHERE page_slug = 'produccion-tecnica' AND (image_url IS NULL OR image_url = '');
-
-      -- Sembrado automático de Historia si está vacío
+      -- Sembrado inicial de Historia si la sección está completamente vacía
       INSERT INTO institutional_content (
         page_slug, section, language, title, subtitle, content, display_order, is_published, updated_by
       )
@@ -214,7 +201,7 @@ export async function obtenerContenidoPublicado(
 
 export async function obtenerContenidoAdmin(section: SeccionInstitucional) {
   await ensureInstitutionalColumns();
-  let resultado = await pool.query(
+  const resultado = await pool.query(
     `
       SELECT ${COLUMNAS}
       FROM institutional_content
@@ -223,20 +210,6 @@ export async function obtenerContenidoAdmin(section: SeccionInstitucional) {
     `,
     [section]
   );
-
-  if (resultado.rows.length === 0 && (section === 'board' || section === 'production')) {
-    institutionalColumnsEnsured = false;
-    await ensureInstitutionalColumns();
-    resultado = await pool.query(
-      `
-        SELECT ${COLUMNAS}
-        FROM institutional_content
-        WHERE section = $1
-        ORDER BY display_order ASC, page_slug ASC, language ASC
-      `,
-      [section]
-    );
-  }
 
   return resultado.rows;
 }
