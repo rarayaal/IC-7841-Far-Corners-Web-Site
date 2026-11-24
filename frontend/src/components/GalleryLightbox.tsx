@@ -41,7 +41,7 @@ export const GalleryButton: React.FC<GalleryButtonProps> = ({
         e.stopPropagation();
         onClick();
       }}
-      className={`inline-flex items-center gap-1.5 rounded-lg border border-brand-blue/60 bg-white/90 px-3 py-1.5 text-xs font-bold text-brand-blue shadow-sm backdrop-blur transition-colors hover:text-brand-navy dark:bg-brand-navyDark/90 dark:hover:text-white ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-lg border border-brand-blue/60 bg-white/90 px-3 py-1.5 text-xs font-bold text-brand-blueText dark:text-brand-blue shadow-sm backdrop-blur transition-colors hover:text-brand-navy dark:bg-brand-navyDark/90 dark:hover:text-white ${className}`}
     >
       <Images className="h-3.5 w-3.5" aria-hidden="true" />
       {language === 'es' ? 'Galería' : 'Gallery'} ({count})
@@ -95,7 +95,9 @@ export const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
       aria-modal="true"
       aria-label={`${es ? 'Galería' : 'Gallery'}: ${title}`}
       className="fixed inset-0 z-[60] flex flex-col bg-black/90 p-3 backdrop-blur-md sm:p-6 animate-fadeIn"
-      onClick={onClose}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div className="mb-3 flex items-center justify-between gap-3 text-white">
         <div className="min-w-0">
@@ -116,7 +118,6 @@ export const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
 
       <div
         className="relative flex min-h-0 flex-1 items-center justify-center"
-        onClick={(e) => e.stopPropagation()}
       >
         <img
           src={current.url}
@@ -149,7 +150,6 @@ export const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
       {images.length > 1 && (
         <div
           className="mt-3 flex justify-start gap-2 overflow-x-auto pb-1 sm:justify-center"
-          onClick={(e) => e.stopPropagation()}
         >
           {images.map((img, i) => (
             <button

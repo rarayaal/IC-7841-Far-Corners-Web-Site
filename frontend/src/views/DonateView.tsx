@@ -304,7 +304,7 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onNavigate }) 
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-12 sm:space-y-16 animate-fadeIn">
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto space-y-3">
-        <span className="inline-block px-4 py-1.5 rounded-full bg-brand-green/20 text-brand-forest dark:text-brand-lime text-xs font-bold uppercase tracking-wider border border-brand-green/40">
+        <span className="inline-block px-4 py-1.5 rounded-full bg-brand-green/20 text-brand-greenText dark:text-brand-lime text-xs font-bold uppercase tracking-wider border border-brand-green/40">
           {t.badge}
         </span>
         <h1 className="font-serif text-4xl sm:text-5xl font-bold text-brand-navy dark:text-white tracking-tight">
@@ -701,7 +701,7 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onNavigate }) 
       {/* Muro de Donaciones por Monto (Pestañas Desplegables / Acordeón) */}
       <div className="max-w-4xl mx-auto space-y-6 pt-6 animate-fadeIn border-t border-slate-200 dark:border-white/10">
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-brand-green/20 text-brand-forest dark:text-brand-lime text-[11px] font-bold border border-brand-green/40 uppercase tracking-wider">
+          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-brand-green/20 text-brand-greenText dark:text-brand-lime text-[11px] font-bold border border-brand-green/40 uppercase tracking-wider">
             <Heart className="w-3.5 h-3.5 fill-current text-brand-green" />
             <span>{isEs ? 'Muro de Donantes y Gratitud' : 'Donor Wall of Gratitude'}</span>
           </div>
@@ -795,7 +795,7 @@ export const DonateView: React.FC<DonateViewProps> = ({ language, onNavigate }) 
                                 ? 'bg-slate-300 text-brand-navy shadow-sm'
                                 : groupIdx === 2
                                 ? 'bg-amber-700/30 text-amber-900 dark:text-amber-200'
-                                : 'bg-brand-green/20 text-brand-forest dark:text-brand-lime'
+                                : 'bg-brand-green/20 text-brand-greenText dark:text-brand-lime'
                             }`}
                           >
                             {group.currency === 'USD' ? '$' : '₡'}

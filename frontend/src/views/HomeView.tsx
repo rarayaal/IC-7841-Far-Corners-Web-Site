@@ -233,7 +233,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
           <button
             onClick={() => setCurrentPage('shows')}
-            className="text-xs font-bold text-brand-blue hover:text-brand-forest dark:hover:text-brand-green flex items-center space-x-1 py-2.5 transition-colors"
+            className="text-xs font-bold text-brand-blueText dark:text-brand-blue hover:text-brand-forest dark:hover:text-brand-green flex items-center space-x-1 py-2.5 transition-colors"
           >
             <span>{t.viewFullCatalog}</span>
             <ChevronRight className="w-4 h-4" />

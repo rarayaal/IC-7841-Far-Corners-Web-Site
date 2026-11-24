@@ -30,9 +30,10 @@ export function App() {
       const guardado = localStorage.getItem('fc-language');
       if (guardado === 'es' || guardado === 'en') return guardado;
     } catch {
-      /* sin almacenamiento: se usa la detección del navegador */
+      /* sin almacenamiento: se usa el idioma predeterminado */
     }
-    return navigator.language?.toLowerCase().startsWith('en') ? 'en' : 'es';
+    // RNF-04: el español es el idioma predeterminado cuando no hay preferencia guardada.
+    return 'es';
   });
 
   const setLanguage = (lang: Language) => {

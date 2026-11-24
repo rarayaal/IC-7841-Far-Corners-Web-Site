@@ -18,6 +18,8 @@ export default {
           lime: "#DCEB4F",       // Energía (Chartreuse / Lime Yellow)
           cream: "#F8F8F2",      // Equilibrio (Off-white / Soft Cream)
           forest: "#008047",     // Comunidad (Rich Forest Green)
+          blueText: "#265F9E",   // Azul para TEXTO sobre fondo claro (contraste >= 4,5:1)
+          greenText: "#00703D",  // Verde para TEXTO sobre fondo claro (contraste >= 4,5:1)
           border: "#1e4066",
         }
       },

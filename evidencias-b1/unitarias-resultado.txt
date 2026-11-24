@@ -1,0 +1,69 @@
+✔ TC-B1-22-U01 sin variables R2, prefirmar lanza AlmacenamientoNoConfiguradoError (1.4827ms)
+✔ TC-B1-22-U02 sin variables R2, urlPublica lanza AlmacenamientoNoConfiguradoError (0.3616ms)
+✔ TC-B1-22-U14 sin variables R2, urlVigente conserva la URL guardada (0.2467ms)
+✔ TC-B1-22-U03 imágenes WebP, JPEG y PNG tienen límite de 10 MB (1.1025ms)
+✔ TC-B1-22-U04 el PDF tiene límite de 25 MB y no es imagen (0.1169ms)
+✔ TC-B1-22-U05 formatos no permitidos no tienen límite (se rechazan) (0.1228ms)
+✔ TC-B1-22-U06 generarLlave produce llaves válidas con la extensión del tipo (1.2257ms)
+✔ TC-B1-22-U07 las llaves generadas son únicas (0.7247ms)
+✔ TC-B1-22-U08 FORMATO_LLAVE rechaza recorridos de ruta y llaves mal formadas (0.2081ms)
+✔ TC-B1-22-U09 urlPublica concatena la URL pública del bucket y la llave (7.2849ms)
+✔ TC-B1-22-U10 la URL prefirmada expira en 5 minutos y apunta al bucket (34.2586ms)
+✔ TC-B1-22-U11 la firma obliga a usar el tipo y tamaño validados (3.5114ms)
+✔ TC-B1-22-U12 urlVigente usa el dominio público actual y la llave aunque la URL guardada sea de otro dominio (0.2524ms)
+✔ TC-B1-22-U13 urlVigente conserva la URL guardada cuando el recurso no tiene llave (recursos heredados) (0.1198ms)
+◇ injected env (0) from .env
+◇ injected env (0) from backend\.env
+✔ TC-B1-22-V01 presign válido devuelve URL, llave y método PUT (34.7335ms)
+✔ TC-B1-22-V02 presign sin nombre de archivo → 400 (0.3318ms)
+✔ TC-B1-22-V03 presign con formato no permitido → 422 (0.2838ms)
+✔ TC-B1-22-V04 presign con tamaño inválido → 400 (0.2082ms)
+✔ TC-B1-22-V05 frontera: imagen de exactamente 10 MB pasa y 10 MB + 1 byte falla (1.8402ms)
+✔ TC-B1-22-V06 frontera: PDF de 25 MB pasa y 25 MB + 1 byte falla; un PDF de 11 MB es válido (2.9406ms)
+✔ TC-B1-22-V07 confirm con llave inválida → 400 (0.5475ms)
+✔ TC-B1-22-V08 confirm exige declarar autorización de uso del contenido (0.2171ms)
+✔ TC-B1-22-V09 confirm exige exactamente una asociación (contenido, proyecto o evento) (0.294ms)
+✔ TC-B1-22-V10 confirm rechaza identificadores de asociación que no son UUID (0.4587ms)
+✔ TC-B1-01-V01 las secciones editables incluyen historia, impacto, visión, footer, junta, producción y galerías (1.0921ms)
+✔ TC-B1-01-V02 sección inexistente → 404 (0.3661ms)
+✔ TC-B1-01-V03 identificador de página inválido → 400 (0.393ms)
+✔ TC-B1-01-V04 idioma distinto de es/en → 400 (0.2063ms)
+✔ TC-B1-01-V05 frontera del título: vacío o de solo espacios falla; 256 caracteres falla (0.1792ms)
+✔ TC-B1-01-V06 frontera del contenido: vacío falla y 20001 caracteres falla (0.1885ms)
+✔ TC-B1-01-V07 el botón requiere texto y destino, o ninguno (0.1877ms)
+✔ TC-B1-01-V08 el destino del botón rechaza protocolos peligrosos (0.3083ms)
+✔ TC-B1-01-V09 el orden debe ser entero entre 0 y 2147483647 (0.1812ms)
+✔ TC-B1-01-V10 la visibilidad debe ser booleana (0.1424ms)
+✔ TC-B1-01-V11 modificar y borrar con identificador no UUID → 400/404 sin tocar la BD (0.2935ms)
+✔ TC-B1-01-V12 la imagen del contenido solo admite rutas del sitio o URL http(s) de hasta 2048 caracteres (0.2981ms)
+✔ TC-B1-24-V01 solo son retirables institucional, proyecto, evento y multimedia (0.1236ms)
+✔ TC-B1-24-V02 tipos no retirables o con trampa de prototipo se rechazan (0.0935ms)
+✔ TC-B1-24-V03 cada tipo retirable exige su permiso y apunta a una tabla fija (0.0902ms)
+ℹ tests 39
+ℹ suites 0
+ℹ pass 39
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 403.2081
+ℹ start of coverage report
+ℹ ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ℹ file                          | line % | branch % | funcs % | uncovered lines
+ℹ ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ℹ dist                          |        |          |         | 
+ℹ  controllers                  |        |          |         | 
+ℹ   institutional.controller.js |  52.16 |    75.61 |   76.92 | 12-16 74-75 80-81 83-84 114-129 137-157 159-173 185 187-203 208-210 217-222 224-244 249-251 258 260-277
+ℹ   media.controller.js         |  36.54 |    78.57 |   46.15 | 6-10 26-32 51-52 54-66 68-86 130-136 148-152 164-176 178-196 198-215 218-267 269-301
+ℹ  db.js                        | 100.00 |   100.00 |  100.00 | 
+ℹ  repositories                 |        |          |         | 
+ℹ   audit.repository.js         |  13.04 |   100.00 |    0.00 | 4-24 30-49 54-92
+ℹ   institutional.repository.js |  16.43 |   100.00 |    0.00 | 37-132 147-156 160-173 175-193 195-241 243-320 323-353
+ℹ   media.repository.js         |  18.13 |   100.00 |    0.00 | 27-30 32-47 49-52 54-63 65-106 108-153 156-182
+ℹ   retirement.repository.js    |  28.92 |   100.00 |   16.67 | 40-43 47-83 85-98 100-105 110-166
+ℹ  services                     |        |          |         | 
+ℹ   storage.service.js          |  84.78 |   100.00 |   83.33 | 117-134 136-138
+ℹ ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ℹ all files                     |  35.07 |    81.65 |   43.55 | 
+ℹ ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ℹ end of coverage report

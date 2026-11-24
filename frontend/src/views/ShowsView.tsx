@@ -70,7 +70,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-12 sm:space-y-16 animate-fadeIn">
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto space-y-3">
-        <span className="inline-block px-4 py-1.5 rounded-full bg-brand-green/20 text-brand-forest dark:text-brand-lime text-xs font-bold uppercase tracking-wider border border-brand-green/40">
+        <span className="inline-block px-4 py-1.5 rounded-full bg-brand-green/20 text-brand-greenText dark:text-brand-lime text-xs font-bold uppercase tracking-wider border border-brand-green/40">
           {t.badge}
         </span>
         <h1 className="font-serif text-4xl sm:text-5xl font-bold text-brand-navy dark:text-white tracking-tight">
@@ -187,7 +187,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
                   {show.title} ({show.year})
                 </h3>
 
-                <div className="flex items-center space-x-2 text-xs text-brand-blue">
+                <div className="flex items-center space-x-2 text-xs text-brand-blueText dark:text-brand-blue">
                   <Calendar className="w-3.5 h-3.5" />
                   <span>{show.dates}</span>
                 </div>
@@ -219,7 +219,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
                           <ImageIcon className="w-3.5 h-3.5 text-brand-green" />
                           <span>{es ? 'Galería de Fotos' : 'Photo Gallery'}</span>
                         </span>
-                        <span className="text-[10px] font-mono text-slate-400">{galleryList.length} {es ? 'fotos' : 'photos'}</span>
+                        <span className="text-[10px] font-mono text-slate-600 dark:text-slate-400">{galleryList.length} {es ? 'fotos' : 'photos'}</span>
                       </div>
 
                       <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 no-scrollbar">
@@ -485,7 +485,7 @@ export const ShowsView: React.FC<ShowsViewProps> = ({ language, onOpenTickets })
             <h4 className="font-serif text-xl font-bold text-brand-navy dark:text-white">
               {actorDetalle.name}
             </h4>
-            <span className="inline-block px-3 py-1 mt-1 rounded-full text-xs font-bold bg-brand-green/20 text-brand-forest dark:text-brand-lime border border-brand-green/30">
+            <span className="inline-block px-3 py-1 mt-1 rounded-full text-xs font-bold bg-brand-green/20 text-brand-greenText dark:text-brand-lime border border-brand-green/30">
               {actorDetalle.role}
             </span>
 

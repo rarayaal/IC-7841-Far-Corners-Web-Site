@@ -49,6 +49,19 @@ function enlaceValido(enlace: string) {
   }
 }
 
+// La imagen puede ser una ruta del sitio (/obras/foto.jpg) o una URL http(s).
+function imagenValida(imagen: string) {
+  if (imagen.length > 2048) return false;
+
+  if (imagen.startsWith('/') && !imagen.startsWith('//')) return true;
+
+  try {
+    return ['https:', 'http:'].includes(new URL(imagen).protocol);
+  } catch {
+    return false;
+  }
+}
+
 function textoOpcional(valor: unknown) {
   return typeof valor === 'string' ? valor.trim() || null : null;
 }
@@ -137,6 +150,19 @@ function validarCuerpo(
     };
   }
 
+  if (image_url != null && typeof image_url !== 'string') {
+    return { error: 'La imagen debe ser texto.' };
+  }
+
+  const imagen = textoOpcional(image_url);
+
+  if (imagen && !imagenValida(imagen)) {
+    return {
+      error:
+        'La imagen debe ser una ruta del sitio (/ruta) o una URL con https: o http: de hasta 2048 caracteres.',
+    };
+  }
+
   const orden = display_order === undefined ? 0 : display_order;
 
   if (
@@ -163,7 +189,7 @@ function validarCuerpo(
       subtitle_en: textoOpcional(subtitle_en),
       content: content.trim(),
       content_en: textoOpcional(content_en),
-      image_url: textoOpcional(image_url),
+      image_url: imagen,
       cta_label: etiquetaBoton,
       cta_target: destinoBoton,
       display_order: orden,
