@@ -11,7 +11,46 @@ export interface ProjectInput {
   participants_count?: number | null;
 }
 
+let projectSeeded = false;
+export async function ensureInitialProject() {
+  if (projectSeeded) return;
+  try {
+    const countRes = await pool.query(`SELECT COUNT(*) FROM projects`);
+    if (parseInt(countRes.rows[0]?.count ?? "0", 10) === 0) {
+      await pool.query(`
+        INSERT INTO projects (
+          id,
+          title,
+          description,
+          country,
+          image_url,
+          display_order,
+          is_published,
+          project_year,
+          participants_count
+        )
+        VALUES (
+          '1a2ec430-5549-4ba7-a2cc-c2b3bfacb177',
+          'Teatro Comunitario Monteverde',
+          'Actividad extracurricular bienal de artes escénicas en Monteverde, donde jóvenes y adultos de la comunidad colaboran con voluntarios y pasantes de todo el mundo para montar un musical comunitario.',
+          'CR',
+          '/recursos/IMG_2915.PNG',
+          0,
+          true,
+          2026,
+          1200
+        )
+        ON CONFLICT (id) DO NOTHING
+      `);
+    }
+    projectSeeded = true;
+  } catch (err) {
+    console.error("Error al asegurar proyecto inicial:", err);
+  }
+}
+
 export async function obtenerProyectosPublicados() {
+  await ensureInitialProject();
   const result = await pool.query(`
     SELECT
       id,
@@ -34,6 +73,7 @@ export async function obtenerProyectosPublicados() {
 }
 
 export async function obtenerTodosLosProyectos() {
+  await ensureInitialProject();
   const result = await pool.query(`
     SELECT
       id,
