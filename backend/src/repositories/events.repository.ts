@@ -91,9 +91,60 @@ async function ensurePaymentColumns() {
   }
 }
 
+let eventsSeeded = false;
+export async function ensureInitialEvents() {
+  if (eventsSeeded) return;
+  try {
+    const countRes = await pool.query(`SELECT COUNT(*) FROM events`);
+    if (parseInt(countRes.rows[0]?.count ?? "0", 10) === 0) {
+      await pool.query(`
+        INSERT INTO events (
+          id,
+          title,
+          description,
+          event_date,
+          venue,
+          max_capacity,
+          poster_url,
+          banner_url,
+          director,
+          season_year,
+          status,
+          dates_label,
+          display_order,
+          is_published,
+          is_featured
+        )
+        VALUES (
+          '22222222-2222-2222-2222-222222220001',
+          'THE ADDAMS FAMILY MUSICAL',
+          'Una comedia musical cómica y conmovedora que celebra la singularidad de cada familia.',
+          '2026-10-01 19:00:00',
+          'Teatro Comunitario Monteverde',
+          120,
+          '/obras/addams-2026/addams-2026-01.jpg',
+          '/obras/addams-2026/addams-2026-02.jpg',
+          'Director Artístico',
+          2026,
+          'current',
+          '1 al 20 de octubre, 2026',
+          0,
+          true,
+          true
+        )
+        ON CONFLICT (id) DO NOTHING;
+      `);
+    }
+    eventsSeeded = true;
+  } catch (err) {
+    console.error("Error al asegurar obras iniciales:", err);
+  }
+}
+
 // Obtener lista de eventos (obras) con sus funciones y elenco
 export async function obtenerEventos(soloPublicados = true): Promise<EventRow[]> {
   await ensurePaymentColumns();
+  await ensureInitialEvents();
   const whereClause = soloPublicados ? "WHERE e.is_published = TRUE" : "";
   const query = `
     SELECT

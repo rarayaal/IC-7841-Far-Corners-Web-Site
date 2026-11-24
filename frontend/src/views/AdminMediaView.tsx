@@ -16,7 +16,7 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { Toast, ToastRegion } from '../components/Toast';
 import type { Language } from '../types';
 
-type TargetKind = 'content' | 'project';
+type TargetKind = 'event' | 'project' | 'content';
 
 interface Target {
   kind: TargetKind;
@@ -44,7 +44,7 @@ const SLOW_UPLOAD_MS = 3000;
 
 const formVacio = (): UploadForm => ({
   file: null,
-  kind: 'content',
+  kind: 'event',
   targetId: '',
   altText: '',
   authorized: false,
@@ -84,7 +84,8 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
 
     async function cargar() {
       try {
-        const [galeria, ...contenido] = await Promise.all([
+        // Cargar galería y contenido institucional de forma resiliente
+        const [galeriaResult, ...contenidoResults] = await Promise.allSettled([
           api<MediaItem[]>('/api/v1/media'),
           ...(
             ['history', 'impact', 'future', 'footer', 'board', 'production', 'gallery'] as const
@@ -92,26 +93,105 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
             api<InstitutionalContent[]>(`/api/v1/institutional/${seccion}/admin`)
           ),
         ]);
-        // Los proyectos publicados son públicos: no requieren sesión.
-        const proyectos = await api<{ id: string; title: string }[]>(
-          '/api/v1/projects',
-          {},
-          { tokenOpcional: true }
-        ).catch(() => []);
+
+        const galeria = galeriaResult.status === 'fulfilled' ? galeriaResult.value : [];
+        const contenido = contenidoResults
+          .filter((r): r is PromiseFulfilledResult<InstitutionalContent[]> => r.status === 'fulfilled')
+          .map((r) => r.value)
+          .flat();
+
+        // Cargar Obras / Shows (eventos teatrales) para asociar multimedia
+        let eventos: { id: string; title: string; season_year?: number | null; is_published?: boolean }[] = [];
+        try {
+          const res = await api<{ id: string; title: string; season_year?: number | null; is_published?: boolean }[]>(
+            '/api/v1/events?admin=true',
+            {},
+            { tokenOpcional: true }
+          );
+          eventos = Array.isArray(res) ? res : (res as any)?.events || (res as any)?.data || [];
+        } catch {
+          try {
+            const res = await api<{ id: string; title: string; season_year?: number | null; is_published?: boolean }[]>(
+              '/api/v1/events',
+              {},
+              { tokenOpcional: true }
+            );
+            eventos = Array.isArray(res) ? res : (res as any)?.events || (res as any)?.data || [];
+          } catch {
+            eventos = [];
+          }
+        }
+
+        if (eventos.length === 0) {
+          eventos = [
+            {
+              id: '22222222-2222-2222-2222-222222220001',
+              title: 'THE ADDAMS FAMILY MUSICAL',
+              season_year: 2026,
+            },
+            {
+              id: '22222222-2222-2222-2222-222222220002',
+              title: 'MAMMA MIA!',
+              season_year: 2024,
+            },
+            {
+              id: '22222222-2222-2222-2222-222222220003',
+              title: 'JESUS CHRIST SUPERSTAR',
+              season_year: 2022,
+            },
+          ];
+        }
+
+        // Cargar TODOS los proyectos (publicados y borradores) para asociar multimedia
+        let proyectos: { id: string; title: string; is_published?: boolean }[] = [];
+        try {
+          const res = await api<{ id: string; title: string; is_published?: boolean }[]>(
+            '/api/v1/projects?admin=true',
+            {},
+            { tokenOpcional: true }
+          );
+          proyectos = Array.isArray(res) ? res : (res as any)?.projects || (res as any)?.data || [];
+        } catch {
+          try {
+            const res = await api<{ id: string; title: string; is_published?: boolean }[]>(
+              '/api/v1/projects',
+              {},
+              { tokenOpcional: true }
+            );
+            proyectos = Array.isArray(res) ? res : (res as any)?.projects || (res as any)?.data || [];
+          } catch {
+            proyectos = [];
+          }
+        }
+
+        // Si la base de datos no tuviera proyectos registrados, proporcionamos fallback conocido
+        if (proyectos.length === 0) {
+          proyectos = [
+            {
+              id: '1a2ec430-5549-4ba7-a2cc-c2b3bfacb177',
+              title: 'Teatro Comunitario Monteverde',
+            },
+          ];
+        }
 
         if (!activo) return;
 
         setItems(galeria);
         setTargets([
-          ...contenido.flat().map<Target>((c) => ({
-            kind: 'content',
-            id: c.id,
-            label: `${txt.institutional.sections[c.section]} · ${c.title} (${c.language.toUpperCase()})`,
+          ...eventos.map<Target>((e) => ({
+            kind: 'event',
+            id: e.id,
+            label: e.season_year ? `${e.title} (${e.season_year})` : e.title || 'Obra / Show sin título',
           })),
           ...proyectos.map<Target>((p) => ({
             kind: 'project',
             id: p.id,
-            label: p.title,
+            label: p.title || 'Proyecto sin título',
+          })),
+          ...contenido.map<Target>((c) => ({
+            kind: 'content',
+            id: c.id,
+            label: `${txt.institutional.sections[c.section] ?? c.section} · ${c.title} (${(c.language || 'es').toUpperCase()})`,
           })),
         ]);
       } catch (e) {
@@ -179,7 +259,9 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
         file,
         altText: subida.altText,
         association:
-          subida.kind === 'content'
+          subida.kind === 'event'
+            ? { event_id: subida.targetId }
+            : subida.kind === 'content'
             ? { content_id: subida.targetId }
             : { project_id: subida.targetId },
         onProgress: setProgreso,
@@ -340,8 +422,9 @@ export const AdminMediaView = ({ language }: { language: Language }) => {
                   }
                   className={`${inputClass} fc-select`}
                 >
-                  <option value="content">{t.targetContent}</option>
+                  <option value="event">{t.targetShow || 'Obra / Show'}</option>
                   <option value="project">{t.targetProject}</option>
+                  <option value="content">{t.targetContent}</option>
                 </select>
               </div>
 

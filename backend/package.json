@@ -3,10 +3,14 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --test tests/bloque2-unitarias.test.mjs tests/bloque2-integracion-concurrencia.test.mjs",
+    "test:b2": "node --test tests/bloque2-unitarias.test.mjs tests/bloque2-integracion-concurrencia.test.mjs",
+    "test:k6": "node ../scripts/run-performance.mjs",
+    "test:seguridad": "node ../scripts/run-security.mjs",
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "test:translation": "npm run build && node --test tests/*.test.mjs",
+    "test:estatico": "node ../scripts/analisis-estatico-b2.mjs",
     "start": "node dist/server.js"
   },
   "keywords": [],
